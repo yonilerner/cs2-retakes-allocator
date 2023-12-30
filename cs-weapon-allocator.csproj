@@ -8,6 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="CounterStrikeSharp.API" Version="1.0.142" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Reference Include="CounterStrikeSharp.API">
         <HintPath>D:\cs2-server\game\csgo\addons\counterstrikesharp\api\CounterStrikeSharp.API.dll</HintPath>
       </Reference>
