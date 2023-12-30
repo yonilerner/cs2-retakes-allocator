@@ -22,9 +22,15 @@ public class Cs2WeaponAllocator : BasePlugin
 
         if (hotReload)
         {
-            // If a hot reload is detected restart the current map.
-            Server.ExecuteCommand($"map {Server.MapName}");
+            HandleHotReload();
         }
+    }
+
+    private void HandleHotReload()
+    {
+        _tPlayers.Clear();
+        _ctPlayers.Clear();
+        Server.ExecuteCommand($"map {Server.MapName}");
     }
 
     public override void Unload(bool hotReload)
@@ -91,7 +97,6 @@ public class Cs2WeaponAllocator : BasePlugin
             {
                 GetArmorForRoundType(roundType),
                 CsItem.Knife,
-                CsItem.Bomb,
             };
             items.AddRange(
                 GetRandomUtilForRoundType(roundType, CsTeam.Terrorist)
@@ -144,6 +149,11 @@ public class Cs2WeaponAllocator : BasePlugin
     {
         AddTimer(0.1f, () =>
         {
+            if (!Utils.PlayerIsValid(player))
+            {
+                Log.Write($"Player is not valid when allocating item");
+                return;
+            }
             foreach (var item in items)
             {
                 player.GiveNamedItem(item);
@@ -153,13 +163,14 @@ public class Cs2WeaponAllocator : BasePlugin
 
     private void GiveDefuseKit(CCSPlayerController player)
     {
-        if (player.PlayerPawn.Value?.ItemServices?.Handle == null)
-        {
-            return;
-        }
-
         AddTimer(0.1f, () =>
         {
+            if (player.PlayerPawn.Value?.ItemServices?.Handle == null || !Utils.PlayerIsValid(player))
+            {
+                Log.Write($"Player is not valid when giving defuse kit");
+                return;
+            }
+
             var itemServices = new CCSPlayer_ItemServices(player.PlayerPawn.Value.ItemServices.Handle);
             itemServices.HasDefuser = true;
         });

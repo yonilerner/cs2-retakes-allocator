@@ -1,4 +1,6 @@
-﻿namespace Cs2WeaponAllocator;
+﻿using CounterStrikeSharp.API.Core;
+
+namespace Cs2WeaponAllocator;
 
 public static class Utils
 {
@@ -18,5 +20,10 @@ public static class Utils
         var item = items.ElementAt(random);
         // Log.Write($"Item: {item}");
         return item;
+    }
+
+    public static bool PlayerIsValid(CCSPlayerController? player)
+    {
+        return player != null && player.IsValid;
     }
 }
