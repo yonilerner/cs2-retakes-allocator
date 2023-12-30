@@ -31,10 +31,10 @@ public class CSWeaponAllocator : BasePlugin
     public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        var oldteam = (CsTeam)@event.Oldteam;
+        var oldTeam = (CsTeam)@event.Oldteam;
         var playerTeam = (CsTeam)@event.Team;
 
-        switch (oldteam)
+        switch (oldTeam)
         {
             case CsTeam.Terrorist:
                 tPlayers.Remove(player);
@@ -50,7 +50,7 @@ public class CSWeaponAllocator : BasePlugin
             case CsTeam.None:
                 tPlayers.Remove(player);
                 ctPlayers.Remove(player);
-                return HookResult.Continue;
+                break;
             case CsTeam.Terrorist:
                 tPlayers.Add(player);
                 break;
@@ -98,7 +98,7 @@ public class CSWeaponAllocator : BasePlugin
             AllocateItemsForPlayer(player, items);
         }
 
-        var defuser = Utils.Choice(ctPlayers);
+        var defusingPlayer = Utils.Choice(ctPlayers);
         foreach (var player in ctPlayers)
         {
             var items = new List<CsItem>
@@ -119,7 +119,7 @@ public class CSWeaponAllocator : BasePlugin
             else
             {
                 // On pistol rounds, you get util *or* a defuse kit
-                if (defuser?.UserId == player.UserId)
+                if (defusingPlayer?.UserId == player.UserId)
                 {
                     GiveDefuseKit(player);
                 }
@@ -152,6 +152,7 @@ public class CSWeaponAllocator : BasePlugin
         {
             return;
         }
+
         AddTimer(0.1f, () =>
         {
             var itemServices = new CCSPlayer_ItemServices(player.PlayerPawn.Value.ItemServices.Handle);
@@ -163,35 +164,33 @@ public class CSWeaponAllocator : BasePlugin
     {
         var randomValue = new Random().NextDouble();
 
-        if (randomValue < 0.2)
+        return randomValue switch
         {
-            // 20% chance of pistol round
-            return RoundType.Pistol;
-        }
-        else if (randomValue < 0.5)
-        {
-            // 30% chance of half-buy round
-            return RoundType.HalfBuy;
-        }
-        else
-        {
-            // 50% chance of rifle round
-            return RoundType.FullBuy;
-        }
+            // 15% chance of pistol round
+            < 0.15 => RoundType.Pistol,
+            // 25% chance of halfbuy round
+            < 0.40 => RoundType.HalfBuy,
+            // 70% chance of fullbuy round
+            _ => RoundType.FullBuy,
+        };
     }
 
     private IList<CsItem> GetRandomUtilForRoundType(RoundType roundType, CsTeam team)
     {
-        var pistolItems = new List<CsItem>
-        {
-            CsItem.Flashbang,
-            CsItem.Smoke,
-        };
+        // Limited util on pistol rounds
         if (roundType == RoundType.Pistol)
         {
-            return new List<CsItem> { Utils.Choice(pistolItems) };
+            return new List<CsItem>
+            {
+                Utils.Choice(new List<CsItem>
+                {
+                    CsItem.Flashbang,
+                    CsItem.Smoke,
+                }),
+            };
         }
 
+        // All util options are available on buy rounds
         var possibleItems = new List<CsItem>
         {
             CsItem.Flashbang,
@@ -200,14 +199,18 @@ public class CSWeaponAllocator : BasePlugin
             team == CsTeam.Terrorist ? CsItem.Molotov : CsItem.Incendiary,
         };
 
+        // Everyone gets one util
         var randomUtil = new List<CsItem>
         {
-            Utils.Choice(possibleItems)
+            Utils.Choice(possibleItems),
         };
 
-        var i = 0;
+        // 50% chance to get an extra util item
+        // We cant give people duplicate of anything other than a flash though, so
+        //  try up to 50 times to give them a duplicate flash or a non-duplicate other nade
         if (new Random().NextDouble() < .5)
         {
+            var i = 0;
             while (i < 50)
             {
                 var extraItem = Utils.Choice(possibleItems);
@@ -292,8 +295,8 @@ public class CSWeaponAllocator : BasePlugin
         }
         else
         {
-            var randomlyGetAwp = new Random().NextDouble() < 0.2;
-            if (randomlyGetAwp && roundType == RoundType.FullBuy)
+            // 20% chance of getting an AWP on a fullbuy round
+            if (roundType == RoundType.FullBuy && new Random().NextDouble() < 0.2)
             {
                 weapons.Add(CsItem.AWP);
             }

@@ -1,6 +1,6 @@
 ﻿namespace cs_weapon_allocator;
 
-public class Log
+public static class Log
 {
     public static void Write(string message)
     {
