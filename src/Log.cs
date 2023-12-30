@@ -2,8 +2,8 @@
 
 public static class Log
 {
-    public static void Write(string message)
-    {
-        Console.WriteLine($"[WeaponAllocator] {message}");
-    }
+	public static void Write(string message)
+	{
+		Console.WriteLine($"[WeaponAllocator] {message}");
+	}
 }

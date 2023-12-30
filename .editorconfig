@@ -1,0 +1,164 @@
+
+[*.{appxmanifest,asax,ascx,aspx,axaml,axml,build,c,c++,c++m,cc,ccm,cginc,compute,config,cp,cpp,cppm,cs,cshtml,csproj,css,cu,cuh,cxx,cxxm,dbml,discomap,dtd,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,htm,html,hxx,inc,inl,ino,ipp,ixx,js,jsproj,jsx,lsproj,master,mpp,mq4,mq5,mqh,mxx,njsproj,nuspec,paml,proj,props,proto,razor,resw,resx,skin,StyleCop,targets,tasks,tpp,ts,tsx,usf,ush,vb,vbproj,xaml,xamlx,xml,xoml,xsd}]
+indent_style = tab
+indent_size = tab
+tab_width = 4
+
+[*.{json,resjson}]
+indent_style = tab
+indent_size = tab
+tab_width = 2
+
+[*]
+
+# Standard properties
+end_of_line = lf
+
+# Microsoft .NET properties
+csharp_new_line_before_members_in_object_initializers = false
+csharp_preferred_modifier_order = internal, public, protected, private, file, new, async, abstract, virtual, readonly, override, static, extern, unsafe, volatile, sealed, required:suggestion
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_prefer_utf8_string_literals = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+dotnet_naming_rule.private_props_not_allowed_rule.import_to_resharper = True
+dotnet_naming_rule.private_props_not_allowed_rule.resharper_description = private_props_not_allowed
+dotnet_naming_rule.private_props_not_allowed_rule.resharper_guid = 5463b36e-97e1-4c30-9cce-30a590ec863e
+dotnet_naming_rule.private_props_not_allowed_rule.resharper_style = s_ + aaBb_AaBb, AA_BB
+dotnet_naming_rule.private_props_not_allowed_rule.severity = warning
+dotnet_naming_rule.private_props_not_allowed_rule.style = s_lower_camel_case_underscore_tolerant_style
+dotnet_naming_rule.private_props_not_allowed_rule.symbols = private_props_not_allowed_symbols
+dotnet_naming_style.s_lower_camel_case_underscore_tolerant_style.capitalization = camel_case
+dotnet_naming_style.s_lower_camel_case_underscore_tolerant_style.required_prefix = s_
+dotnet_naming_style.s_lower_camel_case_underscore_tolerant_style.word_separator = _
+dotnet_naming_symbols.private_props_not_allowed_symbols.applicable_accessibilities = local,private
+dotnet_naming_symbols.private_props_not_allowed_symbols.applicable_kinds = property
+dotnet_naming_symbols.private_props_not_allowed_symbols.resharper_applicable_kinds = property
+dotnet_naming_symbols.private_props_not_allowed_symbols.resharper_required_modifiers = any
+dotnet_separate_import_directive_groups = true
+dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:suggestion
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:suggestion
+dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:suggestion
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
+dotnet_style_qualification_for_event = true:suggestion
+dotnet_style_qualification_for_field = true:suggestion
+dotnet_style_qualification_for_method = true:suggestion
+dotnet_style_qualification_for_property = true:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
+
+# ReSharper properties
+resharper_apply_on_completion = true
+resharper_autodetect_indent_settings = true
+resharper_blank_lines_after_control_transfer_statements = 1
+resharper_braces_for_ifelse = required
+resharper_can_use_global_alias = false
+resharper_csharp_allow_far_alignment = true
+resharper_csharp_empty_block_style = together
+resharper_csharp_indent_style = tab
+resharper_csharp_keep_blank_lines_in_code = 1
+resharper_csharp_keep_blank_lines_in_declarations = 1
+resharper_csharp_max_line_length = 404
+resharper_csharp_wrap_after_declaration_lpar = true
+resharper_csharp_wrap_before_binary_opsign = true
+resharper_csharp_wrap_before_declaration_rpar = true
+resharper_csharp_wrap_parameters_style = chop_if_long
+resharper_enforce_line_ending_style = true
+resharper_force_attribute_style = join
+resharper_indent_preprocessor_region = no_indent
+resharper_max_attribute_length_for_same_line = 50
+resharper_nested_ternary_style = expanded
+resharper_object_creation_when_type_not_evident = target_typed
+resharper_parentheses_redundancy_style = remove
+resharper_place_expr_method_on_single_line = false
+resharper_place_expr_property_on_single_line = true
+resharper_place_simple_embedded_statement_on_same_line = false
+resharper_place_simple_initializer_on_single_line = false
+resharper_show_autodetect_configure_formatting_tip = false
+resharper_use_roslyn_logic_for_evident_types = true
+resharper_wrap_array_initializer_style = chop_if_long
+resharper_wrap_before_arrow_with_expressions = true
+resharper_wrap_chained_binary_expressions = chop_if_long
+resharper_wrap_object_and_collection_initializer_style = chop_always
+
+# ReSharper inspection severities
+resharper_arrange_attributes_highlighting = warning
+resharper_arrange_redundant_parentheses_highlighting = hint
+resharper_arrange_this_qualifier_highlighting = hint
+resharper_arrange_type_member_modifiers_highlighting = hint
+resharper_arrange_type_modifiers_highlighting = hint
+resharper_bad_attribute_brackets_spaces_highlighting = warning
+resharper_bad_braces_spaces_highlighting = warning
+resharper_bad_colon_spaces_highlighting = warning
+resharper_bad_comma_spaces_highlighting = warning
+resharper_bad_control_braces_indent_highlighting = warning
+resharper_bad_control_braces_line_breaks_highlighting = warning
+resharper_bad_declaration_braces_indent_highlighting = warning
+resharper_bad_declaration_braces_line_breaks_highlighting = warning
+resharper_bad_expression_braces_indent_highlighting = warning
+resharper_bad_expression_braces_line_breaks_highlighting = warning
+resharper_bad_generic_brackets_spaces_highlighting = warning
+resharper_bad_indent_highlighting = warning
+resharper_bad_linq_line_breaks_highlighting = warning
+resharper_bad_list_line_breaks_highlighting = warning
+resharper_bad_member_access_spaces_highlighting = warning
+resharper_bad_namespace_braces_indent_highlighting = warning
+resharper_bad_parens_line_breaks_highlighting = warning
+resharper_bad_parens_spaces_highlighting = warning
+resharper_bad_preprocessor_indent_highlighting = warning
+resharper_bad_semicolon_spaces_highlighting = warning
+resharper_bad_spaces_after_keyword_highlighting = warning
+resharper_bad_square_brackets_spaces_highlighting = warning
+resharper_bad_switch_braces_indent_highlighting = warning
+resharper_bad_symbol_spaces_highlighting = warning
+resharper_built_in_type_reference_style_for_member_access_highlighting = hint
+resharper_built_in_type_reference_style_highlighting = hint
+resharper_check_namespace_highlighting = hint
+resharper_class_can_be_sealed_global_highlighting = hint
+resharper_class_can_be_sealed_local_highlighting = hint
+resharper_class_never_instantiated_global_highlighting = none
+resharper_comment_typo_highlighting = none
+resharper_condition_is_always_true_or_false_highlighting = hint
+resharper_convert_to_constant_local_highlighting = none
+resharper_cpp_missing_space_highlighting = warning
+resharper_cpp_multiple_spaces_highlighting = warning
+resharper_cpp_redundant_space_highlighting = warning
+resharper_cpp_unnecessary_whitespace_highlighting = warning
+resharper_identifier_typo_highlighting = none
+resharper_incorrect_blank_lines_near_braces_highlighting = warning
+resharper_internal_or_private_member_not_documented_highlighting = warning
+resharper_member_can_be_private_global_highlighting = none
+resharper_member_can_be_protected_global_highlighting = none
+resharper_missing_blank_lines_highlighting = warning
+resharper_missing_indent_highlighting = warning
+resharper_missing_linebreak_highlighting = warning
+resharper_missing_space_highlighting = warning
+resharper_multiple_spaces_highlighting = warning
+resharper_multiple_statements_on_one_line_highlighting = warning
+resharper_multiple_type_members_on_one_line_highlighting = warning
+resharper_non_readonly_member_in_get_hash_code_highlighting = none
+resharper_outdent_is_off_prev_level_highlighting = warning
+resharper_redundant_blank_lines_highlighting = warning
+resharper_redundant_default_member_initializer_highlighting = none
+resharper_redundant_space_highlighting = warning
+resharper_separate_control_transfer_statement_highlighting = suggestion
+resharper_string_ends_with_is_culture_specific_highlighting = warning
+resharper_string_literal_typo_highlighting = none
+resharper_string_starts_with_is_culture_specific_highlighting = warning
+resharper_suggest_var_or_type_built_in_types_highlighting = hint
+resharper_suggest_var_or_type_elsewhere_highlighting = hint
+resharper_suggest_var_or_type_simple_types_highlighting = hint
+resharper_tabs_and_spaces_mismatch_highlighting = warning
+resharper_tabs_outside_indent_highlighting = warning
+resharper_unnecessary_whitespace_highlighting = suggestion
+resharper_unused_auto_property_accessor_global_highlighting = none
+resharper_unused_member_global_highlighting = none
+resharper_unused_type_global_highlighting = none
+resharper_virtual_member_call_in_constructor_highlighting = none
+resharper_wrong_indent_size_highlighting = warning
+
+[*.cs]
+indent_style = tab
+indent_size = tab
+tab_width = 4

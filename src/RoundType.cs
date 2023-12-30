@@ -2,7 +2,7 @@
 
 public enum RoundType
 {
-    Pistol,
-    HalfBuy,
-    FullBuy,
+	Pistol,
+	HalfBuy,
+	FullBuy
 }
