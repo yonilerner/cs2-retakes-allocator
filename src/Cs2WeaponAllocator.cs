@@ -1,15 +1,13 @@
-﻿using System.Collections;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace cs_weapon_allocator;
+namespace Cs2WeaponAllocator;
 
 [MinimumApiVersion(129)]
-public class CSWeaponAllocator : BasePlugin
+public class Cs2WeaponAllocator : BasePlugin
 {
     public override string ModuleName => "Weapon Allocator Plugin";
     public override string ModuleVersion => "0.0.1";

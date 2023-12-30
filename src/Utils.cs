@@ -1,6 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
-
-namespace cs_weapon_allocator;
+﻿namespace Cs2WeaponAllocator;
 
 public static class Utils
 {

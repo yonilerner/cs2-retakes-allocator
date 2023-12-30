@@ -1,4 +1,4 @@
-﻿namespace cs_weapon_allocator;
+﻿namespace Cs2WeaponAllocator;
 
 public enum RoundType
 {
