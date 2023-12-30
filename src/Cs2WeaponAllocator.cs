@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
@@ -12,17 +13,23 @@ public class Cs2WeaponAllocator : BasePlugin
     public override string ModuleName => "Weapon Allocator Plugin";
     public override string ModuleVersion => "0.0.1";
 
-    private IList<CCSPlayerController> tPlayers = new List<CCSPlayerController>();
-    private IList<CCSPlayerController> ctPlayers = new List<CCSPlayerController>();
+    private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
+    private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
 
     public override void Load(bool hotReload)
     {
-        Console.WriteLine("Loaded CSWeaponAllocator");
+        Log.Write("Loaded");
+
+        if (hotReload)
+        {
+            // If a hot reload is detected restart the current map.
+            Server.ExecuteCommand($"map {Server.MapName}");
+        }
     }
 
     public override void Unload(bool hotReload)
     {
-        Console.WriteLine("Unloaded CSWeaponAllocator");
+        Log.Write($"Unloaded");
     }
 
     [GameEventHandler]
@@ -35,10 +42,10 @@ public class Cs2WeaponAllocator : BasePlugin
         switch (oldTeam)
         {
             case CsTeam.Terrorist:
-                tPlayers.Remove(player);
+                _tPlayers.Remove(player);
                 break;
             case CsTeam.CounterTerrorist:
-                ctPlayers.Remove(player);
+                _ctPlayers.Remove(player);
                 break;
         }
 
@@ -46,14 +53,14 @@ public class Cs2WeaponAllocator : BasePlugin
         {
             case CsTeam.Spectator:
             case CsTeam.None:
-                tPlayers.Remove(player);
-                ctPlayers.Remove(player);
+                _tPlayers.Remove(player);
+                _ctPlayers.Remove(player);
                 break;
             case CsTeam.Terrorist:
-                tPlayers.Add(player);
+                _tPlayers.Add(player);
                 break;
             case CsTeam.CounterTerrorist:
-                ctPlayers.Add(player);
+                _ctPlayers.Add(player);
                 break;
         }
 
@@ -63,8 +70,8 @@ public class Cs2WeaponAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
-        tPlayers.Remove(@event.Userid);
-        ctPlayers.Remove(@event.Userid);
+        _tPlayers.Remove(@event.Userid);
+        _ctPlayers.Remove(@event.Userid);
         return HookResult.Continue;
     }
 
@@ -75,10 +82,10 @@ public class Cs2WeaponAllocator : BasePlugin
         Log.Write($"Round type: {roundType}");
 
         Log.Write("Players:");
-        Log.Write($"T: ${tPlayers.Count}");
-        Log.Write($"CT: ${ctPlayers.Count}");
+        Log.Write($"T: ${_tPlayers.Count}");
+        Log.Write($"CT: ${_ctPlayers.Count}");
 
-        foreach (var player in tPlayers)
+        foreach (var player in _tPlayers)
         {
             var items = new List<CsItem>
             {
@@ -96,8 +103,8 @@ public class Cs2WeaponAllocator : BasePlugin
             AllocateItemsForPlayer(player, items);
         }
 
-        var defusingPlayer = Utils.Choice(ctPlayers);
-        foreach (var player in ctPlayers)
+        var defusingPlayer = Utils.Choice(_ctPlayers);
+        foreach (var player in _ctPlayers)
         {
             var items = new List<CsItem>
             {
@@ -158,7 +165,7 @@ public class Cs2WeaponAllocator : BasePlugin
         });
     }
 
-    private RoundType GetRandomRoundType()
+    private static RoundType GetRandomRoundType()
     {
         var randomValue = new Random().NextDouble();
 
@@ -173,7 +180,7 @@ public class Cs2WeaponAllocator : BasePlugin
         };
     }
 
-    private IList<CsItem> GetRandomUtilForRoundType(RoundType roundType, CsTeam team)
+    private static IEnumerable<CsItem> GetRandomUtilForRoundType(RoundType roundType, CsTeam team)
     {
         // Limited util on pistol rounds
         if (roundType == RoundType.Pistol)
@@ -225,26 +232,19 @@ public class Cs2WeaponAllocator : BasePlugin
         return randomUtil;
     }
 
-    private CsItem GetArmorForRoundType(RoundType roundType)
-    {
-        if (roundType == RoundType.Pistol)
-        {
-            return CsItem.Kevlar;
-        }
+    private static CsItem GetArmorForRoundType(RoundType roundType) =>
+        roundType == RoundType.Pistol ? CsItem.Kevlar : CsItem.KevlarHelmet;
 
-        return CsItem.KevlarHelmet;
-    }
-
-    private List<CsItem> GetRandomWeaponsForRoundType(RoundType roundType, CsTeam team)
+    private static IEnumerable<CsItem> GetRandomWeaponsForRoundType(RoundType roundType, CsTeam team)
     {
-        IList<CsItem> tPistolWeapons = new List<CsItem>
+        var tPistolWeapons = new List<CsItem>
         {
             CsItem.Glock,
             CsItem.P250,
             CsItem.Tec9,
             CsItem.Deagle,
         };
-        IList<CsItem> ctPistolWeapons = new List<CsItem>
+        var ctPistolWeapons = new List<CsItem>
         {
             CsItem.USP,
             CsItem.P250,
@@ -252,14 +252,14 @@ public class Cs2WeaponAllocator : BasePlugin
             CsItem.Deagle,
         };
 
-        IList<CsItem> tHalfBuyWeapons = new List<CsItem>
+        var tHalfBuyWeapons = new List<CsItem>
         {
             CsItem.Mac10,
             CsItem.MP5,
             CsItem.UMP45,
             CsItem.P90,
         };
-        IList<CsItem> ctHalfBuyWeapons = new List<CsItem>
+        var ctHalfBuyWeapons = new List<CsItem>
         {
             CsItem.MP9,
             CsItem.MP5,
@@ -267,12 +267,12 @@ public class Cs2WeaponAllocator : BasePlugin
             CsItem.P90,
         };
 
-        IList<CsItem> tFullBuyWeapons = new List<CsItem>
+        var tFullBuyWeapons = new List<CsItem>
         {
             CsItem.AK47,
         };
 
-        IList<CsItem> ctFullBuyWeapons = new List<CsItem>
+        var ctFullBuyWeapons = new List<CsItem>
         {
             CsItem.M4A4,
             CsItem.M4A1S,
@@ -287,21 +287,18 @@ public class Cs2WeaponAllocator : BasePlugin
 
         weapons.Add(team == CsTeam.Terrorist ? CsItem.Glock : CsItem.USP);
 
-        if (roundType == RoundType.HalfBuy)
+        switch (roundType)
         {
-            weapons.Add(Utils.Choice(team == CsTeam.Terrorist ? tHalfBuyWeapons : ctHalfBuyWeapons));
-        }
-        else
-        {
+            case RoundType.HalfBuy:
+                weapons.Add(Utils.Choice(team == CsTeam.Terrorist ? tHalfBuyWeapons : ctHalfBuyWeapons));
+                break;
             // 20% chance of getting an AWP on a fullbuy round
-            if (roundType == RoundType.FullBuy && new Random().NextDouble() < 0.2)
-            {
+            case RoundType.FullBuy when new Random().NextDouble() < 0.2:
                 weapons.Add(CsItem.AWP);
-            }
-            else
-            {
+                break;
+            default:
                 weapons.Add(Utils.Choice(team == CsTeam.Terrorist ? tFullBuyWeapons : ctFullBuyWeapons));
-            }
+                break;
         }
 
         return weapons;
