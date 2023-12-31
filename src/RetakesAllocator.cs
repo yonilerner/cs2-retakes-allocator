@@ -5,12 +5,12 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace Cs2WeaponAllocator;
+namespace RetakesAllocator;
 
 [MinimumApiVersion(129)]
-public class Cs2WeaponAllocator : BasePlugin
+public class RetakesAllocator : BasePlugin
 {
-    public override string ModuleName => "Weapon Allocator Plugin";
+    public override string ModuleName => "CS2 Retakes Allocator";
     public override string ModuleVersion => "0.0.1";
 
     private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
