@@ -10,7 +10,7 @@ namespace RetakesAllocator;
 [MinimumApiVersion(129)]
 public class RetakesAllocator : BasePlugin
 {
-    public override string ModuleName => "CS2 Retakes Allocator";
+    public override string ModuleName => "Retakes Allocator Plugin";
     public override string ModuleVersion => "0.0.1";
 
     private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
