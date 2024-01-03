@@ -5,6 +5,12 @@
         <RootNamespace>RetakesAllocator</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Foo>Bar</Foo>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <CopyPath Condition=" '$(CopyPath)' == '' ">
+            C:\Tools</CopyPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,5 +18,9 @@
         <HintPath>.\CounterStrikeSharp\addons\counterstrikesharp\api\CounterStrikeSharp.API.dll</HintPath>
       </Reference>
     </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="echo '$(CopyPath.Trim())'" />
+    </Target>
 
 </Project>
