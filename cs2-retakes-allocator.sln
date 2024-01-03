@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RetakesAllocator", "RetakesAllocator\RetakesAllocator.csproj", "{63CED353-BD36-4715-BBF6-56558D131CE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RetakesAllocatorTest", "RetakesAllocatorTest\RetakesAllocatorTest.csproj", "{71FB77CC-26A1-4845-9941-131DBBC52C22}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63CED353-BD36-4715-BBF6-56558D131CE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63CED353-BD36-4715-BBF6-56558D131CE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63CED353-BD36-4715-BBF6-56558D131CE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63CED353-BD36-4715-BBF6-56558D131CE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71FB77CC-26A1-4845-9941-131DBBC52C22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71FB77CC-26A1-4845-9941-131DBBC52C22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71FB77CC-26A1-4845-9941-131DBBC52C22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71FB77CC-26A1-4845-9941-131DBBC52C22}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

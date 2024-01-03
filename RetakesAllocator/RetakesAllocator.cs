@@ -9,7 +9,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace RetakesAllocator;
 
-[MinimumApiVersion(129)]
+[MinimumApiVersion(142)]
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
