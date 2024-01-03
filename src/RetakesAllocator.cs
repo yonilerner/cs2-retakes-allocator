@@ -122,8 +122,8 @@ public class RetakesAllocator : BasePlugin
         Log.Write($"Round type: {roundType}");
 
         Log.Write("Players:");
-        Log.Write($"T: ${_tPlayers.Count}");
-        Log.Write($"CT: ${_ctPlayers.Count}");
+        Log.Write($"T: {_tPlayers.Count}");
+        Log.Write($"CT: {_ctPlayers.Count}");
 
         foreach (var player in _tPlayers)
         {
