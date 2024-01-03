@@ -15,7 +15,7 @@
     </ItemGroup>
     
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' ">
-      <Exec Command="copy '$(TargetPath)' '$(CopyPath)' " />
+      <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(CopyPath)&quot; " />
     </Target>
 
 </Project>
