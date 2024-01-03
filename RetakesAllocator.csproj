@@ -8,19 +8,14 @@
         <Foo>Bar</Foo>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <CopyPath Condition=" '$(CopyPath)' == '' ">
-            C:\Tools</CopyPath>
-    </PropertyGroup>
-
     <ItemGroup>
       <Reference Include="CounterStrikeSharp.API">
         <HintPath>.\CounterStrikeSharp\addons\counterstrikesharp\api\CounterStrikeSharp.API.dll</HintPath>
       </Reference>
     </ItemGroup>
-
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="echo '$(CopyPath.Trim())'" />
+    
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' ">
+      <Exec Command="copy '$(TargetPath)' '$(CopyPath)' " />
     </Target>
 
 </Project>
