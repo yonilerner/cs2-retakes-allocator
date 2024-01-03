@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cs2WeaponAllocator", "Cs2WeaponAllocator.csproj", "{93BCE3E8-9B8A-4E5C-8FF3-03C652104C3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RetakesAllocator", "RetakesAllocator.csproj", "{93BCE3E8-9B8A-4E5C-8FF3-03C652104C3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
