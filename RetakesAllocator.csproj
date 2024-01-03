@@ -5,7 +5,6 @@
         <RootNamespace>RetakesAllocator</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Foo>Bar</Foo>
     </PropertyGroup>
 
     <ItemGroup>
