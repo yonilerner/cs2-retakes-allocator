@@ -56,15 +56,15 @@ public class RetakesAllocator : BasePlugin
         
         if (type == "H")
         {
-            _nextRoundType = RoundType.FullBuy;
-            commandInfo.ReplyToCommand($"Next round will be a fullbuy round.");
+            _nextRoundType = RoundType.HalfBuy;
+            commandInfo.ReplyToCommand($"Next round will be a halfbuy round.");
             return;
         }
         
         if (type == "F")
         {
-            _nextRoundType = RoundType.HalfBuy;
-            commandInfo.ReplyToCommand($"Next round will be a halfbuy round.");
+            _nextRoundType = RoundType.FullBuy;
+            commandInfo.ReplyToCommand($"Next round will be a fullbuy round.");
             return;
         }
 
@@ -130,9 +130,14 @@ public class RetakesAllocator : BasePlugin
         {
             var items = new List<CsItem>
             {
-                GetArmorForRoundType(roundType),
                 CsItem.Knife,
             };
+            
+            if (roundType != RoundType.Pistol)
+            {
+                items.Add(GetArmorForRoundType(roundType));
+            }
+            
             items.AddRange(
                 GetRandomUtilForRoundType(roundType, CsTeam.Terrorist)
             );
@@ -148,9 +153,14 @@ public class RetakesAllocator : BasePlugin
         {
             var items = new List<CsItem>
             {
-                GetArmorForRoundType(roundType),
                 CsItem.Knife,
             };
+            
+            if (roundType != RoundType.Pistol)
+            {
+                items.Add(GetArmorForRoundType(roundType));
+            }
+            
             items.AddRange(
                 GetRandomWeaponsForRoundType(roundType, CsTeam.CounterTerrorist)
             );
