@@ -17,7 +17,7 @@ public class RetakesAllocator : BasePlugin
 
     private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
     private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
-    private static RoundType? _nextRoundType;
+    private RoundType? _nextRoundType;
 
     public override void Load(bool hotReload)
     {
@@ -117,7 +117,9 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
-        var roundType = GetRandomRoundType();
+        var roundType = _nextRoundType ?? GetRandomRoundType();
+        _nextRoundType = null;
+        
         Log.Write($"Round type: {roundType}");
 
         Log.Write("Players:");
@@ -212,13 +214,6 @@ public class RetakesAllocator : BasePlugin
     private static RoundType GetRandomRoundType()
     {
         var randomValue = new Random().NextDouble();
-        
-        if (_nextRoundType != null)
-        {
-            var roundType = _nextRoundType ?? RoundType.Pistol;
-            _nextRoundType = null;
-            return roundType;
-        }
         
         return randomValue switch
         {
