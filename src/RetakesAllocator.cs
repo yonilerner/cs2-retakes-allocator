@@ -56,18 +56,17 @@ public class RetakesAllocator : BasePlugin
         
         if (type == "H")
         {
-            _nextRoundType = RoundType.FullBuy;
-            commandInfo.ReplyToCommand($"Next round will be a fullbuy round.");
+            _nextRoundType = RoundType.HalfBuy;
+            commandInfo.ReplyToCommand($"Next round will be a halfbuy round.");
             return;
         }
         
         if (type == "F")
         {
-            _nextRoundType = RoundType.HalfBuy;
-            commandInfo.ReplyToCommand($"Next round will be a halfbuy round.");
+            _nextRoundType = RoundType.FullBuy;
+            commandInfo.ReplyToCommand($"Next round will be a fullbuy round.");
             return;
         }
-
         commandInfo.ReplyToCommand($"[Allocator] You must specify a round type [P/H/F]");
     }
 
