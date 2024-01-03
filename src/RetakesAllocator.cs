@@ -2,6 +2,8 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 
@@ -15,6 +17,7 @@ public class RetakesAllocator : BasePlugin
 
     private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
     private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
+    private RoundType? _nextRoundType;
 
     public override void Load(bool hotReload)
     {
@@ -36,6 +39,36 @@ public class RetakesAllocator : BasePlugin
     public override void Unload(bool hotReload)
     {
         Log.Write($"Unloaded");
+    }
+
+    [ConsoleCommand("css_nextround", "Sets the next round type.")]
+    [CommandHelper(minArgs: 1, usage: "[P/H/F]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [RequiresPermissions("@css/root")]
+    public void AddNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        var type = commandInfo.GetArg(1).ToUpper();
+        if (type == "P")
+        {
+            _nextRoundType = RoundType.Pistol;
+            commandInfo.ReplyToCommand($"Next round will be a pistol round.");
+            return;
+        }
+        
+        if (type == "H")
+        {
+            _nextRoundType = RoundType.FullBuy;
+            commandInfo.ReplyToCommand($"Next round will be a fullbuy round.");
+            return;
+        }
+        
+        if (type == "F")
+        {
+            _nextRoundType = RoundType.HalfBuy;
+            commandInfo.ReplyToCommand($"Next round will be a halfbuy round.");
+            return;
+        }
+
+        commandInfo.ReplyToCommand($"[Allocator] You must specify a round type [P/H/F]");
     }
 
     [GameEventHandler]
@@ -84,7 +117,9 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
-        var roundType = GetRandomRoundType();
+        var roundType = _nextRoundType ?? GetRandomRoundType();
+        _nextRoundType = null;
+        
         Log.Write($"Round type: {roundType}");
 
         Log.Write("Players:");
@@ -179,7 +214,7 @@ public class RetakesAllocator : BasePlugin
     private static RoundType GetRandomRoundType()
     {
         var randomValue = new Random().NextDouble();
-
+        
         return randomValue switch
         {
             // 15% chance of pistol round
