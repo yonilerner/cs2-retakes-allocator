@@ -227,7 +227,7 @@ public class RetakesAllocator : BasePlugin
             < 0.15 => RoundType.Pistol,
             // 25% chance of halfbuy round
             < 0.40 => RoundType.HalfBuy,
-            // 70% chance of fullbuy round
+            // 60% chance of fullbuy round
             _ => RoundType.FullBuy,
         };
     }
