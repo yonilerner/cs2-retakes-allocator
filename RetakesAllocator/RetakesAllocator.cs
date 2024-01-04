@@ -53,20 +53,21 @@ public class RetakesAllocator : BasePlugin
             commandInfo.ReplyToCommand($"Next round will be a pistol round.");
             return;
         }
-        
+
         if (type == "H")
         {
             _nextRoundType = RoundType.HalfBuy;
             commandInfo.ReplyToCommand($"Next round will be a halfbuy round.");
             return;
         }
-        
+
         if (type == "F")
         {
             _nextRoundType = RoundType.FullBuy;
             commandInfo.ReplyToCommand($"Next round will be a fullbuy round.");
             return;
         }
+
         commandInfo.ReplyToCommand($"[Allocator] You must specify a round type [P/H/F]");
     }
 
@@ -118,7 +119,7 @@ public class RetakesAllocator : BasePlugin
     {
         var roundType = _nextRoundType ?? GetRandomRoundType();
         _nextRoundType = null;
-        
+
         Log.Write($"Round type: {roundType}");
 
         Log.Write("Players:");
@@ -188,9 +189,15 @@ public class RetakesAllocator : BasePlugin
                 Log.Write($"Player is not valid when allocating item");
                 return;
             }
+
             foreach (var item in items)
             {
                 player.GiveNamedItem(item);
+            }
+
+            if ((CsTeam)player.TeamNum == CsTeam.Terrorist)
+            {
+                AddTimer(0.1f, () => { NativeAPI.IssueClientCommand((int)player.UserId!, "slot5"); });
             }
         });
     }
@@ -213,7 +220,7 @@ public class RetakesAllocator : BasePlugin
     private static RoundType GetRandomRoundType()
     {
         var randomValue = new Random().NextDouble();
-        
+
         return randomValue switch
         {
             // 15% chance of pistol round
