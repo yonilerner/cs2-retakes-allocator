@@ -1,6 +1,9 @@
 ﻿# CS2 Retakes Allocator
 Very early version, somewhat working **MAY HAVE BUGS / USE WITH CAUTION**
 
+## Retakes
+This plugin is made to run alongside B3none's retakes implementation: https://github.com/b3none/cs2-retakes
+
 ## Progress
 - [x] Implement weapon allocation
 - [x] Implement armour allocation
