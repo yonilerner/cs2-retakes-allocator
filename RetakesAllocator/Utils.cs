@@ -1,4 +1,7 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using System.Diagnostics;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
+using CounterStrikeSharp.API.Modules.Utils;
 
 namespace RetakesAllocator;
 
@@ -25,5 +28,16 @@ public static class Utils
     public static bool PlayerIsValid(CCSPlayerController? player)
     {
         return player != null && player.IsValid;
+    }
+
+    public static RoundType? ParseRoundType(string roundType)
+    {
+        return roundType.ToUpper() switch
+        {
+            "F" => RoundType.FullBuy,
+            "H" => RoundType.HalfBuy,
+            "P" => RoundType.Pistol,
+            _ => null,
+        };
     }
 }

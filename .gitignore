@@ -7,3 +7,4 @@ riderModule.iml
 *.DotSettings.user
 .vs/
 .vs-code/
+data.db

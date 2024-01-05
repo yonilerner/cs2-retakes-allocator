@@ -6,6 +6,8 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.EntityFrameworkCore;
+using RetakesAllocator.db;
 
 namespace RetakesAllocator;
 
@@ -19,9 +21,14 @@ public class RetakesAllocator : BasePlugin
     private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
     private RoundType? _nextRoundType;
 
+    #region Setup
+
     public override void Load(bool hotReload)
     {
         Log.Write("Loaded");
+
+        Db.Instance ??= new Db();
+        Db.GetInstance().Database.Migrate();
 
         if (hotReload)
         {
@@ -39,12 +46,78 @@ public class RetakesAllocator : BasePlugin
     public override void Unload(bool hotReload)
     {
         Log.Write($"Unloaded");
+
+        Db.Instance?.Dispose();
+        Db.Instance = null;
+    }
+    
+    #endregion
+
+    #region Commands
+
+    [ConsoleCommand("css_weapon")]
+    [CommandHelper(minArgs: 2, usage: "P|H|F weapon", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Utils.PlayerIsValid(player))
+        {
+            return;
+        }
+
+        var playerId = player?.UserId ?? 0;
+        var team = (CsTeam) player!.TeamNum;
+
+        var roundTypeInput = commandInfo.GetArg(1).Trim();
+        var roundType = Utils.ParseRoundType(roundTypeInput);
+        if (roundType is null)
+        {
+            commandInfo.ReplyToCommand($"Invalid round type provided: {roundTypeInput}");
+            return;
+        }
+
+        var weaponInput = commandInfo.GetArg(2).Trim();
+        CsItem? weapon;
+        if (WeaponHelpers.IsRemoveWeaponSentinel(weaponInput))
+        {
+            weapon = null;
+        }
+        else
+        {
+            var foundWeapons = WeaponHelpers.FindItemByName(weaponInput);
+            if (foundWeapons.Count == 0)
+            {
+                commandInfo.ReplyToCommand($"Weapon '{weaponInput}' not found.");
+                return;
+            }
+
+            if (foundWeapons.Count != 1)
+            {
+                commandInfo.ReplyToCommand($"Weapon '{weaponInput}' matches multiple weapons: {foundWeapons}");
+                return;
+            }
+
+            var firstWeapon = foundWeapons.First();
+
+            if (!WeaponHelpers.IsValidWeapon((RoundType) roundType, team, firstWeapon))
+            {
+                commandInfo.ReplyToCommand(
+                    $"Weapon '{firstWeapon}' is not valid for round={roundType} and team={team}");
+                return;
+            }
+
+            weapon = firstWeapon;
+        }
+
+        var userSettings = Db.GetInstance().UserSettings.FirstOrDefault(u => u.UserId == playerId) ??
+                           new UserSetting {UserId = playerId};
+        userSettings.SetWeaponPreference(team, (RoundType) roundType, weapon);
+        Db.GetInstance().SaveChanges();
     }
 
     [ConsoleCommand("css_nextround", "Sets the next round type.")]
     [CommandHelper(minArgs: 1, usage: "[P/H/F]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     [RequiresPermissions("@css/root")]
-    public void AddNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    public void OnNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         var type = commandInfo.GetArg(1).ToUpper();
         if (type == "P")
@@ -71,12 +144,16 @@ public class RetakesAllocator : BasePlugin
         commandInfo.ReplyToCommand($"[Allocator] You must specify a round type [P/H/F]");
     }
 
+    #endregion
+
+    #region Events
+
     [GameEventHandler]
     public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        var oldTeam = (CsTeam)@event.Oldteam;
-        var playerTeam = (CsTeam)@event.Team;
+        var oldTeam = (CsTeam) @event.Oldteam;
+        var playerTeam = (CsTeam) @event.Team;
 
         switch (oldTeam)
         {
@@ -117,7 +194,7 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
-        var roundType = _nextRoundType ?? GetRandomRoundType();
+        var roundType = _nextRoundType ?? RoundTypeHelpers.GetRandomRoundType();
         _nextRoundType = null;
 
         Log.Write($"Round type: {roundType}");
@@ -126,18 +203,29 @@ public class RetakesAllocator : BasePlugin
         Log.Write($"T: {_tPlayers.Count}");
         Log.Write($"CT: {_ctPlayers.Count}");
 
+        var playerIds = _ctPlayers.Concat(_tPlayers)
+            .Where(p => p.IsValid && p.UserId is not null)
+            .Select(x => (int) x.UserId!);
+        var userSettingsByPlayerId = Db.GetInstance()
+            .UserSettings
+            .AsNoTracking()
+            .Where(u => playerIds.Contains(u.UserId))
+            .GroupBy(p => p.UserId)
+            .ToDictionary(g => g.Key, g => g.First());
+
         foreach (var player in _tPlayers)
         {
+            var userSettings = player.UserId is not null ? userSettingsByPlayerId[(int) player.UserId] : null;
             var items = new List<CsItem>
             {
-                GetArmorForRoundType(roundType),
+                RoundTypeHelpers.GetArmorForRoundType(roundType),
                 CsItem.Knife,
             };
-            items.AddRange(
-                GetRandomUtilForRoundType(roundType, CsTeam.Terrorist)
+            items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, CsTeam.Terrorist)
             );
             items.AddRange(
-                GetRandomWeaponsForRoundType(roundType, CsTeam.Terrorist)
+                userSettings?.GetWeaponsForTeamAndRound(CsTeam.Terrorist, roundType) ??
+                WeaponHelpers.GetRandomWeaponsForRoundType(roundType, CsTeam.Terrorist)
             );
 
             AllocateItemsForPlayer(player, items);
@@ -146,20 +234,22 @@ public class RetakesAllocator : BasePlugin
         var defusingPlayer = Utils.Choice(_ctPlayers);
         foreach (var player in _ctPlayers)
         {
+            var userSettings = player.UserId is not null ? userSettingsByPlayerId[(int) player.UserId] : null;
             var items = new List<CsItem>
             {
-                GetArmorForRoundType(roundType),
+                RoundTypeHelpers.GetArmorForRoundType(roundType),
                 CsItem.Knife,
             };
             items.AddRange(
-                GetRandomWeaponsForRoundType(roundType, CsTeam.CounterTerrorist)
+                userSettings?.GetWeaponsForTeamAndRound(CsTeam.CounterTerrorist, roundType) ??
+                WeaponHelpers.GetRandomWeaponsForRoundType(roundType, CsTeam.CounterTerrorist)
             );
 
             // On non-pistol rounds, everyone gets defuse kit and util
             if (roundType != RoundType.Pistol)
             {
                 GiveDefuseKit(player);
-                items.AddRange(GetRandomUtilForRoundType(roundType, CsTeam.CounterTerrorist));
+                items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, CsTeam.CounterTerrorist));
             }
             else
             {
@@ -170,7 +260,7 @@ public class RetakesAllocator : BasePlugin
                 }
                 else
                 {
-                    items.AddRange(GetRandomUtilForRoundType(roundType, CsTeam.CounterTerrorist));
+                    items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, CsTeam.CounterTerrorist));
                 }
             }
 
@@ -179,6 +269,10 @@ public class RetakesAllocator : BasePlugin
 
         return HookResult.Continue;
     }
+
+    #endregion
+
+    #region Helpers
 
     private void AllocateItemsForPlayer(CCSPlayerController player, IList<CsItem> items)
     {
@@ -195,9 +289,9 @@ public class RetakesAllocator : BasePlugin
                 player.GiveNamedItem(item);
             }
 
-            if ((CsTeam)player.TeamNum == CsTeam.Terrorist)
+            if ((CsTeam) player.TeamNum == CsTeam.Terrorist)
             {
-                AddTimer(0.1f, () => { NativeAPI.IssueClientCommand((int)player.UserId!, "slot5"); });
+                AddTimer(0.1f, () => { NativeAPI.IssueClientCommand((int) player.UserId!, "slot5"); });
             }
         });
     }
@@ -217,142 +311,5 @@ public class RetakesAllocator : BasePlugin
         });
     }
 
-    private static RoundType GetRandomRoundType()
-    {
-        var randomValue = new Random().NextDouble();
-
-        return randomValue switch
-        {
-            // 15% chance of pistol round
-            < 0.15 => RoundType.Pistol,
-            // 25% chance of halfbuy round
-            < 0.40 => RoundType.HalfBuy,
-            // 60% chance of fullbuy round
-            _ => RoundType.FullBuy,
-        };
-    }
-
-    private static IEnumerable<CsItem> GetRandomUtilForRoundType(RoundType roundType, CsTeam team)
-    {
-        // Limited util on pistol rounds
-        if (roundType == RoundType.Pistol)
-        {
-            return new List<CsItem>
-            {
-                Utils.Choice(new List<CsItem>
-                {
-                    CsItem.Flashbang,
-                    CsItem.Smoke,
-                }),
-            };
-        }
-
-        // All util options are available on buy rounds
-        var possibleItems = new List<CsItem>
-        {
-            CsItem.Flashbang,
-            CsItem.Smoke,
-            CsItem.HEGrenade,
-            team == CsTeam.Terrorist ? CsItem.Molotov : CsItem.Incendiary,
-        };
-
-        // Everyone gets one util
-        var randomUtil = new List<CsItem>
-        {
-            Utils.Choice(possibleItems),
-        };
-
-        // 50% chance to get an extra util item
-        // We cant give people duplicate of anything other than a flash though, so
-        //  try up to 50 times to give them a duplicate flash or a non-duplicate other nade
-        if (new Random().NextDouble() < .5)
-        {
-            var i = 0;
-            while (i < 50)
-            {
-                var extraItem = Utils.Choice(possibleItems);
-                if (extraItem == CsItem.Flashbang || !randomUtil.Contains(extraItem))
-                {
-                    randomUtil.Add(extraItem);
-                    break;
-                }
-
-                i++;
-            }
-        }
-
-        return randomUtil;
-    }
-
-    private static CsItem GetArmorForRoundType(RoundType roundType) =>
-        roundType == RoundType.Pistol ? CsItem.Kevlar : CsItem.KevlarHelmet;
-
-    private static IEnumerable<CsItem> GetRandomWeaponsForRoundType(RoundType roundType, CsTeam team)
-    {
-        var tPistolWeapons = new List<CsItem>
-        {
-            CsItem.Glock,
-            CsItem.P250,
-            CsItem.Tec9,
-            CsItem.Deagle,
-        };
-        var ctPistolWeapons = new List<CsItem>
-        {
-            CsItem.USP,
-            CsItem.P250,
-            CsItem.FiveSeven,
-            CsItem.Deagle,
-        };
-
-        var tHalfBuyWeapons = new List<CsItem>
-        {
-            CsItem.Mac10,
-            CsItem.MP5,
-            CsItem.UMP45,
-            CsItem.P90,
-        };
-        var ctHalfBuyWeapons = new List<CsItem>
-        {
-            CsItem.MP9,
-            CsItem.MP5,
-            CsItem.UMP45,
-            CsItem.P90,
-        };
-
-        var tFullBuyWeapons = new List<CsItem>
-        {
-            CsItem.AK47,
-        };
-
-        var ctFullBuyWeapons = new List<CsItem>
-        {
-            CsItem.M4A4,
-            CsItem.M4A1S,
-        };
-
-        var weapons = new List<CsItem>();
-        if (roundType == RoundType.Pistol)
-        {
-            weapons.Add(Utils.Choice(team == CsTeam.Terrorist ? tPistolWeapons : ctPistolWeapons));
-            return weapons;
-        }
-
-        weapons.Add(team == CsTeam.Terrorist ? CsItem.Glock : CsItem.USP);
-
-        switch (roundType)
-        {
-            case RoundType.HalfBuy:
-                weapons.Add(Utils.Choice(team == CsTeam.Terrorist ? tHalfBuyWeapons : ctHalfBuyWeapons));
-                break;
-            // 20% chance of getting an AWP on a fullbuy round
-            case RoundType.FullBuy when new Random().NextDouble() < 0.2:
-                weapons.Add(CsItem.AWP);
-                break;
-            default:
-                weapons.Add(Utils.Choice(team == CsTeam.Terrorist ? tFullBuyWeapons : ctFullBuyWeapons));
-                break;
-        }
-
-        return weapons;
-    }
+    #endregion
 }
