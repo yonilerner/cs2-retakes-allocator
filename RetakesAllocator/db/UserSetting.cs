@@ -15,7 +15,8 @@ using WeaponPreferencesType = Dictionary<
 
 public class UserSetting
 {
-    [Key] [Required]
+    [Key]
+    [Required]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int UserId { get; set; }
 

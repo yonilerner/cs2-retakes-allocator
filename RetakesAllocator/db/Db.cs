@@ -23,6 +23,7 @@ public class Db : DbContext
         {
             throw new Exception("Database was not initialized");
         }
+
         return Instance;
     }
 

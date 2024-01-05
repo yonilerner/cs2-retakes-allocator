@@ -135,6 +135,7 @@ public static class WeaponHelpers
         "unset",
         "none",
     };
+
     public static bool IsRemoveWeaponSentinel(string needle)
     {
         return _weaponSentinels.Contains(needle.ToLower());
@@ -150,7 +151,7 @@ public static class WeaponHelpers
         };
         return Utils.Choice(collectionToCheck);
     }
-    
+
     public static IEnumerable<CsItem> GetRandomWeaponsForRoundType(RoundType roundType, CsTeam team)
     {
         var weapons = new List<CsItem>();

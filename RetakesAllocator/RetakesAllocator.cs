@@ -50,7 +50,7 @@ public class RetakesAllocator : BasePlugin
         Db.Instance?.Dispose();
         Db.Instance = null;
     }
-    
+
     #endregion
 
     #region Commands
