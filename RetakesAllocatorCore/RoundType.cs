@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace RetakesAllocator;
+namespace RetakesAllocatorCore;
 
 public enum RoundType
 {

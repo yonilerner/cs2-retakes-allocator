@@ -1,13 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace RetakesAllocator.db;
+namespace RetakesAllocatorCore.db;
 
 using WeaponPreferencesType = Dictionary<
     CsTeam,
@@ -22,7 +21,7 @@ public class UserSetting
     public ulong UserId { get; set; }
 
     [Column(TypeName = "TEXT"), MaxLength(10000)]
-    public WeaponPreferencesType WeaponPreferences { get; set; }
+    public WeaponPreferencesType WeaponPreferences { get; set; } = new();
 
     public void SetWeaponPreference(CsTeam team, RoundType roundType, CsItem? weapon)
     {
@@ -84,37 +83,13 @@ public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, 
             return "";
         }
 
-        var options = new JsonSerializerOptions
-        {
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        try
-        {
-            return JsonSerializer.Serialize(value, options);
-        }
-        catch
-        {
-            return "";
-        }
+        return JsonSerializer.Serialize(value);
     }
 
     public static WeaponPreferencesType WeaponPreferenceDeserialize(string value)
     {
-        var options = new JsonSerializerOptions
-        {
-            Converters = { new JsonStringEnumConverter() }
-        };
-        try
-        {
-            var parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value, options);
-            return parseResult ?? new WeaponPreferencesType();
-        }
-        catch (Exception e)
-        {
-            Log.Write(e.StackTrace);
-            return new WeaponPreferencesType();
-        }
+        var parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value);
+        return parseResult ?? new WeaponPreferencesType();
     }
 }
 

@@ -7,7 +7,8 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore;
-using RetakesAllocator.db;
+using RetakesAllocatorCore.db;
+using RetakesAllocatorCore;
 
 namespace RetakesAllocator;
 

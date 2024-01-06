@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
-using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities.Constants;
-using CounterStrikeSharp.API.Modules.Utils;
+﻿using CounterStrikeSharp.API.Core;
 
-namespace RetakesAllocator;
+namespace RetakesAllocatorCore;
 
 public static class Utils
 {

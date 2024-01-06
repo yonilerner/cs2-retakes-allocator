@@ -1,8 +1,7 @@
-using System.Collections;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace RetakesAllocator;
+namespace RetakesAllocatorCore;
 
 public static class WeaponHelpers
 {

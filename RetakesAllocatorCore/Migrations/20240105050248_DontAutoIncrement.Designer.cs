@@ -3,15 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RetakesAllocator.db;
+using RetakesAllocatorCore.db;
 
 #nullable disable
 
 namespace RetakesAllocator.Migrations
 {
     [DbContext(typeof(Db))]
-    [Migration("20240105045524_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240105050248_DontAutoIncrement")]
+    partial class DontAutoIncrement
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,7 +22,6 @@ namespace RetakesAllocator.Migrations
             modelBuilder.Entity("RetakesAllocator.db.UserSetting", b =>
                 {
                     b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("WeaponPreferences")

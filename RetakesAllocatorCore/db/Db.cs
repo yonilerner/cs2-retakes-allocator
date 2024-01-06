@@ -1,10 +1,8 @@
-using System.Text.Json;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace RetakesAllocator.db;
+namespace RetakesAllocatorCore.db;
 
 using WeaponPreferencesType = Dictionary<
     CsTeam,
@@ -29,7 +27,7 @@ public class Db : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite($"Data Source=C:\\cs2-server\\game\\bin\\win64\\data.db");
+        optionsBuilder.UseSqlite($"Data Source=data.db");
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
