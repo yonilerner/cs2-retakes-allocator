@@ -61,7 +61,7 @@ public class RetakesAllocator : BasePlugin
     [CommandHelper(minArgs: 2, usage: "P|H|F weapon", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
-        if (!Utils.PlayerIsValid(player))
+        if (!Helpers.PlayerIsValid(player))
         {
             return;
         }
@@ -69,7 +69,7 @@ public class RetakesAllocator : BasePlugin
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
         var team = (CsTeam) player!.TeamNum;
 
-        var result = OnWeaponCommandHelper.Handle(Utils.CommandInfoToArgList(commandInfo), playerId, team);
+        var result = OnWeaponCommandHelper.Handle(Helpers.CommandInfoToArgList(commandInfo), playerId, team);
         if (result != null)
         {
             commandInfo.ReplyToCommand(result);
@@ -160,56 +160,22 @@ public class RetakesAllocator : BasePlugin
         _nextRoundType = null;
 
         Log.Write($"Round type: {roundType}");
-
-        Log.Write("Players:");
-        Log.Write($"T: {_tPlayers.Count}");
-        Log.Write($"CT: {_ctPlayers.Count}");
+        Log.Write($"#T Players: {_tPlayers.Count}");
+        Log.Write($"#CT Players: {_ctPlayers.Count}");
 
         var playerIds = _ctPlayers.Concat(_tPlayers)
-            .Where(p => p.IsValid && p.UserId is not null && p.AuthorizedSteamID is not null)
-            .Select(x => x.AuthorizedSteamID!.SteamId64)
+            .Where(Helpers.PlayerIsValid)
+            .Select(Helpers.GetSteamId)
+            .Where(id => id != 0)
             .ToList();
-        Log.Write($"playerIds: {string.Join(",", playerIds)}");
-        var userSettingsList = Db.GetInstance()
-            .UserSettings
-            .AsNoTracking()
-            // .Where(u => playerIds.Contains(u.UserId))
-            .ToList();
-        Log.Write($"Players: {userSettingsList.Count}");
-        var userSettingsByPlayerId = userSettingsList
-            .GroupBy(p => p.UserId)
-            .ToDictionary(g => g.Key, g => g.First());
-        Log.Write($"Players by ID: {userSettingsByPlayerId.Count}");
-        Log.Write($"K: {string.Join(",", userSettingsByPlayerId.Keys)}");
+        var userSettingsByPlayerId = Queries.GetUsersSettings(playerIds);
+        
+        var defusingPlayer = Utils.Choice(_ctPlayers);
 
         foreach (var player in _tPlayers)
         {
-            var playerSteamId = player.AuthorizedSteamID?.SteamId64 ?? 0;
-            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
-            Log.Write($"Found user settings {userSettings}");
-            if (userSettings != null)
-            {
-                Log.Write($"Found preferences {string.Join(",", userSettings.WeaponPreferences.Keys)}");
-            }
-            var items = new List<CsItem>
-            {
-                RoundTypeHelpers.GetArmorForRoundType(roundType),
-                CsItem.Knife,
-            };
-            items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, CsTeam.Terrorist)
-            );
-            items.AddRange(
-                userSettings?.GetWeaponsForTeamAndRound(CsTeam.Terrorist, roundType) ??
-                WeaponHelpers.GetRandomWeaponsForRoundType(roundType, CsTeam.Terrorist)
-            );
-
-            AllocateItemsForPlayer(player, items);
-        }
-
-        var defusingPlayer = Utils.Choice(_ctPlayers);
-        foreach (var player in _ctPlayers)
-        {
-            var playerSteamId = player.AuthorizedSteamID?.SteamId64 ?? 0;
+            var team = (CsTeam) player.TeamNum;
+            var playerSteamId = Helpers.GetSteamId(player);
             userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
             var items = new List<CsItem>
             {
@@ -217,27 +183,35 @@ public class RetakesAllocator : BasePlugin
                 CsItem.Knife,
             };
             items.AddRange(
-                userSettings?.GetWeaponsForTeamAndRound(CsTeam.CounterTerrorist, roundType) ??
-                WeaponHelpers.GetRandomWeaponsForRoundType(roundType, CsTeam.CounterTerrorist)
+                    userSettings?.GetWeaponsForTeamAndRound(team, roundType) ??
+                    WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team)
             );
 
-            // On non-pistol rounds, everyone gets defuse kit and util
-            if (roundType != RoundType.Pistol)
+            if (team == CsTeam.CounterTerrorist)
             {
-                GiveDefuseKit(player);
-                items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, CsTeam.CounterTerrorist));
-            }
-            else
-            {
-                // On pistol rounds, you get util *or* a defuse kit
-                if (defusingPlayer?.UserId == player.UserId)
+
+                // On non-pistol rounds, everyone gets defuse kit and util
+                if (roundType != RoundType.Pistol)
                 {
                     GiveDefuseKit(player);
+                    items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
                 }
                 else
                 {
-                    items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, CsTeam.CounterTerrorist));
+                    // On pistol rounds, you get util *or* a defuse kit
+                    if (defusingPlayer?.UserId == player.UserId)
+                    {
+                        GiveDefuseKit(player);
+                    }
+                    else
+                    {
+                        items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
+                    }
                 }
+            }
+            else
+            {
+                items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
             }
 
             AllocateItemsForPlayer(player, items);
@@ -254,7 +228,7 @@ public class RetakesAllocator : BasePlugin
     {
         AddTimer(0.1f, () =>
         {
-            if (!Utils.PlayerIsValid(player))
+            if (!Helpers.PlayerIsValid(player))
             {
                 Log.Write($"Player is not valid when allocating item");
                 return;
@@ -276,7 +250,7 @@ public class RetakesAllocator : BasePlugin
     {
         AddTimer(0.1f, () =>
         {
-            if (player.PlayerPawn.Value?.ItemServices?.Handle == null || !Utils.PlayerIsValid(player))
+            if (player.PlayerPawn.Value?.ItemServices?.Handle == null || !Helpers.PlayerIsValid(player))
             {
                 Log.Write($"Player is not valid when giving defuse kit");
                 return;

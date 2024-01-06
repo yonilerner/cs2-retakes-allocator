@@ -22,21 +22,4 @@ public static class Utils
         // Log.Write($"Item: {item}");
         return item;
     }
-
-    public static bool PlayerIsValid(CCSPlayerController? player)
-    {
-        return player != null && player.IsValid && player.AuthorizedSteamID is not null;
-    }
-
-    public static ICollection<string> CommandInfoToArgList(CommandInfo commandInfo, bool includeFirst = false)
-    {
-        var result = new List<string>();
-
-        for (var i = includeFirst ? 0 : 1; i < commandInfo.ArgCount; i++)
-        {
-            result.Add(commandInfo.GetArg(i));
-        }
-
-        return result;
-    }
 }

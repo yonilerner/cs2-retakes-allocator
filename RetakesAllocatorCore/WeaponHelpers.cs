@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using RetakesAllocatorCore.db;
 
 namespace RetakesAllocatorCore;
 
@@ -152,7 +153,7 @@ public static class WeaponHelpers
         return Utils.Choice(collectionToCheck);
     }
 
-    public static IEnumerable<CsItem> GetRandomWeaponsForRoundType(RoundType roundType, CsTeam team)
+    public static ICollection<CsItem> GetRandomWeaponsForRoundType(RoundType roundType, CsTeam team)
     {
         var weapons = new List<CsItem>();
         if (roundType == RoundType.Pistol)
@@ -173,5 +174,12 @@ public static class WeaponHelpers
         }
 
         return weapons;
+    }
+
+    public static ICollection<CsItem> GetWeaponsForUser(ulong userId, RoundType roundType, CsTeam team)
+    {
+        var userSettings = Queries.GetUserSettings(userId);
+        return userSettings?.GetWeaponsForTeamAndRound(team, roundType) ??
+               GetRandomWeaponsForRoundType(roundType, team);
     }
 }
