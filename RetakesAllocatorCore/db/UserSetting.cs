@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
+using System.Xml;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -61,10 +62,12 @@ public class UserSetting
         var firstWeapon = GetWeaponPreference(team, roundType) ??
                           WeaponHelpers.GetRandomWeaponForRoundType(roundType, team);
         weapons.Add(firstWeapon);
+        // Log.Write($"First weapon!!!: {firstWeapon}");
 
         if (roundType != RoundType.Pistol)
         {
             weapons.AddRange(GetWeaponsForTeamAndRound(team, RoundType.Pistol));
+            // Log.Write($"Not pistol {roundType}: {string.Join(",", weapons)}");
         }
 
         return weapons;

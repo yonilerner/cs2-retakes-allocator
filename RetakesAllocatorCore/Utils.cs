@@ -1,5 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Commands;
+﻿using CounterStrikeSharp.API.Modules.Utils;
 
 namespace RetakesAllocatorCore;
 
@@ -21,5 +20,17 @@ public static class Utils
         var item = items.ElementAt(random);
         // Log.Write($"Item: {item}");
         return item;
+    }
+
+    public static CsTeam ParseTeam(string teamInput)
+    {
+        return teamInput.ToLower() switch
+        {
+            "t" => CsTeam.Terrorist,
+            "terrorist" => CsTeam.Terrorist,
+            "ct" => CsTeam.CounterTerrorist,
+            "counterterrorist" => CsTeam.CounterTerrorist, 
+            _ => CsTeam.None,
+        };
     }
 }

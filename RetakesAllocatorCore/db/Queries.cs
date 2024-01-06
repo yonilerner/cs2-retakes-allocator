@@ -23,12 +23,10 @@ public class Queries
         }
 
         userSettings.SetWeaponPreference(team, roundType, item);
-        if (!isNew)
-        {
-            Db.GetInstance().Entry(userSettings).State = EntityState.Modified;
-        }
+        Db.GetInstance().Entry(userSettings).State = isNew ? EntityState.Added : EntityState.Modified;
 
         Db.GetInstance().SaveChanges();
+        Db.GetInstance().Entry(userSettings).State = EntityState.Detached;
     }
 
     public static IDictionary<ulong, UserSetting> GetUsersSettings(ICollection<ulong> userIds)
@@ -46,5 +44,20 @@ public class Queries
         return userSettingsList
             .GroupBy(p => p.UserId)
             .ToDictionary(g => g.Key, g => g.First());
+    }
+
+    public static void Migrate()
+    {
+        Db.GetInstance().Database.Migrate();
+    }
+
+    public static void Wipe()
+    {
+        Db.GetInstance().UserSettings.ExecuteDelete();
+    }
+
+    public static void Disconnect()
+    {
+        Db.Disconnect();
     }
 }

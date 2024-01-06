@@ -124,7 +124,9 @@ public static class WeaponHelpers
 
     public static ICollection<CsItem> FindItemByName(string needle)
     {
-        return Enum.GetValues<CsItem>().Where(item => Enum.GetName(item)?.ToLower().Contains(needle.ToLower()) ?? false)
+        return Enum.GetNames<CsItem>()
+            .Where(name => name.ToLower().Contains(needle.ToLower()))
+            .Select(Enum.Parse<CsItem>)
             .ToList();
     }
 
@@ -145,8 +147,8 @@ public static class WeaponHelpers
     {
         var collectionToCheck = roundType switch
         {
-            RoundType.Pistol => team == CsTeam.Terrorist ? _tPistols : _ctPistols,
-            RoundType.HalfBuy => team == CsTeam.Terrorist ? _tMidRange : _ctMidRange,
+            RoundType.Pistol => _sharedPistols.Concat(team == CsTeam.Terrorist ? _tPistols : _ctPistols).ToHashSet(),
+            RoundType.HalfBuy => _sharedMidRange.Concat(team == CsTeam.Terrorist ? _tMidRange : _ctMidRange).ToHashSet(),
             RoundType.FullBuy => team == CsTeam.Terrorist ? _tRifles : _ctRifles,
             _ => _sharedPistols,
         };

@@ -19,15 +19,23 @@ public class Db : DbContext
     {
         if (Instance is null)
         {
-            throw new Exception("Database was not initialized");
+            Instance = new Db();
         }
 
         return Instance;
     }
 
+    public static void Disconnect()
+    {
+        Instance?.Dispose();
+        Instance = null;
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite($"Data Source=data.db");
+        optionsBuilder
+            .UseSqlite($"Data Source=data.db")
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

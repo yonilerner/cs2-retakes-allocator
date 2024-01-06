@@ -1,6 +1,5 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
-using Microsoft.EntityFrameworkCore;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.db;
 
@@ -11,16 +10,14 @@ public class DbTests
     [SetUp]
     public void Setup()
     {
-        Db.Instance ??= new Db();
-        Db.GetInstance().Database.Migrate();
-        Db.GetInstance().UserSettings.ExecuteDelete();
+        Queries.Migrate();
+        Queries.Wipe();
     }
 
     [TearDown]
     public void TearDown()
     {
-        Db.Instance?.Dispose();
-        Db.Instance = null;
+        Queries.Disconnect();
     }
 
     [Test]

@@ -1,6 +1,5 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
-using Microsoft.EntityFrameworkCore;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.db;
 
@@ -11,16 +10,14 @@ public class WeaponSelectionTests
     [SetUp]
     public void Setup()
     {
-        Db.Instance ??= new Db();
-        Db.GetInstance().Database.Migrate();
-        Db.GetInstance().UserSettings.ExecuteDelete();
+        Queries.Migrate();
+        Queries.Wipe();
     }
 
     [TearDown]
     public void TearDown()
     {
-        Db.Instance?.Dispose();
-        Db.Instance = null;
+        Queries.Disconnect();
     }
 
     [Test]
@@ -49,25 +46,51 @@ public class WeaponSelectionTests
     }
 
     [Test]
-    [TestCase(CsTeam.Terrorist, "f", "galil", CsItem.Galil, "Galil' is now")]
-    [TestCase(CsTeam.Terrorist, "H", "mac10", CsItem.Mac10, "Mac10' is now")]
-    [TestCase(CsTeam.CounterTerrorist, "P", "deag", CsItem.Deagle, "Deagle' is now")]
-    [TestCase(CsTeam.CounterTerrorist, "F", "galil", null, "Galil' is not valid")]
-    [TestCase(CsTeam.CounterTerrorist, "P", "tec9", null, "Tec9' is not valid")]
-    [TestCase(CsTeam.Terrorist, "P", "ak47", null, "AK47' is not valid")]
-    [TestCase(CsTeam.Terrorist, "c", "ak47", null, "round type")]
-    [TestCase(CsTeam.Terrorist, "F", "poop", null, "not found")]
-    public void SetWeaponPreferenceCommand(CsTeam team, string roundTypeInput, string itemInput, CsItem? expectedItem,
+    [TestCase(CsTeam.Terrorist, RoundType.FullBuy, "galil", CsItem.Galil, "Galil' is now")]
+    [TestCase(CsTeam.Terrorist, RoundType.FullBuy, "krieg", CsItem.Krieg, "SG553' is now")]
+    [TestCase(CsTeam.Terrorist, RoundType.HalfBuy, "mac10", CsItem.Mac10, "Mac10' is now")]
+    [TestCase(CsTeam.CounterTerrorist, RoundType.Pistol, "deag", CsItem.Deagle, "Deagle' is now")]
+    [TestCase(CsTeam.CounterTerrorist, RoundType.FullBuy, "galil", null, "Galil' is not valid")]
+    [TestCase(CsTeam.CounterTerrorist, RoundType.Pistol, "tec9", null, "Tec9' is not valid")]
+    [TestCase(CsTeam.Terrorist, RoundType.Pistol, "ak47", null, "AK47' is not valid")]
+    [TestCase(CsTeam.Terrorist, RoundType.FullBuy, "poop", null, "not found")]
+    public void SetWeaponPreferenceCommandSingleArg(CsTeam team, RoundType roundType, string itemInput,
+        CsItem? expectedItem,
         string message)
     {
-        var args = new List<string> {roundTypeInput, itemInput};
+        var args = new List<string> { itemInput };
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, team);
+        var result = OnWeaponCommandHelper.Handle(args, 1, team, roundType);
 
         Assert.That(result, Does.Contain(message));
 
         var setWeapon = Queries.GetUserSettings(1)?
-            .GetWeaponsForTeamAndRound(team, RoundTypeHelpers.ParseRoundType(roundTypeInput)!.Value).FirstOrDefault();
+            .GetWeaponsForTeamAndRound(team, roundType).FirstOrDefault();
+        Assert.That(setWeapon, Is.EqualTo(expectedItem));
+    }
+
+    [Test]
+    [TestCase("T", "F", "galil", CsItem.Galil, "Galil' is now")]
+    [TestCase("T", "F", "krieg", CsItem.Krieg, "SG553' is now")]
+    [TestCase("T", "H", "mac10", CsItem.Mac10, "Mac10' is now")]
+    [TestCase("CT", "P", "deag", CsItem.Deagle, "Deagle' is now")]
+    [TestCase("CT", "F", "galil", null, "Galil' is not valid")]
+    [TestCase("CT", "P", "tec9", null, "Tec9' is not valid")]
+    [TestCase("T", "P", "ak47", null, "AK47' is not valid")]
+    [TestCase("T", "F", "poop", null, "not found")]
+    public void SetWeaponPreferenceCommandMultiArg(string teamInput, string roundTypeInput, string itemInput,
+        CsItem? expectedItem,
+        string message)
+    {
+        var args = new List<string> { itemInput, teamInput, roundTypeInput };
+
+        var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, RoundType.Pistol);
+
+        Assert.That(result, Does.Contain(message));
+
+        var setWeapon = Queries.GetUserSettings(1)?
+            .GetWeaponsForTeamAndRound(Utils.ParseTeam(teamInput),
+                RoundTypeHelpers.ParseRoundType(roundTypeInput)!.Value).FirstOrDefault();
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
     }
 }

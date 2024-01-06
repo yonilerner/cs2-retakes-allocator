@@ -6,16 +6,34 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
-    public static string? Handle(ICollection<string> args, ulong userId, CsTeam team)
+    public static string? Handle(ICollection<string> args, ulong userId, CsTeam team, RoundType roundType)
     {
-        var roundTypeInput = args.ElementAt(0).Trim();
-        var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
-        if (roundType is null)
+        var weaponInput = args.ElementAt(0).Trim();
+
+        var teamInput = args.ElementAtOrDefault(1)?.Trim().ToLower();
+        if (teamInput is not null)
         {
-            return $"Invalid round type provided: {roundTypeInput}";
+            var parsedTeamInput = Utils.ParseTeam(teamInput);
+            if (parsedTeamInput == CsTeam.None)
+            {
+                return $"Invalid team provided: {teamInput}";
+            }
+
+            team = parsedTeamInput;
+        }
+        
+        var roundTypeInput = args.ElementAtOrDefault(2)?.Trim();
+        if (roundTypeInput is not null)
+        {
+            var parsedRoundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
+            if (parsedRoundType is null)
+            {
+                return $"Invalid round type provided: {roundTypeInput}";
+            }
+
+            roundType = parsedRoundType.Value;
         }
 
-        var weaponInput = args.ElementAt(1).Trim();
         CsItem? weapon;
         if (WeaponHelpers.IsRemoveWeaponSentinel(weaponInput))
         {
@@ -37,15 +55,15 @@ public class OnWeaponCommandHelper
 
             var firstWeapon = foundWeapons.First();
 
-            if (!WeaponHelpers.IsValidWeapon((RoundType) roundType, team, firstWeapon))
+            if (!WeaponHelpers.IsValidWeapon(roundType, team, firstWeapon))
             {
-                return $"Weapon '{firstWeapon}' is not valid for round={roundType} and team={team}";
+                return $"Weapon '{firstWeapon}' is not valid for {roundType} rounds on {team}";
             }
 
             weapon = firstWeapon;
         }
 
-        Queries.SetWeaponPreferenceForUser(userId, team, (RoundType) roundType, weapon);
-        return $"Weapon '{weapon}' is now your preference.";
+        Queries.SetWeaponPreferenceForUser(userId, team, roundType, weapon);
+        return $"Weapon '{weapon}' is now your {roundType} preference for {team}.";
     }
 }
