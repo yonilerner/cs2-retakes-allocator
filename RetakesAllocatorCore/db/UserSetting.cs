@@ -34,7 +34,7 @@ public class UserSetting
 
         if (weapon is not null)
         {
-            roundPreferences.Add(roundType, (CsItem) weapon);
+            roundPreferences[roundType] = (CsItem) weapon;
         }
         else
         {
@@ -42,21 +42,25 @@ public class UserSetting
         }
     }
 
-    public ICollection<CsItem> GetWeaponsForTeamAndRound(CsTeam team, RoundType roundType)
+    public CsItem? GetWeaponPreference(CsTeam team, RoundType roundType)
     {
-        List<CsItem> weapons = new();
         if (WeaponPreferences.TryGetValue(team, out var roundPreferences))
         {
             if (roundPreferences.TryGetValue(roundType, out var weapon))
             {
-                weapons.Add(weapon);
+                return weapon;
             }
         }
 
-        if (weapons.Count == 0)
-        {
-            weapons.Add(WeaponHelpers.GetRandomWeaponForRoundType(roundType, team));
-        }
+        return null;
+    }
+
+    public ICollection<CsItem> GetWeaponsForTeamAndRound(CsTeam team, RoundType roundType)
+    {
+        List<CsItem> weapons = new();
+        var firstWeapon = GetWeaponPreference(team, roundType) ??
+                          WeaponHelpers.GetRandomWeaponForRoundType(roundType, team);
+        weapons.Add(firstWeapon);
 
         if (roundType != RoundType.Pistol)
         {

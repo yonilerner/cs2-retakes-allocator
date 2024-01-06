@@ -26,18 +26,26 @@ public class WeaponSelectionTests
     [Test]
     public void SetWeaponPreferenceDirectly()
     {
-        var userSettings = new UserSetting
-        {
-            UserId = 1,
-            WeaponPreferences = { }
-        };
-        Db.GetInstance().UserSettings.Add(userSettings);
-        userSettings.SetWeaponPreference(CsTeam.Terrorist, RoundType.FullBuy, CsItem.Galil);
-        Db.GetInstance().SaveChanges();
+        Assert.That(Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.Terrorist, RoundType.FullBuy),
+            Is.EqualTo(null));
 
-        userSettings = Queries.GetUserSettings(1);
-        Assert.That(userSettings!.GetWeaponsForTeamAndRound(CsTeam.Terrorist, RoundType.FullBuy).ToList(),
-            Does.Contain(CsItem.GalilAR));
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, RoundType.FullBuy, CsItem.Galil);
+        Assert.That(Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.Terrorist, RoundType.FullBuy),
+            Is.EqualTo(CsItem.Galil));
+
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, RoundType.FullBuy, CsItem.AWP);
+        Assert.That(Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.Terrorist, RoundType.FullBuy),
+            Is.EqualTo(CsItem.AWP));
+
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, RoundType.Pistol, CsItem.Deagle);
+        Assert.That(Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.Terrorist, RoundType.Pistol),
+            Is.EqualTo(CsItem.Deagle));
+
+        Assert.That(Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.CounterTerrorist, RoundType.HalfBuy),
+            Is.EqualTo(null));
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.CounterTerrorist, RoundType.HalfBuy, CsItem.MP9);
+        Assert.That(Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.CounterTerrorist, RoundType.HalfBuy),
+            Is.EqualTo(CsItem.MP9));
     }
 
     [Test]

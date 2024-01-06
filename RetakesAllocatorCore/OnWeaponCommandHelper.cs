@@ -45,14 +45,7 @@ public class OnWeaponCommandHelper
             weapon = firstWeapon;
         }
 
-        var userSettings = Db.GetInstance().UserSettings.FirstOrDefault(u => u.UserId == userId);
-        if (userSettings == null)
-        {
-            userSettings = new UserSetting {UserId = userId};
-            Db.GetInstance().UserSettings.Add(userSettings);
-        }
-        userSettings.SetWeaponPreference(team, (RoundType) roundType, weapon);
-        Db.GetInstance().SaveChanges();
+        Queries.SetWeaponPreferenceForUser(userId, team, (RoundType) roundType, weapon);
         return $"Weapon '{weapon}' is now your preference.";
     }
 }
