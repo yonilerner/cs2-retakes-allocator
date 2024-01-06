@@ -28,7 +28,7 @@ public class Queries
     {
         var userSettingsList = Db.GetInstance()
             .UserSettings
-            .AsNoTracking()
+            // .AsNoTracking()
             .Where(u => userIds.Contains(u.UserId))
             .ToList();
         if (userSettingsList.Count == 0)
