@@ -43,7 +43,7 @@ public static class RoundTypeHelpers
         }
 
         // All util options are available on buy rounds
-        var possibleItems = new List<CsItem>
+        var possibleItems = new HashSet<CsItem>()
         {
             CsItem.Flashbang,
             CsItem.Smoke,
@@ -51,29 +51,24 @@ public static class RoundTypeHelpers
             team == CsTeam.Terrorist ? CsItem.Molotov : CsItem.Incendiary,
         };
 
+        var firstUtil = Utils.Choice(possibleItems);
+
         // Everyone gets one util
         var randomUtil = new List<CsItem>
         {
-            Utils.Choice(possibleItems),
+            firstUtil,
         };
 
         // 50% chance to get an extra util item
-        // We cant give people duplicate of anything other than a flash though, so
-        //  try up to 50 times to give them a duplicate flash or a non-duplicate other nade
         if (new Random().NextDouble() < .5)
         {
-            var i = 0;
-            while (i < 50)
+            // We cant give people duplicate of anything other than a flash though
+            if (firstUtil != CsItem.Flashbang)
             {
-                var extraItem = Utils.Choice(possibleItems);
-                if (extraItem == CsItem.Flashbang || !randomUtil.Contains(extraItem))
-                {
-                    randomUtil.Add(extraItem);
-                    break;
-                }
-
-                i++;
+                possibleItems.Remove(firstUtil);
             }
+
+            randomUtil.Add(Utils.Choice(possibleItems));
         }
 
         return randomUtil;
