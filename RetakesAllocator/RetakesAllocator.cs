@@ -26,6 +26,7 @@ public class RetakesAllocator : BasePlugin
     public override void Load(bool hotReload)
     {
         Log.Write("Loaded");
+        SQLitePCL.Batteries.Init();
 
         Db.Instance ??= new Db();
         Db.GetInstance().Database.Migrate();
@@ -64,7 +65,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        var playerId = player?.UserId ?? 0;
+        var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
         var team = (CsTeam) player!.TeamNum;
 
         var roundTypeInput = commandInfo.GetArg(1).Trim();
@@ -90,11 +91,11 @@ public class RetakesAllocator : BasePlugin
                 return;
             }
 
-            if (foundWeapons.Count != 1)
-            {
-                commandInfo.ReplyToCommand($"Weapon '{weaponInput}' matches multiple weapons: {foundWeapons}");
-                return;
-            }
+            // if (foundWeapons.Count != 1)
+            // {
+            //     commandInfo.ReplyToCommand($"Weapon '{weaponInput}' matches multiple weapons: {foundWeapons}");
+            //     return;
+            // }
 
             var firstWeapon = foundWeapons.First();
 
@@ -110,8 +111,10 @@ public class RetakesAllocator : BasePlugin
 
         var userSettings = Db.GetInstance().UserSettings.FirstOrDefault(u => u.UserId == playerId) ??
                            new UserSetting {UserId = playerId};
+        Db.GetInstance().Attach(userSettings);
         userSettings.SetWeaponPreference(team, (RoundType) roundType, weapon);
         Db.GetInstance().SaveChanges();
+        commandInfo.ReplyToCommand($"Weapon '{weapon}' is now your preference.");
     }
 
     [ConsoleCommand("css_nextround", "Sets the next round type.")]
@@ -204,18 +207,31 @@ public class RetakesAllocator : BasePlugin
         Log.Write($"CT: {_ctPlayers.Count}");
 
         var playerIds = _ctPlayers.Concat(_tPlayers)
-            .Where(p => p.IsValid && p.UserId is not null)
-            .Select(x => (int) x.UserId!);
-        var userSettingsByPlayerId = Db.GetInstance()
+            .Where(p => p.IsValid && p.UserId is not null && p.AuthorizedSteamID is not null)
+            .Select(x => x.AuthorizedSteamID!.SteamId64)
+            .ToList();
+        Log.Write($"playerIds: {string.Join(",", playerIds)}");
+        var userSettingsList = Db.GetInstance()
             .UserSettings
             .AsNoTracking()
-            .Where(u => playerIds.Contains(u.UserId))
+            // .Where(u => playerIds.Contains(u.UserId))
+            .ToList();
+        Log.Write($"Players: {userSettingsList.Count}");
+        var userSettingsByPlayerId = userSettingsList
             .GroupBy(p => p.UserId)
             .ToDictionary(g => g.Key, g => g.First());
+        Log.Write($"Players by ID: {userSettingsByPlayerId.Count}");
+        Log.Write($"K: {string.Join(",", userSettingsByPlayerId.Keys)}");
 
         foreach (var player in _tPlayers)
         {
-            var userSettings = player.UserId is not null ? userSettingsByPlayerId[(int) player.UserId] : null;
+            var playerSteamId = player.AuthorizedSteamID?.SteamId64 ?? 0;
+            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
+            Log.Write($"Found user settings {userSettings}");
+            if (userSettings != null)
+            {
+                Log.Write($"Found preferences {string.Join(",", userSettings.WeaponPreferences.Keys)}");
+            }
             var items = new List<CsItem>
             {
                 RoundTypeHelpers.GetArmorForRoundType(roundType),
@@ -234,7 +250,8 @@ public class RetakesAllocator : BasePlugin
         var defusingPlayer = Utils.Choice(_ctPlayers);
         foreach (var player in _ctPlayers)
         {
-            var userSettings = player.UserId is not null ? userSettingsByPlayerId[(int) player.UserId] : null;
+            var playerSteamId = player.AuthorizedSteamID?.SteamId64 ?? 0;
+            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
             var items = new List<CsItem>
             {
                 RoundTypeHelpers.GetArmorForRoundType(roundType),

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -18,13 +19,14 @@ public class UserSetting
     [Key]
     [Required]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int UserId { get; set; }
+    public ulong UserId { get; set; }
 
     [Column(TypeName = "TEXT"), MaxLength(10000)]
-    public WeaponPreferencesType WeaponPreferences { get; set; } = new();
+    public WeaponPreferencesType WeaponPreferences { get; set; }
 
     public void SetWeaponPreference(CsTeam team, RoundType roundType, CsItem? weapon)
     {
+        Log.Write($"Setting preference for {UserId} {team} {roundType} {weapon}");
         if (!WeaponPreferences.TryGetValue(team, out var roundPreferences))
         {
             roundPreferences = new();
@@ -82,9 +84,14 @@ public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, 
             return "";
         }
 
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new JsonStringEnumConverter() }
+        };
+
         try
         {
-            return JsonSerializer.Serialize(value);
+            return JsonSerializer.Serialize(value, options);
         }
         catch
         {
@@ -94,13 +101,18 @@ public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, 
 
     public static WeaponPreferencesType WeaponPreferenceDeserialize(string value)
     {
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new JsonStringEnumConverter() }
+        };
         try
         {
-            var parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value);
+            var parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value, options);
             return parseResult ?? new WeaponPreferencesType();
         }
-        catch
+        catch (Exception e)
         {
+            Log.Write(e.StackTrace);
             return new WeaponPreferencesType();
         }
     }

@@ -148,6 +148,7 @@ public static class WeaponHelpers
             RoundType.Pistol => team == CsTeam.Terrorist ? _tPistols : _ctPistols,
             RoundType.HalfBuy => team == CsTeam.Terrorist ? _tMidRange : _ctMidRange,
             RoundType.FullBuy => team == CsTeam.Terrorist ? _tRifles : _ctRifles,
+            _ => _sharedPistols,
         };
         return Utils.Choice(collectionToCheck);
     }

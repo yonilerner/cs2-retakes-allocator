@@ -27,7 +27,7 @@ public static class Utils
 
     public static bool PlayerIsValid(CCSPlayerController? player)
     {
-        return player != null && player.IsValid;
+        return player != null && player.IsValid && player.AuthorizedSteamID is not null;
     }
 
     public static RoundType? ParseRoundType(string roundType)
