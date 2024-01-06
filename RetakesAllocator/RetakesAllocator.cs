@@ -69,53 +69,11 @@ public class RetakesAllocator : BasePlugin
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
         var team = (CsTeam) player!.TeamNum;
 
-        var roundTypeInput = commandInfo.GetArg(1).Trim();
-        var roundType = Utils.ParseRoundType(roundTypeInput);
-        if (roundType is null)
+        var result = OnWeaponCommandHelper.Handle(Utils.CommandInfoToArgList(commandInfo), playerId, team);
+        if (result != null)
         {
-            commandInfo.ReplyToCommand($"Invalid round type provided: {roundTypeInput}");
-            return;
+            commandInfo.ReplyToCommand(result);
         }
-
-        var weaponInput = commandInfo.GetArg(2).Trim();
-        CsItem? weapon;
-        if (WeaponHelpers.IsRemoveWeaponSentinel(weaponInput))
-        {
-            weapon = null;
-        }
-        else
-        {
-            var foundWeapons = WeaponHelpers.FindItemByName(weaponInput);
-            if (foundWeapons.Count == 0)
-            {
-                commandInfo.ReplyToCommand($"Weapon '{weaponInput}' not found.");
-                return;
-            }
-
-            // if (foundWeapons.Count != 1)
-            // {
-            //     commandInfo.ReplyToCommand($"Weapon '{weaponInput}' matches multiple weapons: {foundWeapons}");
-            //     return;
-            // }
-
-            var firstWeapon = foundWeapons.First();
-
-            if (!WeaponHelpers.IsValidWeapon((RoundType) roundType, team, firstWeapon))
-            {
-                commandInfo.ReplyToCommand(
-                    $"Weapon '{firstWeapon}' is not valid for round={roundType} and team={team}");
-                return;
-            }
-
-            weapon = firstWeapon;
-        }
-
-        var userSettings = Db.GetInstance().UserSettings.FirstOrDefault(u => u.UserId == playerId) ??
-                           new UserSetting {UserId = playerId};
-        Db.GetInstance().Attach(userSettings);
-        userSettings.SetWeaponPreference(team, (RoundType) roundType, weapon);
-        Db.GetInstance().SaveChanges();
-        commandInfo.ReplyToCommand($"Weapon '{weapon}' is now your preference.");
     }
 
     [ConsoleCommand("css_nextround", "Sets the next round type.")]

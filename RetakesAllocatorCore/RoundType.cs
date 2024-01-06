@@ -76,4 +76,15 @@ public static class RoundTypeHelpers
 
     public static CsItem GetArmorForRoundType(RoundType roundType) =>
         roundType == RoundType.Pistol ? CsItem.Kevlar : CsItem.KevlarHelmet;
+
+    public static RoundType? ParseRoundType(string roundType)
+    {
+        return roundType.ToUpper() switch
+        {
+            "F" => RoundType.FullBuy,
+            "H" => RoundType.HalfBuy,
+            "P" => RoundType.Pistol,
+            _ => null,
+        };
+    }
 }

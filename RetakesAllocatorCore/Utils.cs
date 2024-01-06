@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Commands;
 
 namespace RetakesAllocatorCore;
 
@@ -27,14 +28,15 @@ public static class Utils
         return player != null && player.IsValid && player.AuthorizedSteamID is not null;
     }
 
-    public static RoundType? ParseRoundType(string roundType)
+    public static ICollection<string> CommandInfoToArgList(CommandInfo commandInfo, bool includeFirst = false)
     {
-        return roundType.ToUpper() switch
+        var result = new List<string>();
+
+        for (var i = includeFirst ? 0 : 1; i < commandInfo.ArgCount; i++)
         {
-            "F" => RoundType.FullBuy,
-            "H" => RoundType.HalfBuy,
-            "P" => RoundType.Pistol,
-            _ => null,
-        };
+            result.Add(commandInfo.GetArg(i));
+        }
+
+        return result;
     }
 }
