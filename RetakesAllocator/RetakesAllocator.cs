@@ -118,29 +118,17 @@ public class RetakesAllocator : BasePlugin
     [RequiresPermissions("@css/root")]
     public void OnNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
-        var type = commandInfo.GetArg(1).ToUpper();
-        if (type == "P")
+        var roundTypeInput = commandInfo.GetArg(1).ToLower();
+        var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
+        if (roundType is null)
         {
-            _nextRoundType = RoundType.Pistol;
-            commandInfo.ReplyToCommand($"Next round will be a pistol round.");
-            return;
+            commandInfo.ReplyToCommand($"Invalid round type: {roundTypeInput}.");
         }
-
-        if (type == "H")
+        else
         {
-            _nextRoundType = RoundType.HalfBuy;
-            commandInfo.ReplyToCommand($"Next round will be a halfbuy round.");
-            return;
+            _nextRoundType = roundType;
+            commandInfo.ReplyToCommand($"Next round will be a {roundType} round.");
         }
-
-        if (type == "F")
-        {
-            _nextRoundType = RoundType.FullBuy;
-            commandInfo.ReplyToCommand($"Next round will be a fullbuy round.");
-            return;
-        }
-
-        commandInfo.ReplyToCommand($"[Allocator] You must specify a round type [P/H/F]");
     }
 
     #endregion

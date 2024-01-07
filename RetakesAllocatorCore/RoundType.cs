@@ -79,11 +79,18 @@ public static class RoundTypeHelpers
 
     public static RoundType? ParseRoundType(string roundType)
     {
-        return roundType.ToUpper() switch
+        return roundType.ToLower() switch
         {
-            "F" => RoundType.FullBuy,
-            "H" => RoundType.HalfBuy,
-            "P" => RoundType.Pistol,
+            "f" => RoundType.FullBuy,
+            "full" => RoundType.FullBuy,
+            "fullbuy" => RoundType.FullBuy,
+            "h" => RoundType.HalfBuy,
+            "half" => RoundType.HalfBuy,
+            "halfbuy" => RoundType.HalfBuy,
+            "force" => RoundType.HalfBuy,
+            "forcebuy" => RoundType.HalfBuy,
+            "p" => RoundType.Pistol,
+            "pistol" => RoundType.Pistol,
             _ => null,
         };
     }
