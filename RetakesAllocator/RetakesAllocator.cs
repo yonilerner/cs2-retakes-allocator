@@ -218,6 +218,7 @@ public class RetakesAllocator : BasePlugin
             out var currentRoundType
         );
         _currentRoundType = currentRoundType;
+        _nextRoundType = null;
         return HookResult.Continue;
     }
 
