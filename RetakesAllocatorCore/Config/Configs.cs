@@ -33,7 +33,7 @@ public static class Configs
         return _configData;
     }
 
-    public static ConfigData Load(string modulePath)
+    public static ConfigData Load(string modulePath, bool saveDefaults = true)
     {
         var configFileDirectory = Path.Combine(modulePath, ConfigDirectoryName);
         Directory.CreateDirectory(configFileDirectory);
@@ -47,7 +47,10 @@ public static class Configs
         else
         {
             _configData = GetDefaultData();
-            SaveConfigData(_configData);
+            if (saveDefaults)
+            {
+                SaveConfigData(_configData);
+            }
         }
 
         if (_configData is null)
@@ -72,17 +75,17 @@ public static class Configs
 
     private static ConfigData GetDefaultData()
     {
-        return new ConfigData(
-            WeaponHelpers.GetAllWeapons(),
-            Enum.GetValues<WeaponSelectionType>().ToList(),
-            new()
+        return new ConfigData {
+            PlayerSelectableWeapons = WeaponHelpers.GetAllWeapons(),
+            AllowedWeaponSelectionTypes = Enum.GetValues<WeaponSelectionType>().ToList(),
+            RoundTypePercentages = new()
             {
                 {RoundType.Pistol, 15},
                 {RoundType.HalfBuy, 25},
                 {RoundType.FullBuy, 60},
             },
-            false
-        );
+            MigrateOnStartup = false
+        };
     }
 }
 
@@ -93,13 +96,12 @@ public enum WeaponSelectionType
     Default,
 }
 
-public record ConfigData(
-    List<CsItem> PlayerSelectableWeapons,
-    List<WeaponSelectionType> AllowedWeaponSelectionTypes,
-    Dictionary<RoundType, int> RoundTypePercentages,
-    bool MigrateOnStartup
-)
+public record ConfigData
 {
+    public required List<CsItem> PlayerSelectableWeapons {get; set; }
+    public required List<WeaponSelectionType> AllowedWeaponSelectionTypes {get; set; }
+    public required Dictionary<RoundType, int> RoundTypePercentages {get; set; }
+    public required bool MigrateOnStartup {get; set; }
     public void Validate()
     {
         if (RoundTypePercentages.Values.Sum() != 100)

@@ -49,41 +49,11 @@ public class UserSetting
         {
             if (roundPreferences.TryGetValue(roundType, out var weapon))
             {
-                return WeaponHelpers.IsPlayerSelectableWeapon(weapon) ? weapon : null;
+                return weapon;
             }
         }
 
         return null;
-    }
-
-    public ICollection<CsItem> GetWeaponsForTeamAndRound(CsTeam team, RoundType roundType)
-    {
-        if (!Configs.GetConfigData().CanPlayersSelectWeapons())
-        {
-            if (Configs.GetConfigData().CanAssignRandomWeapons())
-            {
-                return WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team);
-            }
-
-            if (Configs.GetConfigData().CanAssignDefaultWeapons())
-            {
-                return WeaponHelpers.GetDefaultWeaponsForRoundType(roundType, team);
-            }
-        }
-
-        List<CsItem> weapons = new()
-        {
-            GetWeaponPreference(team, roundType) ?? WeaponHelpers.GetDefaultWeaponForRoundType(roundType, team)
-        };
-        // Log.Write($"First weapon!!!: {firstWeapon}");
-
-        if (roundType != RoundType.Pistol)
-        {
-            weapons.AddRange(GetWeaponsForTeamAndRound(team, RoundType.Pistol));
-            // Log.Write($"Not pistol {roundType}: {string.Join(",", weapons)}");
-        }
-
-        return weapons;
     }
 }
 

@@ -49,22 +49,10 @@ public class OnRoundPostStartHelper
                 RoundTypeHelpers.GetArmorForRoundType(roundType),
                 team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
             };
-            var pref = userSettings?.GetWeaponPreference(team, roundType) ?? CsItem.Knife;
-            Log.Write($"Weapon pref!: {pref} {roundType} {team}");
-
-            var userWeapons = userSettings?.GetWeaponsForTeamAndRound(team, roundType);
-            if (userWeapons is not null)
-            {
-                items.AddRange(userWeapons);
-            }
-            else if (Configs.GetConfigData().CanAssignRandomWeapons())
-            {
-                items.AddRange(WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team));
-            }
-            else if (Configs.GetConfigData().CanAssignDefaultWeapons())
-            {
-                items.AddRange(WeaponHelpers.GetDefaultWeaponsForRoundType(roundType, team));
-            }
+            
+            items.AddRange(
+                WeaponHelpers.GetWeaponsForRoundType(roundType, team, userSettings)
+            );
 
             if (team == CsTeam.CounterTerrorist)
             {
