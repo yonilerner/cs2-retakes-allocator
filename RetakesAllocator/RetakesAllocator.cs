@@ -23,6 +23,7 @@ public class RetakesAllocator : BasePlugin
     private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
 
     private RoundType? _nextRoundType;
+    private RoundType? _currentRoundType;
 
     #region Setup
 
@@ -77,7 +78,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var team = (CsTeam) player!.TeamNum;
+        var team = (CsTeam)player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
@@ -86,14 +87,22 @@ public class RetakesAllocator : BasePlugin
             false,
             out var selectedWeapon
         );
-        if (result != null)
+        if (result is not null)
         {
             commandInfo.ReplyToCommand(result);
         }
 
-        if (selectedWeapon != null)
+        if (selectedWeapon is not null)
         {
-            AllocateItemsForPlayer(player, new List<CsItem> {selectedWeapon.Value});
+            var selectedWeaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(selectedWeapon.Value);
+            if (selectedWeaponRoundType == RoundType.Pistol || selectedWeaponRoundType == _currentRoundType)
+            {
+                Helpers.RemoveWeapons(
+                    player,
+                    item => WeaponHelpers.GetRoundTypeForWeapon(item) != selectedWeaponRoundType
+                );
+                AllocateItemsForPlayer(player, new List<CsItem> { selectedWeapon.Value });
+            }
         }
     }
 
@@ -107,7 +116,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var team = (CsTeam) player!.TeamNum;
+        var team = (CsTeam)player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
@@ -116,7 +125,7 @@ public class RetakesAllocator : BasePlugin
             true,
             out _
         );
-        if (result != null)
+        if (result is not null)
         {
             commandInfo.ReplyToCommand(result);
         }
@@ -155,8 +164,8 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        var oldTeam = (CsTeam) @event.Oldteam;
-        var playerTeam = (CsTeam) @event.Team;
+        var oldTeam = (CsTeam)@event.Oldteam;
+        var playerTeam = (CsTeam)@event.Team;
 
         switch (oldTeam)
         {
@@ -197,80 +206,18 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
-        var roundType = _nextRoundType ?? RoundTypeHelpers.GetRandomRoundType();
-        _nextRoundType = null;
-
-        Log.Write($"Round type: {roundType}");
-        Log.Write($"#T Players: {_tPlayers.Count}");
-        Log.Write($"#CT Players: {_ctPlayers.Count}");
-
-        var allPlayers = _ctPlayers.Concat(_tPlayers).ToList();
-
-        var playerIds = allPlayers
-            .Where(Helpers.PlayerIsValid)
-            .Select(Helpers.GetSteamId)
-            .Where(id => id != 0)
-            .ToList();
-        var userSettingsByPlayerId = Queries.GetUsersSettings(playerIds);
-
-        var defusingPlayer = Utils.Choice(_ctPlayers);
-
-        foreach (var player in allPlayers)
-        {
-            var team = (CsTeam) player.TeamNum;
-            var playerSteamId = Helpers.GetSteamId(player);
-            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
-            var items = new List<CsItem>
-            {
-                RoundTypeHelpers.GetArmorForRoundType(roundType),
-                team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
-            };
-            var pref = userSettings?.GetWeaponPreference(team, roundType) ?? CsItem.Knife;
-            Log.Write($"Weapon pref!: {pref} {roundType} {team}");
-
-            var userWeapons = userSettings?.GetWeaponsForTeamAndRound(team, roundType);
-            if (userWeapons != null)
-            {
-                items.AddRange(userWeapons);
-            }
-            else if (Configs.GetConfigData().CanAssignRandomWeapons())
-            {
-                items.AddRange(WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team));
-            }
-            else if (Configs.GetConfigData().CanAssignDefaultWeapons())
-            {
-                items.AddRange(WeaponHelpers.GetDefaultWeaponsForRoundType(roundType, team));
-            }
-
-            if (team == CsTeam.CounterTerrorist)
-            {
-                // On non-pistol rounds, everyone gets defuse kit and util
-                if (roundType != RoundType.Pistol)
-                {
-                    GiveDefuseKit(player);
-                    items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
-                }
-                else
-                {
-                    // On pistol rounds, you get util *or* a defuse kit
-                    if (defusingPlayer?.UserId == player.UserId)
-                    {
-                        GiveDefuseKit(player);
-                    }
-                    else
-                    {
-                        items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
-                    }
-                }
-            }
-            else
-            {
-                items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
-            }
-
-            AllocateItemsForPlayer(player, items);
-        }
-
+        OnRoundPostStartHelper.Handle(
+            _nextRoundType,
+            _tPlayers,
+            _ctPlayers,
+            Helpers.PlayerIsValid,
+            Helpers.GetSteamId,
+            Helpers.GetTeam,
+            GiveDefuseKit,
+            AllocateItemsForPlayer,
+            out var currentRoundType
+        );
+        _currentRoundType = currentRoundType;
         return HookResult.Continue;
     }
 
@@ -278,7 +225,7 @@ public class RetakesAllocator : BasePlugin
 
     #region Helpers
 
-    private void AllocateItemsForPlayer(CCSPlayerController player, IList<CsItem> items)
+    private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items)
     {
         // Helpers.RemoveArmor(player);
         // Helpers.RemoveWeapons(player);
@@ -296,9 +243,9 @@ public class RetakesAllocator : BasePlugin
                 player.GiveNamedItem(item);
             }
 
-            if ((CsTeam) player.TeamNum == CsTeam.Terrorist)
+            if ((CsTeam)player.TeamNum == CsTeam.Terrorist)
             {
-                AddTimer(0.1f, () => { NativeAPI.IssueClientCommand((int) player.UserId!, "slot5"); });
+                AddTimer(0.1f, () => { NativeAPI.IssueClientCommand((int)player.UserId!, "slot5"); });
             }
         });
     }
@@ -307,7 +254,7 @@ public class RetakesAllocator : BasePlugin
     {
         AddTimer(0.1f, () =>
         {
-            if (player.PlayerPawn.Value?.ItemServices?.Handle == null || !Helpers.PlayerIsValid(player))
+            if (player.PlayerPawn.Value?.ItemServices?.Handle is null || !Helpers.PlayerIsValid(player))
             {
                 Log.Write($"Player is not valid when giving defuse kit");
                 return;

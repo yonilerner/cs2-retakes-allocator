@@ -60,7 +60,7 @@ public class WeaponSelectionTests
         Assert.That(result, Does.Contain(message));
         Assert.That(selectedItem, Is.EqualTo(expectedItem));
 
-        var roundType = expectedItem != null
+        var roundType = expectedItem is not null
             ? WeaponHelpers.GetRoundTypeForWeapon(expectedItem.Value) ?? RoundType.Pistol
             : RoundType.Pistol;
 
@@ -68,7 +68,7 @@ public class WeaponSelectionTests
             .GetWeaponsForTeamAndRound(team, roundType).FirstOrDefault();
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
 
-        if (removeMessage != null)
+        if (removeMessage is not null)
         {
             result = OnWeaponCommandHelper.Handle(args, 1, team, true, out _);
             Assert.That(result, Does.Contain(removeMessage));
@@ -99,7 +99,7 @@ public class WeaponSelectionTests
         Assert.That(result, Does.Contain(message));
         Assert.That(selectedItem, Is.EqualTo(expectedItem));
 
-        var roundType = expectedItem != null
+        var roundType = expectedItem is not null
             ? WeaponHelpers.GetRoundTypeForWeapon(expectedItem.Value) ?? RoundType.Pistol
             : RoundType.Pistol;
 

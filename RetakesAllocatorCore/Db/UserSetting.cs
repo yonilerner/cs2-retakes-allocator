@@ -49,7 +49,7 @@ public class UserSetting
         {
             if (roundPreferences.TryGetValue(roundType, out var weapon))
             {
-                return weapon;
+                return WeaponHelpers.IsPlayerSelectableWeapon(weapon) ? weapon : null;
             }
         }
 
@@ -73,7 +73,7 @@ public class UserSetting
 
         List<CsItem> weapons = new()
         {
-            GetWeaponPreference(team, roundType) ?? WeaponHelpers.GetRandomWeaponForRoundType(roundType, team)
+            GetWeaponPreference(team, roundType) ?? WeaponHelpers.GetDefaultWeaponForRoundType(roundType, team)
         };
         // Log.Write($"First weapon!!!: {firstWeapon}");
 
@@ -98,7 +98,7 @@ public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, 
 
     public static string WeaponPreferenceSerialize(WeaponPreferencesType? value)
     {
-        if (value == null)
+        if (value is null)
         {
             return "";
         }

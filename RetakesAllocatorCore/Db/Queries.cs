@@ -15,7 +15,7 @@ public class Queries
     {
         var isNew = false;
         var userSettings = Db.GetInstance().UserSettings.FirstOrDefault(u => u.UserId == userId);
-        if (userSettings == null)
+        if (userSettings is null)
         {
             userSettings = new UserSetting {UserId = userId};
             Db.GetInstance().UserSettings.Add(userSettings);

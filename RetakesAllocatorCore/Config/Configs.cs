@@ -25,7 +25,7 @@ public static class Configs
 
     public static ConfigData GetConfigData()
     {
-        if (_configData == null)
+        if (_configData is null)
         {
             throw new Exception("Config not yet loaded.");
         }
@@ -49,6 +49,13 @@ public static class Configs
             _configData = GetDefaultData();
             SaveConfigData(_configData);
         }
+
+        if (_configData is null)
+        {
+            throw new Exception("Failed to load configs.");
+        }
+        
+        _configData.Validate();
 
         return _configData;
     }

@@ -8,6 +8,8 @@ This plugin is made to run alongside B3none's retakes implementation: https://gi
 
 ## Installation
 
+- Ensure you have https://github.com/b3none/cs2-retakes installed already
+- Update the `RetakesPlugin` config to have `EnableFallbackAllocation` disabled
 - Download a release from https://github.com/yonilerner/cs2-retakes-allocator/releases
 - Extract the zip archive and upload the `RetakesAllocator` plugin to your CounterStrikeSharp plugins folder on your
   server
