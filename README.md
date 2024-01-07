@@ -37,6 +37,8 @@ This plugin implements 3 different round types:
 
 ### Configuration
 
+The config file is located in the plugin folder under `config/config.json`.
+
 - `RoundTypePercentages`: The frequency of each type of round. The values must add up to `100`.
 - `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
