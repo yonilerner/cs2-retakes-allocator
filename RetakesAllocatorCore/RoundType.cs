@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore;
 
@@ -16,15 +17,17 @@ public static class RoundTypeHelpers
     {
         var randomValue = new Random().NextDouble();
 
-        return randomValue switch
+        if (randomValue < Configs.GetConfigData().GetRoundTypePercentage(RoundType.Pistol))
         {
-            // 15% chance of pistol round
-            < 0.15 => RoundType.Pistol,
-            // 25% chance of halfbuy round
-            < 0.40 => RoundType.HalfBuy,
-            // 60% chance of fullbuy round
-            _ => RoundType.FullBuy,
-        };
+            return RoundType.Pistol;
+        }
+
+        if (randomValue < Configs.GetConfigData().GetRoundTypePercentage(RoundType.HalfBuy))
+        {
+            return RoundType.HalfBuy;
+        }
+
+        return RoundType.FullBuy;
     }
 
     public static IEnumerable<CsItem> GetRandomUtilForRoundType(RoundType roundType, CsTeam team)

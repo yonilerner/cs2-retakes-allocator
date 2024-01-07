@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
+using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorTest;
@@ -10,14 +11,8 @@ public class WeaponSelectionTests
     [SetUp]
     public void Setup()
     {
-        Queries.Migrate();
         Queries.Wipe();
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Queries.Disconnect();
+        Configs.Load(".", false);
     }
 
     [Test]
@@ -62,26 +57,26 @@ public class WeaponSelectionTests
     {
         var args = new List<string> { itemInput };
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, team, false);
+        var result = OnWeaponCommandHelper.Handle(args, 1, team, false, out var selectedItem);
 
         Assert.That(result, Does.Contain(message));
+        Assert.That(selectedItem, Is.EqualTo(expectedItem));
 
-        var roundType = expectedItem != null
+        var roundType = expectedItem is not null
             ? WeaponHelpers.GetRoundTypeForWeapon(expectedItem.Value) ?? RoundType.Pistol
             : RoundType.Pistol;
 
         var setWeapon = Queries.GetUserSettings(1)?
-            .GetWeaponsForTeamAndRound(team, roundType).FirstOrDefault();
+            .GetWeaponPreference(team, roundType);
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
 
-        if (removeMessage != null)
+        if (removeMessage is not null)
         {
-            result = OnWeaponCommandHelper.Handle(args, 1, team, true);
+            result = OnWeaponCommandHelper.Handle(args, 1, team, true, out _);
             Assert.That(result, Does.Contain(removeMessage));
-            
+
             setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(team, roundType);
             Assert.That(setWeapon, Is.EqualTo(null));
-            
         }
     }
 
@@ -101,15 +96,46 @@ public class WeaponSelectionTests
     {
         var args = new List<string> { itemInput, teamInput };
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, false);
+        var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, false, out var selectedItem);
 
         Assert.That(result, Does.Contain(message));
+        Assert.That(selectedItem, Is.EqualTo(expectedItem));
 
-        var roundType = expectedItem != null
+        var roundType = expectedItem is not null
             ? WeaponHelpers.GetRoundTypeForWeapon(expectedItem.Value) ?? RoundType.Pistol
             : RoundType.Pistol;
 
         var setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(Utils.ParseTeam(teamInput), roundType);
+        Assert.That(setWeapon, Is.EqualTo(expectedItem));
+    }
+
+    [Test]
+    [TestCase("ak", CsItem.AK47, WeaponSelectionType.PlayerChoice, CsItem.AK47, "AK47' is now")]
+    [TestCase("ak", CsItem.Galil, WeaponSelectionType.PlayerChoice, null, "not allowed")]
+    [TestCase("ak", CsItem.AK47, WeaponSelectionType.Default, null, "cannot choose")]
+    public void SetWeaponPreferencesConfig(
+        string itemName,
+        CsItem? allowedItem,
+        WeaponSelectionType weaponSelectionType,
+        CsItem? expectedItem,
+        string message
+    )
+    {
+        var team = CsTeam.Terrorist;
+        Configs.GetConfigData().AllowedWeaponSelectionTypes = new List<WeaponSelectionType> { weaponSelectionType };
+        Configs.GetConfigData().UsableWeapons = new List<CsItem> { };
+        if (allowedItem is not null)
+        {
+            Configs.GetConfigData().UsableWeapons.Add(allowedItem.Value);
+        }
+
+        var args = new List<string> { itemName };
+        var result = OnWeaponCommandHelper.Handle(args, 1, team, false, out var selectedItem);
+
+        Assert.That(result, Does.Contain(message));
+        Assert.That(selectedItem, Is.EqualTo(expectedItem));
+
+        var setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(team, RoundType.FullBuy);
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
     }
 }

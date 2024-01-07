@@ -1,5 +1,7 @@
+using System.Collections;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorCore;
@@ -54,28 +56,41 @@ public static class WeaponHelpers
         CsItem.MAG7,
     };
 
+    private static readonly int _maxSmgItemValue = (int)CsItem.UMP;
+
     private static readonly ICollection<CsItem> _tRifles = new HashSet<CsItem>
     {
         CsItem.AK47,
         CsItem.Galil,
         CsItem.Krieg,
-        CsItem.AutoSniperT,
     };
 
     private static readonly ICollection<CsItem> _ctRifles = new HashSet<CsItem>
     {
         CsItem.Famas,
         CsItem.AUG,
-        CsItem.M4A1,
+        CsItem.M4A1S,
         CsItem.M4A4,
-        CsItem.AutoSniperCT,
     };
 
-    private static readonly ICollection<CsItem> _snipers = new HashSet<CsItem>
+    private static readonly ICollection<CsItem> _sharedSnipers = new HashSet<CsItem>
     {
         CsItem.AWP,
         CsItem.Scout,
     };
+
+    private static readonly ICollection<CsItem> _tSnipers = new HashSet<CsItem>
+    {
+        CsItem.AutoSniperT,
+    };
+
+    private static readonly ICollection<CsItem> _ctSnipers = new HashSet<CsItem>
+    {
+        CsItem.AutoSniperCT,
+    };
+
+    private static readonly ICollection<CsItem> _allSnipers =
+        _sharedSnipers.Concat(_ctSnipers).Concat(_tSnipers).ToHashSet();
 
     private static readonly ICollection<CsItem> _heavys = new HashSet<CsItem>
     {
@@ -83,29 +98,60 @@ public static class WeaponHelpers
         CsItem.Negev,
     };
 
+    private static readonly ICollection<CsItem> _allWeapons = Enum.GetValues<CsItem>()
+        .Where(item => (int)item >= 200 && (int)item < 500)
+        .ToHashSet();
 
     private static readonly Dictionary<
         CsTeam,
         Dictionary<RoundType, ICollection<CsItem>>
-    > _weaponsByTeamAndRoundType = new()
+    > _validWeaponsByTeamAndRoundType = new()
     {
         {
             CsTeam.Terrorist, new()
             {
-                {RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_tPistols))},
-                {RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_tMidRange))},
-                {RoundType.FullBuy, _tRifles},
+                { RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_tPistols)) },
+                { RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_tMidRange)) },
+                { RoundType.FullBuy, _tRifles.Concat(_sharedSnipers).Concat(_tSnipers).Concat(_heavys).ToHashSet() },
             }
         },
         {
             CsTeam.CounterTerrorist, new()
             {
-                {RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_ctPistols))},
-                {RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_ctMidRange))},
-                {RoundType.FullBuy, _ctRifles},
+                { RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_ctPistols)) },
+                { RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_ctMidRange)) },
+                { RoundType.FullBuy, _ctRifles.Concat(_sharedSnipers).Concat(_ctSnipers).Concat(_heavys).ToHashSet() },
             }
         }
     };
+
+    private static readonly Dictionary<
+        CsTeam,
+        Dictionary<RoundType, CsItem>
+    > _defaultWeaponsByTeamAndRoundType = new()
+    {
+        {
+            CsTeam.Terrorist, new()
+            {
+                { RoundType.Pistol, CsItem.Glock },
+                { RoundType.HalfBuy, CsItem.Mac10 },
+                { RoundType.FullBuy, CsItem.AK47 },
+            }
+        },
+        {
+            CsTeam.CounterTerrorist, new()
+            {
+                { RoundType.Pistol, CsItem.USPS },
+                { RoundType.HalfBuy, CsItem.MP9 },
+                { RoundType.FullBuy, CsItem.M4A4 },
+            }
+        }
+    };
+
+    public static List<CsItem> GetAllWeapons()
+    {
+        return _allWeapons.ToList();
+    }
 
     public static bool IsValidWeapon(RoundType roundType, CsTeam team, CsItem weapon)
     {
@@ -114,17 +160,22 @@ public static class WeaponHelpers
             return false;
         }
 
-        if (_snipers.Contains(weapon) || _heavys.Contains(weapon))
+        if (_allSnipers.Contains(weapon) || _heavys.Contains(weapon))
         {
             return true;
         }
 
-        return _weaponsByTeamAndRoundType[team][roundType].Contains(weapon);
+        return _validWeaponsByTeamAndRoundType[team][roundType].Contains(weapon);
+    }
+
+    public static bool IsUsableWeapon(CsItem weapon)
+    {
+        return Configs.GetConfigData().UsableWeapons.Contains(weapon);
     }
 
     public static RoundType? GetRoundTypeForWeapon(CsItem weapon)
     {
-        if (_snipers.Concat(_heavys).Concat(_ctRifles).Concat(_tRifles).Contains(weapon))
+        if (_allSnipers.Concat(_heavys).Concat(_ctRifles).Concat(_tRifles).Contains(weapon))
         {
             return RoundType.FullBuy;
         }
@@ -138,11 +189,41 @@ public static class WeaponHelpers
         {
             return RoundType.Pistol;
         }
-        
+
         return null;
     }
 
-    public static ICollection<CsItem> FindItemByName(string needle)
+    public static ICollection<CsItem> FindValidWeaponsByName(string needle)
+    {
+        return FindItemsByName(needle)
+            .Where(item => _allWeapons.Contains(item))
+            .ToList();
+    }
+
+    public static ICollection<CsItem> GetWeaponsForRoundType(RoundType roundType, CsTeam team, UserSetting? userSetting)
+    {
+        var weapons = new List<CsItem>();
+        var weapon = GetWeaponForRoundType(RoundType.Pistol, team, userSetting);
+        if (weapon != null)
+        {
+            weapons.Add(weapon.Value);
+        }
+
+        if (roundType == RoundType.Pistol)
+        {
+            return weapons;
+        }
+
+        weapon = GetWeaponForRoundType(roundType, team, userSetting);
+        if (weapon is not null)
+        {
+            weapons.Add(weapon.Value);
+        }
+
+        return weapons;
+    }
+
+    private static ICollection<CsItem> FindItemsByName(string needle)
     {
         return Enum.GetNames<CsItem>()
             .Where(name => name.ToLower().Contains(needle.ToLower()))
@@ -150,58 +231,49 @@ public static class WeaponHelpers
             .ToList();
     }
 
-    private static readonly ICollection<string> _weaponSentinels = new HashSet<string>
+    private static CsItem GetDefaultWeaponForRoundType(RoundType roundType, CsTeam team)
     {
-        "remove",
-        "delete",
-        "unset",
-        "none",
-    };
-
-    public static bool IsRemoveWeaponSentinel(string needle)
-    {
-        return _weaponSentinels.Contains(needle.ToLower());
+        return _defaultWeaponsByTeamAndRoundType[team][roundType];
     }
 
-    public static CsItem GetRandomWeaponForRoundType(RoundType roundType, CsTeam team)
+    private static CsItem GetRandomWeaponForRoundType(RoundType roundType, CsTeam team)
     {
         var collectionToCheck = roundType switch
         {
             RoundType.Pistol => _sharedPistols.Concat(team == CsTeam.Terrorist ? _tPistols : _ctPistols).ToHashSet(),
-            RoundType.HalfBuy => _sharedMidRange.Concat(team == CsTeam.Terrorist ? _tMidRange : _ctMidRange).ToHashSet(),
+            RoundType.HalfBuy =>
+                _sharedMidRange
+                    .Concat(team == CsTeam.Terrorist ? _tMidRange : _ctMidRange)
+                    .Where(item => (int)item <= _maxSmgItemValue)
+                    .ToHashSet(),
             RoundType.FullBuy => team == CsTeam.Terrorist ? _tRifles : _ctRifles,
             _ => _sharedPistols,
         };
-        return Utils.Choice(collectionToCheck);
+        return Utils.Choice(collectionToCheck.Where(IsUsableWeapon).ToList());
     }
 
-    public static ICollection<CsItem> GetRandomWeaponsForRoundType(RoundType roundType, CsTeam team)
+    private static CsItem? GetWeaponForRoundType(RoundType roundType, CsTeam team, UserSetting? userSetting)
     {
-        var weapons = new List<CsItem>();
-        if (roundType == RoundType.Pistol)
+        CsItem? weapon = null;
+        if (Configs.GetConfigData().CanPlayersSelectWeapons() && userSetting is not null)
         {
-            weapons.Add(GetRandomWeaponForRoundType(roundType, team));
-            return weapons;
+            var weaponPreference = userSetting.GetWeaponPreference(team, roundType);
+            if (weaponPreference is not null && IsUsableWeapon(weaponPreference.Value))
+            {
+                weapon = weaponPreference;
+            }
         }
 
-        weapons.Add(team == CsTeam.Terrorist ? CsItem.Glock : CsItem.USP);
-
-        if (roundType == RoundType.FullBuy && new Random().NextDouble() < 0.2)
+        if (weapon is null && Configs.GetConfigData().CanAssignRandomWeapons())
         {
-            weapons.Add(CsItem.AWP);
-        }
-        else
-        {
-            weapons.Add(GetRandomWeaponForRoundType(roundType, team));
+            weapon = GetRandomWeaponForRoundType(roundType, team);
         }
 
-        return weapons;
-    }
+        if (weapon is null && Configs.GetConfigData().CanAssignDefaultWeapons())
+        {
+            weapon = GetDefaultWeaponForRoundType(roundType, team);
+        }
 
-    public static ICollection<CsItem> GetWeaponsForUser(ulong userId, RoundType roundType, CsTeam team)
-    {
-        var userSettings = Queries.GetUserSettings(userId);
-        return userSettings?.GetWeaponsForTeamAndRound(team, roundType) ??
-               GetRandomWeaponsForRoundType(roundType, team);
+        return weapon;
     }
 }

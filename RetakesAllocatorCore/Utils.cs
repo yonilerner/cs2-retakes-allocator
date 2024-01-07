@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Modules.Utils;
+﻿using System.Runtime.Serialization;
+using CounterStrikeSharp.API.Modules.Utils;
 
 namespace RetakesAllocatorCore;
 
@@ -29,8 +30,34 @@ public static class Utils
             "t" => CsTeam.Terrorist,
             "terrorist" => CsTeam.Terrorist,
             "ct" => CsTeam.CounterTerrorist,
-            "counterterrorist" => CsTeam.CounterTerrorist, 
+            "counterterrorist" => CsTeam.CounterTerrorist,
             _ => CsTeam.None,
         };
+    }
+
+    public static T? ToEnum<T>(string str)
+    {
+        var enumType = typeof(T);
+        try
+        {
+            foreach (var name in Enum.GetNames(enumType))
+            {
+                // Log.Write($"Enum name {name}");
+                var enumMemberAttribute =
+                    ((EnumMemberAttribute[])enumType.GetField(name)!.GetCustomAttributes(typeof(EnumMemberAttribute),
+                        true)).SingleOrDefault();
+                // Log.Write($"Custom attribute: {enumMemberAttribute?.Value}");
+                if (enumMemberAttribute?.Value == str)
+                {
+                    return (T)Enum.Parse(enumType, name);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Write($"Exception parsing enum {e.Message}");
+        }
+
+        return default;
     }
 }

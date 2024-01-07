@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using System.Xml;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
@@ -55,23 +55,6 @@ public class UserSetting
 
         return null;
     }
-
-    public ICollection<CsItem> GetWeaponsForTeamAndRound(CsTeam team, RoundType roundType)
-    {
-        List<CsItem> weapons = new();
-        var firstWeapon = GetWeaponPreference(team, roundType) ??
-                          WeaponHelpers.GetRandomWeaponForRoundType(roundType, team);
-        weapons.Add(firstWeapon);
-        // Log.Write($"First weapon!!!: {firstWeapon}");
-
-        if (roundType != RoundType.Pistol)
-        {
-            weapons.AddRange(GetWeaponsForTeamAndRound(team, RoundType.Pistol));
-            // Log.Write($"Not pistol {roundType}: {string.Join(",", weapons)}");
-        }
-
-        return weapons;
-    }
 }
 
 public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, string>
@@ -85,7 +68,7 @@ public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, 
 
     public static string WeaponPreferenceSerialize(WeaponPreferencesType? value)
     {
-        if (value == null)
+        if (value is null)
         {
             return "";
         }

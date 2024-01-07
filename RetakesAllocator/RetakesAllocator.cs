@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
+using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using SQLitePCL;
 
@@ -21,8 +22,8 @@ public class RetakesAllocator : BasePlugin
     private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
     private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
 
-    private RoundType? _currentRoundType;
     private RoundType? _nextRoundType;
+    private RoundType? _currentRoundType;
 
     #region Setup
 
@@ -31,9 +32,12 @@ public class RetakesAllocator : BasePlugin
         Log.Write("Loaded");
         Batteries.Init();
 
-        Queries.Migrate();
+        Configs.Load(ModuleDirectory);
 
-        _currentRoundType = null;
+        if (Configs.GetConfigData().MigrateOnStartup)
+        {
+            Queries.Migrate();
+        }
 
         if (hotReload)
         {
@@ -45,7 +49,6 @@ public class RetakesAllocator : BasePlugin
     {
         _tPlayers.Clear();
         _ctPlayers.Clear();
-        _currentRoundType = null;
     }
 
     private void HandleHotReload()
@@ -65,9 +68,9 @@ public class RetakesAllocator : BasePlugin
 
     #region Commands
 
-    [ConsoleCommand("css_guns")]
-    [CommandHelper(minArgs: 1, usage: "<weapon> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-    public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    [ConsoleCommand("css_gun")]
+    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
         {
@@ -81,16 +84,30 @@ public class RetakesAllocator : BasePlugin
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
             team,
-            false
+            false,
+            out var selectedWeapon
         );
-        if (result != null)
+        if (result is not null)
         {
             commandInfo.ReplyToCommand(result);
         }
+
+        if (selectedWeapon is not null)
+        {
+            var selectedWeaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(selectedWeapon.Value);
+            if (selectedWeaponRoundType == RoundType.Pistol || selectedWeaponRoundType == _currentRoundType)
+            {
+                Helpers.RemoveWeapons(
+                    player,
+                    item => WeaponHelpers.GetRoundTypeForWeapon(item) != selectedWeaponRoundType
+                );
+                AllocateItemsForPlayer(player, new List<CsItem> { selectedWeapon.Value });
+            }
+        }
     }
-    
-    [ConsoleCommand("css_removeweapon")]
-    [CommandHelper(minArgs: 1, usage: "<weapon> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+
+    [ConsoleCommand("css_removegun")]
+    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     public void OnRemoveWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -105,22 +122,23 @@ public class RetakesAllocator : BasePlugin
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
             team,
-            true
+            true,
+            out _
         );
-        if (result != null)
+        if (result is not null)
         {
             commandInfo.ReplyToCommand(result);
         }
     }
-    
+
     [ConsoleCommand("css_nextround", "Sets the next round type.")]
-    [CommandHelper(minArgs: 1, usage: "[P/H/F]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [CommandHelper(minArgs: 1, usage: "<P/H/F>", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     [RequiresPermissions("@css/root")]
     public void OnNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         var roundTypeInput = commandInfo.GetArg(1).ToLower();
         var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
-        if (roundType == null)
+        if (roundType is null)
         {
             commandInfo.ReplyToCommand($"Invalid round type: {roundTypeInput}.");
         }
@@ -129,6 +147,13 @@ public class RetakesAllocator : BasePlugin
             _nextRoundType = roundType;
             commandInfo.ReplyToCommand($"Next round will be a {roundType} round.");
         }
+    }
+
+    [ConsoleCommand("css_reload_allocator_config", "Reloads the cs2-retakes-allocator config.")]
+    [RequiresPermissions("@css/root")]
+    public void OnReloadAllocatorConfigCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        Configs.Load(ModuleDirectory);
     }
 
     #endregion
@@ -181,71 +206,19 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
-        var roundType = _nextRoundType ?? RoundTypeHelpers.GetRandomRoundType();
-        _currentRoundType = roundType;
+        OnRoundPostStartHelper.Handle(
+            _nextRoundType,
+            _tPlayers,
+            _ctPlayers,
+            Helpers.PlayerIsValid,
+            Helpers.GetSteamId,
+            Helpers.GetTeam,
+            GiveDefuseKit,
+            AllocateItemsForPlayer,
+            out var currentRoundType
+        );
+        _currentRoundType = currentRoundType;
         _nextRoundType = null;
-
-        Log.Write($"Round type: {roundType}");
-        Log.Write($"#T Players: {_tPlayers.Count}");
-        Log.Write($"#CT Players: {_ctPlayers.Count}");
-
-        var allPlayers = _ctPlayers.Concat(_tPlayers).ToList();
-
-        var playerIds = allPlayers
-            .Where(Helpers.PlayerIsValid)
-            .Select(Helpers.GetSteamId)
-            .Where(id => id != 0)
-            .ToList();
-        var userSettingsByPlayerId = Queries.GetUsersSettings(playerIds);
-
-        var defusingPlayer = Utils.Choice(_ctPlayers);
-
-        foreach (var player in allPlayers)
-        {
-            var team = (CsTeam)player.TeamNum;
-            var playerSteamId = Helpers.GetSteamId(player);
-            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
-            var items = new List<CsItem>
-            {
-                RoundTypeHelpers.GetArmorForRoundType(roundType),
-                team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
-            };
-            var pref = userSettings?.GetWeaponPreference(team, roundType) ?? CsItem.Knife;
-            Log.Write($"Weapon pref!: {pref} {roundType} {team}");
-            items.AddRange(
-                userSettings?.GetWeaponsForTeamAndRound(team, roundType) ??
-                WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team)
-            );
-
-            if (team == CsTeam.CounterTerrorist)
-            {
-                // On non-pistol rounds, everyone gets defuse kit and util
-                if (roundType != RoundType.Pistol)
-                {
-                    GiveDefuseKit(player);
-                    items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
-                }
-                else
-                {
-                    // On pistol rounds, you get util *or* a defuse kit
-                    if (defusingPlayer?.UserId == player.UserId)
-                    {
-                        GiveDefuseKit(player);
-                    }
-                    else
-                    {
-                        items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
-                    }
-                }
-            }
-            else
-            {
-                items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
-            }
-
-            AllocateItemsForPlayer(player, items);
-        }
-
         return HookResult.Continue;
     }
 
@@ -253,7 +226,7 @@ public class RetakesAllocator : BasePlugin
 
     #region Helpers
 
-    private void AllocateItemsForPlayer(CCSPlayerController player, IList<CsItem> items)
+    private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items)
     {
         // Helpers.RemoveArmor(player);
         // Helpers.RemoveWeapons(player);
@@ -282,7 +255,7 @@ public class RetakesAllocator : BasePlugin
     {
         AddTimer(0.1f, () =>
         {
-            if (player.PlayerPawn.Value?.ItemServices?.Handle == null || !Helpers.PlayerIsValid(player))
+            if (player.PlayerPawn.Value?.ItemServices?.Handle is null || !Helpers.PlayerIsValid(player))
             {
                 Log.Write($"Player is not valid when giving defuse kit");
                 return;
