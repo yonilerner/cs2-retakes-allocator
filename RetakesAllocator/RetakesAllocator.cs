@@ -65,9 +65,9 @@ public class RetakesAllocator : BasePlugin
 
     #region Commands
 
-    [ConsoleCommand("css_weapon")]
+    [ConsoleCommand("css_guns")]
     [CommandHelper(minArgs: 1, usage: "<weapon> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-    public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
         {
@@ -112,9 +112,7 @@ public class RetakesAllocator : BasePlugin
             commandInfo.ReplyToCommand(result);
         }
     }
-
-
-
+    
     [ConsoleCommand("css_nextround", "Sets the next round type.")]
     [CommandHelper(minArgs: 1, usage: "[P/H/F]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     [RequiresPermissions("@css/root")]
@@ -122,7 +120,7 @@ public class RetakesAllocator : BasePlugin
     {
         var roundTypeInput = commandInfo.GetArg(1).ToLower();
         var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
-        if (roundType is null)
+        if (roundType == null)
         {
             commandInfo.ReplyToCommand($"Invalid round type: {roundTypeInput}.");
         }
