@@ -17,8 +17,8 @@
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.7" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' ">
-        <Exec Command="copy &quot;$(TargetDir)/*&quot; &quot;$(CopyPath)&quot; "/>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug' ">
+        <Exec Command="powershell Copy-Item -Recurse -Force &quot;$(TargetDir)*&quot; &quot;$(CopyPath)&quot; "/>
     </Target>
 
 </Project>
