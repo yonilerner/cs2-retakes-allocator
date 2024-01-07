@@ -76,7 +76,7 @@ public static class Configs
     private static ConfigData GetDefaultData()
     {
         return new ConfigData {
-            PlayerSelectableWeapons = WeaponHelpers.GetAllWeapons(),
+            UsableWeapons = WeaponHelpers.GetAllWeapons(),
             AllowedWeaponSelectionTypes = Enum.GetValues<WeaponSelectionType>().ToList(),
             RoundTypePercentages = new()
             {
@@ -98,7 +98,7 @@ public enum WeaponSelectionType
 
 public record ConfigData
 {
-    public required List<CsItem> PlayerSelectableWeapons {get; set; }
+    public required List<CsItem> UsableWeapons {get; set; }
     public required List<WeaponSelectionType> AllowedWeaponSelectionTypes {get; set; }
     public required Dictionary<RoundType, int> RoundTypePercentages {get; set; }
     public required bool MigrateOnStartup {get; set; }

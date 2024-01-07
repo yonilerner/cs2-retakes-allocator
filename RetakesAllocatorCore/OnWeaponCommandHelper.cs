@@ -49,7 +49,7 @@ public class OnWeaponCommandHelper
             return $"Weapon '{weapon}' is not valid for {roundType} rounds on {team}";
         }
 
-        if (!WeaponHelpers.IsPlayerSelectableWeapon(weapon))
+        if (!WeaponHelpers.IsUsableWeapon(weapon))
         {
             return $"Weapon '{weapon}' is not allowed to be selected.";
         }

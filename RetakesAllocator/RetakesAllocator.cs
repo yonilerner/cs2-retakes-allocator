@@ -132,7 +132,7 @@ public class RetakesAllocator : BasePlugin
     }
 
     [ConsoleCommand("css_nextround", "Sets the next round type.")]
-    [CommandHelper(minArgs: 1, usage: "[P/H/F]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [CommandHelper(minArgs: 1, usage: "<P/H/F>", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     [RequiresPermissions("@css/root")]
     public void OnNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {

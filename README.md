@@ -16,43 +16,64 @@ This plugin is made to run alongside B3none's retakes implementation: https://gi
     - [ADVANCED] If you want to reduce the upload size, you can delete all runtimes in the `RetakesAllocator` folder
       except the one needed for your particular server
 
-## How it works
+## Usage
 
-The plugin will randomly select a type of round, and allocate weapons and utility based on that:
+### Round Types
 
-- Pistol (15% chance)
-    - Randomly get a pistol
-    - Kevlar and no helmet
-    - Everyone gets a flash or smoke
-    - One CT gets a defuse kit
-- Half buy (25% chance)
-    - Randomly get an mid-range weapon (SMG/Shotgun)
-    - Everyone gets kevlar and helmet
-    - Everyone gets one of any nade, and has a 50% chance of getting a 2nd nade
-- Full buys (60% chance)
-    - Randomly get a rifle
-    - Everyone gets kevlar and helmet
-    - Everyone gets one of any nade, and has a 50% chance of getting a 2nd nade
-    - 20% chance of getting an AWP
+This plugin implements 3 different round types:
 
-You can also use the following commands to select specific weapon preferences:
+- Pistol
+    - Weapons: Only pistols
+    - Armor: Kevlar and no helmet
+    - Util: Flash or smoke, except one CT that gets a defuse kit
+- HalfBuy (shotguns and SMGs)
+    - Weapons: Shotguns and SMGs
+    - Armor: Kevlar and helmet
+    - Util: One nade + 50% chance of a 2nd nade. Every CT has a defuse kit
+- FullBuy (Rifles, snipers, machine guns)
+    - Weapons: Rifles, snipers, machine guns
+    - Armor: Kevlar and helmet
+    - Util: One nade + 50% chance of a 2nd nade. Every CT has a defuse kit
 
-- `!weapon <weapon>` - Set a preference the chosen weapon for the team you are currently on
-    - For example, if you are currently a terrorist and you do `!weapon galil`, your preference for rifle rounds will be
+### Configuration
+
+- `RoundTypePercentages`: The frequency of each type of round. The values must add up to `100`.
+- `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
+- `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
+    - Choices:
+        - `PlayerChoice` - Allow players to choose their preferences for the round type
+        - `Random` - Everyone gets a random weapon for the round type
+        - `Default` - Everyone gets a default weapon for the round type. The defaults are:
+            - T Pistol: Glock
+            - CT Pistol: USPS
+            - T HalfBuy: Mac10
+            - CT HalfBuy: MP9
+            - T Rifle: AK47
+            - CT Rifle: M4A4
+    - These will be tried in order of `PlayerChoice`, `Random`, and `Default`. If a player preference is not available,
+      or this type is removed from the config, a random weapon will be tried. If random weapons are removed from the
+      config, a default weapon will be tried. If default weapons are removed from the config, no weapons will be
+      allocated.
+- `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
+  servers may want to change this to false so they can control when database migrations are applied.
+
+### Commands
+
+You can use the following commands to select specific weapon preferences per-user:
+
+- `!gun <weapon> [T|CT]` - Set a preference the chosen weapon for the team you are currently on, or T/CT if provided
+    - For example, if you are currently a terrorist and you do `!gun galil`, your preference for rifle rounds will be
       Galil
-- `!removeweapon <weapon>` - Remove a preference for the chosen weapon for the team you are currently on
-    - For example, if you previously did `!weapon galil` while a terrorist, and you do `!removeweapon galil` while a
+- `!removegun <weapon> [T|CT]` - Remove a preference for the chosen weapon for the team you are currently on, or T/CT if
+  provided
+    - For example, if you previously did `!gun galil` while a terrorist, and you do `!removegun galil` while a
       terrorist, you will no longer prefer the galil, and will instead get a random weapon
+- `!nextround <P|H|F>` - For admins only. Force the next round to be the selected type.
+- `!reload_allocator_config` - For admins only. Reload the JSON config in-place.
 
-## Current Features
+## Roadmap
 
-- [x] Implement weapon allocation
-- [x] Implement armour allocation
-- [x] Implement grenade allocation
-- [x] Implement different round types
-- [x] Per-player weapon preferences
-- [ ] Option for more predictable rounds
-- [ ] File-based configuration
+See https://github.com/yonilerner/cs2-retakes-allocator/discussions/11
 
 # Building
 

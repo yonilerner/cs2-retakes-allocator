@@ -168,9 +168,9 @@ public static class WeaponHelpers
         return _validWeaponsByTeamAndRoundType[team][roundType].Contains(weapon);
     }
 
-    public static bool IsPlayerSelectableWeapon(CsItem weapon)
+    public static bool IsUsableWeapon(CsItem weapon)
     {
-        return Configs.GetConfigData().PlayerSelectableWeapons.Contains(weapon);
+        return Configs.GetConfigData().UsableWeapons.Contains(weapon);
     }
 
     public static RoundType? GetRoundTypeForWeapon(CsItem weapon)
@@ -249,7 +249,7 @@ public static class WeaponHelpers
             RoundType.FullBuy => team == CsTeam.Terrorist ? _tRifles : _ctRifles,
             _ => _sharedPistols,
         };
-        return Utils.Choice(collectionToCheck);
+        return Utils.Choice(collectionToCheck.Where(IsUsableWeapon).ToList());
     }
 
     private static CsItem? GetWeaponForRoundType(RoundType roundType, CsTeam team, UserSetting? userSetting)
@@ -258,7 +258,7 @@ public static class WeaponHelpers
         if (Configs.GetConfigData().CanPlayersSelectWeapons() && userSetting is not null)
         {
             var weaponPreference = userSetting.GetWeaponPreference(team, roundType);
-            if (weaponPreference is not null && IsPlayerSelectableWeapon(weaponPreference.Value))
+            if (weaponPreference is not null && IsUsableWeapon(weaponPreference.Value))
             {
                 weapon = weaponPreference;
             }

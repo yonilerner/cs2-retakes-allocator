@@ -123,10 +123,10 @@ public class WeaponSelectionTests
     {
         var team = CsTeam.Terrorist;
         Configs.GetConfigData().AllowedWeaponSelectionTypes = new List<WeaponSelectionType> { weaponSelectionType };
-        Configs.GetConfigData().PlayerSelectableWeapons = new List<CsItem> { };
+        Configs.GetConfigData().UsableWeapons = new List<CsItem> { };
         if (allowedItem is not null)
         {
-            Configs.GetConfigData().PlayerSelectableWeapons.Add(allowedItem.Value);
+            Configs.GetConfigData().UsableWeapons.Add(allowedItem.Value);
         }
 
         var args = new List<string> { itemName };
