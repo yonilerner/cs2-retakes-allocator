@@ -26,7 +26,7 @@ public static class RoundTypeHelpers
         {
             return RoundType.HalfBuy;
         }
-        
+
         return RoundType.FullBuy;
     }
 

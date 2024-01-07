@@ -64,6 +64,7 @@ public class UserSetting
             {
                 return WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team);
             }
+
             if (Configs.GetConfigData().CanAssignDefaultWeapons())
             {
                 return WeaponHelpers.GetDefaultWeaponsForRoundType(roundType, team);

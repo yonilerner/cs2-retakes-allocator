@@ -93,7 +93,7 @@ public class RetakesAllocator : BasePlugin
 
         if (selectedWeapon != null)
         {
-            AllocateItemsForPlayer(player, new List<CsItem>{selectedWeapon.Value});
+            AllocateItemsForPlayer(player, new List<CsItem> {selectedWeapon.Value});
         }
     }
 

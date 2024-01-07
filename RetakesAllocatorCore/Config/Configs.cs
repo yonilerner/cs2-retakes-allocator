@@ -8,10 +8,10 @@ public static class Configs
 {
     private static readonly string ConfigDirectoryName = "config";
     private static readonly string ConfigFileName = "config.json";
-    
+
     private static string? _configFilePath;
     private static ConfigData? _configData;
-    
+
     private static readonly JsonSerializerOptions SerializationOptions = new JsonSerializerOptions
     {
         Converters =
@@ -37,11 +37,12 @@ public static class Configs
     {
         var configFileDirectory = Path.Combine(modulePath, ConfigDirectoryName);
         Directory.CreateDirectory(configFileDirectory);
-        
+
         _configFilePath = Path.Combine(configFileDirectory, ConfigFileName);
         if (File.Exists(_configFilePath))
         {
-            _configData = JsonSerializer.Deserialize<ConfigData>(File.ReadAllText(_configFilePath), SerializationOptions);
+            _configData =
+                JsonSerializer.Deserialize<ConfigData>(File.ReadAllText(_configFilePath), SerializationOptions);
         }
         else
         {
@@ -85,7 +86,6 @@ public enum WeaponSelectionType
     Default,
 }
 
-
 public record ConfigData(
     List<CsItem> PlayerSelectableWeapons,
     List<WeaponSelectionType> AllowedWeaponSelectionTypes,
@@ -105,7 +105,7 @@ public record ConfigData(
     {
         return RoundTypePercentages[roundType] / 100;
     }
-    
+
     public bool CanPlayersSelectWeapons()
     {
         return AllowedWeaponSelectionTypes.Contains(WeaponSelectionType.PlayerChoice);

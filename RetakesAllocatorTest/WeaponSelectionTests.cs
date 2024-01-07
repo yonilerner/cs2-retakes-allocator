@@ -53,7 +53,7 @@ public class WeaponSelectionTests
         string? removeMessage
     )
     {
-        var args = new List<string> { itemInput };
+        var args = new List<string> {itemInput};
 
         var result = OnWeaponCommandHelper.Handle(args, 1, team, false, out var selectedItem);
 
@@ -72,10 +72,9 @@ public class WeaponSelectionTests
         {
             result = OnWeaponCommandHelper.Handle(args, 1, team, true, out _);
             Assert.That(result, Does.Contain(removeMessage));
-            
+
             setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(team, roundType);
             Assert.That(setWeapon, Is.EqualTo(null));
-            
         }
     }
 
@@ -93,7 +92,7 @@ public class WeaponSelectionTests
         string message
     )
     {
-        var args = new List<string> { itemInput, teamInput };
+        var args = new List<string> {itemInput, teamInput};
 
         var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, false, out var selectedItem);
 

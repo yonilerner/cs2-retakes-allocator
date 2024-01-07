@@ -83,13 +83,14 @@ public static class WeaponHelpers
     {
         CsItem.AutoSniperT,
     };
-    
+
     private static readonly ICollection<CsItem> _ctSnipers = new HashSet<CsItem>
     {
         CsItem.AutoSniperCT,
     };
 
-    private static readonly ICollection<CsItem> _allSnipers = _sharedSnipers.Concat(_ctSnipers).Concat(_tSnipers).ToHashSet();
+    private static readonly ICollection<CsItem> _allSnipers =
+        _sharedSnipers.Concat(_ctSnipers).Concat(_tSnipers).ToHashSet();
 
     private static readonly ICollection<CsItem> _heavys = new HashSet<CsItem>
     {
@@ -188,7 +189,7 @@ public static class WeaponHelpers
         {
             return RoundType.Pistol;
         }
-        
+
         return null;
     }
 
@@ -257,12 +258,12 @@ public static class WeaponHelpers
         {
             GetDefaultWeaponForRoundType(RoundType.Pistol, team)
         };
-        
+
         if (roundType == RoundType.Pistol)
         {
             return weapons;
         }
-        
+
         weapons.Add(GetDefaultWeaponForRoundType(roundType, team));
 
         return weapons;
