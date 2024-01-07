@@ -1,6 +1,6 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Modules.Utils;
 
-namespace RetakesAllocator;
+namespace RetakesAllocatorCore;
 
 public static class Utils
 {
@@ -22,8 +22,15 @@ public static class Utils
         return item;
     }
 
-    public static bool PlayerIsValid(CCSPlayerController? player)
+    public static CsTeam ParseTeam(string teamInput)
     {
-        return player != null && player.IsValid;
+        return teamInput.ToLower() switch
+        {
+            "t" => CsTeam.Terrorist,
+            "terrorist" => CsTeam.Terrorist,
+            "ct" => CsTeam.CounterTerrorist,
+            "counterterrorist" => CsTeam.CounterTerrorist, 
+            _ => CsTeam.None,
+        };
     }
 }

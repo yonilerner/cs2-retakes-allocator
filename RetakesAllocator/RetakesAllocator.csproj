@@ -4,6 +4,8 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,8 +14,17 @@
         </Reference>
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' ">
-        <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(CopyPath)&quot; "/>
+    <ItemGroup>
+      <ProjectReference Include="..\RetakesAllocatorCore\RetakesAllocatorCore.csproj" />
+    </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug'">
+        <Exec Command="powershell Copy-Item -Recurse -Force &quot;$(TargetDir)*&quot; &quot;$(CopyPath)&quot; "/>
+    </Target>
+    <Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release'">
+        <Exec Command="powershell rm -Recurse -Force &quot;$(TargetDir)..\RetakesAllocator &quot; " ContinueOnError="true"/>
+        <Exec Command="powershell mv -Force &quot;$(TargetDir) $(TargetDir)..\RetakesAllocator&quot;" />
+        <Exec Command="powershell Compress-Archive -Force -Path &quot;$(TargetDir)..\RetakesAllocator\*&quot; -DestinationPath &quot;$(TargetDir)..\RetakesAllocator.zip&quot; " />
     </Target>
 
 </Project>
