@@ -84,7 +84,7 @@ public static class Configs
                 {RoundType.HalfBuy, 25},
                 {RoundType.FullBuy, 60},
             },
-            MigrateOnStartup = false
+            MigrateOnStartup = true,
         };
     }
 }
