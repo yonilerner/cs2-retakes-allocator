@@ -22,9 +22,9 @@
         <Exec Command="powershell Copy-Item -Recurse -Force &quot;$(TargetDir)*&quot; &quot;$(CopyPath)&quot; "/>
     </Target>
     <Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release'">
-        <Exec Command="powershell rm -Recurse -Force &quot;$(TargetDir)..\RetakesAllocator &quot; " ContinueOnError="true"/>
-        <Exec Command="powershell mv -Force &quot;$(TargetDir) $(TargetDir)..\RetakesAllocator&quot;" />
-        <Exec Command="powershell Compress-Archive -Force -Path &quot;$(TargetDir)..\RetakesAllocator\*&quot; -DestinationPath &quot;$(TargetDir)..\RetakesAllocator.zip&quot; " />
+        <Exec Command="powershell rm -Recurse -Force &quot;$(TargetDir)..\$(TargetName)&quot; " ContinueOnError="true"/>
+        <Exec Command="powershell mv -Force &quot;$(TargetDir) $(TargetDir)..\$(TargetName)&quot;" />
+        <Exec Command="powershell Compress-Archive -Force -Path &quot;$(TargetDir)..\$(TargetName)\*&quot; -DestinationPath &quot;$(TargetDir)..\$(TargetName).zip&quot; " />
     </Target>
 
 </Project>
