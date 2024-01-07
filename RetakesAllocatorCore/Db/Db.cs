@@ -2,7 +2,7 @@ using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore;
 
-namespace RetakesAllocatorCore.db;
+namespace RetakesAllocatorCore.Db;
 
 using WeaponPreferencesType = Dictionary<
     CsTeam,

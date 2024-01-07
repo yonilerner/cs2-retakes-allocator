@@ -1,7 +1,7 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
-using RetakesAllocatorCore.db;
+using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorTest;
 
