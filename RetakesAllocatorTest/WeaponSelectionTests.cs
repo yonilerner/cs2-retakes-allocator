@@ -10,14 +10,7 @@ public class WeaponSelectionTests
     [SetUp]
     public void Setup()
     {
-        Queries.Migrate();
         Queries.Wipe();
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Queries.Disconnect();
     }
 
     [Test]
@@ -62,9 +55,10 @@ public class WeaponSelectionTests
     {
         var args = new List<string> { itemInput };
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, team, false);
+        var result = OnWeaponCommandHelper.Handle(args, 1, team, false, out var selectedItem);
 
         Assert.That(result, Does.Contain(message));
+        Assert.That(selectedItem, Is.EqualTo(expectedItem));
 
         var roundType = expectedItem != null
             ? WeaponHelpers.GetRoundTypeForWeapon(expectedItem.Value) ?? RoundType.Pistol
@@ -76,7 +70,7 @@ public class WeaponSelectionTests
 
         if (removeMessage != null)
         {
-            result = OnWeaponCommandHelper.Handle(args, 1, team, true);
+            result = OnWeaponCommandHelper.Handle(args, 1, team, true, out _);
             Assert.That(result, Does.Contain(removeMessage));
             
             setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(team, roundType);
@@ -101,9 +95,10 @@ public class WeaponSelectionTests
     {
         var args = new List<string> { itemInput, teamInput };
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, false);
+        var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, false, out var selectedItem);
 
         Assert.That(result, Does.Contain(message));
+        Assert.That(selectedItem, Is.EqualTo(expectedItem));
 
         var roundType = expectedItem != null
             ? WeaponHelpers.GetRoundTypeForWeapon(expectedItem.Value) ?? RoundType.Pistol

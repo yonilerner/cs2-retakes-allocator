@@ -10,14 +10,7 @@ public class DbTests
     [SetUp]
     public void Setup()
     {
-        Queries.Migrate();
         Queries.Wipe();
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Queries.Disconnect();
     }
 
     [Test]

@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using System.Xml;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
@@ -58,10 +58,22 @@ public class UserSetting
 
     public ICollection<CsItem> GetWeaponsForTeamAndRound(CsTeam team, RoundType roundType)
     {
-        List<CsItem> weapons = new();
-        var firstWeapon = GetWeaponPreference(team, roundType) ??
-                          WeaponHelpers.GetRandomWeaponForRoundType(roundType, team);
-        weapons.Add(firstWeapon);
+        if (!Configs.GetConfigData().CanPlayersSelectWeapons())
+        {
+            if (Configs.GetConfigData().CanAssignRandomWeapons())
+            {
+                return WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team);
+            }
+            if (Configs.GetConfigData().CanAssignDefaultWeapons())
+            {
+                return WeaponHelpers.GetDefaultWeaponsForRoundType(roundType, team);
+            }
+        }
+
+        List<CsItem> weapons = new()
+        {
+            GetWeaponPreference(team, roundType) ?? WeaponHelpers.GetRandomWeaponForRoundType(roundType, team)
+        };
         // Log.Write($"First weapon!!!: {firstWeapon}");
 
         if (roundType != RoundType.Pistol)

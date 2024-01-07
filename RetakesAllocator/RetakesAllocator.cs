@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
+using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using SQLitePCL;
 
@@ -21,7 +22,6 @@ public class RetakesAllocator : BasePlugin
     private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
     private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
 
-    private RoundType? _currentRoundType;
     private RoundType? _nextRoundType;
 
     #region Setup
@@ -31,9 +31,12 @@ public class RetakesAllocator : BasePlugin
         Log.Write("Loaded");
         Batteries.Init();
 
-        Queries.Migrate();
+        Configs.Load(ModuleDirectory);
 
-        _currentRoundType = null;
+        if (Configs.GetConfigData().MigrateOnStartup)
+        {
+            Queries.Migrate();
+        }
 
         if (hotReload)
         {
@@ -45,7 +48,6 @@ public class RetakesAllocator : BasePlugin
     {
         _tPlayers.Clear();
         _ctPlayers.Clear();
-        _currentRoundType = null;
     }
 
     private void HandleHotReload()
@@ -65,9 +67,9 @@ public class RetakesAllocator : BasePlugin
 
     #region Commands
 
-    [ConsoleCommand("css_guns")]
-    [CommandHelper(minArgs: 1, usage: "<weapon> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-    public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    [ConsoleCommand("css_gun")]
+    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
         {
@@ -75,22 +77,28 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var team = (CsTeam)player!.TeamNum;
+        var team = (CsTeam) player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
             team,
-            false
+            false,
+            out var selectedWeapon
         );
         if (result != null)
         {
             commandInfo.ReplyToCommand(result);
         }
+
+        if (selectedWeapon != null)
+        {
+            AllocateItemsForPlayer(player, new List<CsItem>{selectedWeapon.Value});
+        }
     }
-    
-    [ConsoleCommand("css_removeweapon")]
-    [CommandHelper(minArgs: 1, usage: "<weapon> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+
+    [ConsoleCommand("css_removegun")]
+    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     public void OnRemoveWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -99,20 +107,21 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var team = (CsTeam)player!.TeamNum;
+        var team = (CsTeam) player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
             team,
-            true
+            true,
+            out _
         );
         if (result != null)
         {
             commandInfo.ReplyToCommand(result);
         }
     }
-    
+
     [ConsoleCommand("css_nextround", "Sets the next round type.")]
     [CommandHelper(minArgs: 1, usage: "[P/H/F]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     [RequiresPermissions("@css/root")]
@@ -120,7 +129,7 @@ public class RetakesAllocator : BasePlugin
     {
         var roundTypeInput = commandInfo.GetArg(1).ToLower();
         var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
-        if (roundType == null)
+        if (roundType is null)
         {
             commandInfo.ReplyToCommand($"Invalid round type: {roundTypeInput}.");
         }
@@ -131,6 +140,13 @@ public class RetakesAllocator : BasePlugin
         }
     }
 
+    [ConsoleCommand("css_reload_allocator_config", "Reloads the cs2-retakes-allocator config.")]
+    [RequiresPermissions("@css/root")]
+    public void OnReloadAllocatorConfigCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        Configs.Load(ModuleDirectory);
+    }
+
     #endregion
 
     #region Events
@@ -139,8 +155,8 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        var oldTeam = (CsTeam)@event.Oldteam;
-        var playerTeam = (CsTeam)@event.Team;
+        var oldTeam = (CsTeam) @event.Oldteam;
+        var playerTeam = (CsTeam) @event.Team;
 
         switch (oldTeam)
         {
@@ -182,7 +198,6 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
         var roundType = _nextRoundType ?? RoundTypeHelpers.GetRandomRoundType();
-        _currentRoundType = roundType;
         _nextRoundType = null;
 
         Log.Write($"Round type: {roundType}");
@@ -202,7 +217,7 @@ public class RetakesAllocator : BasePlugin
 
         foreach (var player in allPlayers)
         {
-            var team = (CsTeam)player.TeamNum;
+            var team = (CsTeam) player.TeamNum;
             var playerSteamId = Helpers.GetSteamId(player);
             userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
             var items = new List<CsItem>
@@ -212,10 +227,20 @@ public class RetakesAllocator : BasePlugin
             };
             var pref = userSettings?.GetWeaponPreference(team, roundType) ?? CsItem.Knife;
             Log.Write($"Weapon pref!: {pref} {roundType} {team}");
-            items.AddRange(
-                userSettings?.GetWeaponsForTeamAndRound(team, roundType) ??
-                WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team)
-            );
+
+            var userWeapons = userSettings?.GetWeaponsForTeamAndRound(team, roundType);
+            if (userWeapons != null)
+            {
+                items.AddRange(userWeapons);
+            }
+            else if (Configs.GetConfigData().CanAssignRandomWeapons())
+            {
+                items.AddRange(WeaponHelpers.GetRandomWeaponsForRoundType(roundType, team));
+            }
+            else if (Configs.GetConfigData().CanAssignDefaultWeapons())
+            {
+                items.AddRange(WeaponHelpers.GetDefaultWeaponsForRoundType(roundType, team));
+            }
 
             if (team == CsTeam.CounterTerrorist)
             {
@@ -271,9 +296,9 @@ public class RetakesAllocator : BasePlugin
                 player.GiveNamedItem(item);
             }
 
-            if ((CsTeam)player.TeamNum == CsTeam.Terrorist)
+            if ((CsTeam) player.TeamNum == CsTeam.Terrorist)
             {
-                AddTimer(0.1f, () => { NativeAPI.IssueClientCommand((int)player.UserId!, "slot5"); });
+                AddTimer(0.1f, () => { NativeAPI.IssueClientCommand((int) player.UserId!, "slot5"); });
             }
         });
     }

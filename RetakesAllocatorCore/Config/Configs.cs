@@ -1,0 +1,123 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
+
+namespace RetakesAllocatorCore.Config;
+
+public static class Configs
+{
+    private static readonly string ConfigDirectoryName = "config";
+    private static readonly string ConfigFileName = "config.json";
+    
+    private static string? _configFilePath;
+    private static ConfigData? _configData;
+    
+    private static readonly JsonSerializerOptions SerializationOptions = new JsonSerializerOptions
+    {
+        Converters =
+        {
+            new JsonStringEnumConverter()
+        },
+        WriteIndented = true,
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+    };
+
+    public static ConfigData GetConfigData()
+    {
+        if (_configData == null)
+        {
+            throw new Exception("Config not yet loaded.");
+        }
+
+        return _configData;
+    }
+
+    public static ConfigData Load(string modulePath)
+    {
+        var configFileDirectory = Path.Combine(modulePath, ConfigDirectoryName);
+        Directory.CreateDirectory(configFileDirectory);
+        
+        _configFilePath = Path.Combine(configFileDirectory, ConfigFileName);
+        if (File.Exists(_configFilePath))
+        {
+            _configData = JsonSerializer.Deserialize<ConfigData>(File.ReadAllText(_configFilePath), SerializationOptions);
+        }
+        else
+        {
+            _configData = GetDefaultData();
+            SaveConfigData(_configData);
+        }
+
+        return _configData;
+    }
+
+    private static void SaveConfigData(ConfigData configData)
+    {
+        if (_configFilePath is null)
+        {
+            throw new Exception("Config not yet loaded.");
+        }
+
+        File.WriteAllText(_configFilePath, JsonSerializer.Serialize(configData, SerializationOptions));
+    }
+
+    private static ConfigData GetDefaultData()
+    {
+        return new ConfigData(
+            WeaponHelpers.GetAllWeapons(),
+            Enum.GetValues<WeaponSelectionType>().ToList(),
+            new()
+            {
+                {RoundType.Pistol, 15},
+                {RoundType.HalfBuy, 25},
+                {RoundType.FullBuy, 60},
+            },
+            false
+        );
+    }
+}
+
+public enum WeaponSelectionType
+{
+    PlayerChoice,
+    Random,
+    Default,
+}
+
+
+public record ConfigData(
+    List<CsItem> PlayerSelectableWeapons,
+    List<WeaponSelectionType> AllowedWeaponSelectionTypes,
+    Dictionary<RoundType, int> RoundTypePercentages,
+    bool MigrateOnStartup
+)
+{
+    public void Validate()
+    {
+        if (RoundTypePercentages.Values.Sum() != 100)
+        {
+            throw new Exception("'RoundTypePercentages' values must add up to 100");
+        }
+    }
+
+    public double GetRoundTypePercentage(RoundType roundType)
+    {
+        return RoundTypePercentages[roundType] / 100;
+    }
+    
+    public bool CanPlayersSelectWeapons()
+    {
+        return AllowedWeaponSelectionTypes.Contains(WeaponSelectionType.PlayerChoice);
+    }
+
+    public bool CanAssignRandomWeapons()
+    {
+        return AllowedWeaponSelectionTypes.Contains(WeaponSelectionType.Random);
+    }
+
+    public bool CanAssignDefaultWeapons()
+    {
+        return AllowedWeaponSelectionTypes.Contains(WeaponSelectionType.Default);
+    }
+}
