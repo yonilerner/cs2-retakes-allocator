@@ -18,10 +18,10 @@
       <ProjectReference Include="..\RetakesAllocatorCore\RetakesAllocatorCore.csproj" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug' ">
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug'">
         <Exec Command="powershell Copy-Item -Recurse -Force &quot;$(TargetDir)*&quot; &quot;$(CopyPath)&quot; "/>
     </Target>
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release'">
+    <Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release'">
         <Exec Command="powershell rm -Recurse -Force &quot;$(TargetDir)..\RetakesAllocator &quot; " ContinueOnError="true"/>
         <Exec Command="powershell mv -Force &quot;$(TargetDir) $(TargetDir)..\RetakesAllocator&quot;" />
         <Exec Command="powershell Compress-Archive -Force -Path &quot;$(TargetDir)..\RetakesAllocator\*&quot; -DestinationPath &quot;$(TargetDir)..\RetakesAllocator.zip&quot; " />

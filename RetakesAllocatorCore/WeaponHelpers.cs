@@ -122,6 +122,26 @@ public static class WeaponHelpers
         return _weaponsByTeamAndRoundType[team][roundType].Contains(weapon);
     }
 
+    public static RoundType? GetRoundTypeForWeapon(CsItem weapon)
+    {
+        if (_snipers.Concat(_heavys).Concat(_ctRifles).Concat(_tRifles).Contains(weapon))
+        {
+            return RoundType.FullBuy;
+        }
+
+        if (_sharedMidRange.Concat(_ctMidRange).Concat(_tMidRange).Contains(weapon))
+        {
+            return RoundType.HalfBuy;
+        }
+
+        if (_sharedPistols.Concat(_ctPistols).Concat(_tPistols).Contains(weapon))
+        {
+            return RoundType.Pistol;
+        }
+        
+        return null;
+    }
+
     public static ICollection<CsItem> FindItemByName(string needle)
     {
         return Enum.GetNames<CsItem>()

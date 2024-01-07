@@ -6,7 +6,7 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
-    public static string? Handle(ICollection<string> args, ulong userId, CsTeam team, RoundType roundType)
+    public static string? Handle(ICollection<string> args, ulong userId, CsTeam team, bool remove)
     {
         var weaponInput = args.ElementAt(0).Trim();
 
@@ -22,48 +22,33 @@ public class OnWeaponCommandHelper
             team = parsedTeamInput;
         }
         
-        var roundTypeInput = args.ElementAtOrDefault(2)?.Trim();
-        if (roundTypeInput is not null)
+        var foundWeapons = WeaponHelpers.FindItemByName(weaponInput);
+        if (foundWeapons.Count == 0)
         {
-            var parsedRoundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
-            if (parsedRoundType is null)
-            {
-                return $"Invalid round type provided: {roundTypeInput}";
-            }
-
-            roundType = parsedRoundType.Value;
+            return $"Weapon '{weaponInput}' not found.";
+        }
+        var weapon = foundWeapons.First();
+        
+        var roundType = WeaponHelpers.GetRoundTypeForWeapon(weapon);
+        if (roundType is null)
+        {
+            return $"Invalid weapon '{weapon}'";
+        }
+        
+        if (!WeaponHelpers.IsValidWeapon(roundType.Value, team, weapon))
+        {
+            return $"Weapon '{weapon}' is not valid for {roundType} rounds on {team}";
         }
 
-        CsItem? weapon;
-        if (WeaponHelpers.IsRemoveWeaponSentinel(weaponInput))
+        if (remove)
         {
-            weapon = null;
+            Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, null);
+            return $"Weapon '{weapon}' is no longer your {roundType} preference for {team}.";
         }
         else
         {
-            var foundWeapons = WeaponHelpers.FindItemByName(weaponInput);
-            if (foundWeapons.Count == 0)
-            {
-                return $"Weapon '{weaponInput}' not found.";
-            }
-
-            // if (foundWeapons.Count != 1)
-            // {
-            //     commandInfo.ReplyToCommand($"Weapon '{weaponInput}' matches multiple weapons: {foundWeapons}");
-            //     return;
-            // }
-
-            var firstWeapon = foundWeapons.First();
-
-            if (!WeaponHelpers.IsValidWeapon(roundType, team, firstWeapon))
-            {
-                return $"Weapon '{firstWeapon}' is not valid for {roundType} rounds on {team}";
-            }
-
-            weapon = firstWeapon;
+            Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, weapon);
+            return $"Weapon '{weapon}' is now your {roundType} preference for {team}.";
         }
-
-        Queries.SetWeaponPreferenceForUser(userId, team, roundType, weapon);
-        return $"Weapon '{weapon}' is now your {roundType} preference for {team}.";
     }
 }

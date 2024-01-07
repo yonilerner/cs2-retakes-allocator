@@ -66,7 +66,7 @@ public class RetakesAllocator : BasePlugin
     #region Commands
 
     [ConsoleCommand("css_weapon")]
-    [CommandHelper(minArgs: 1, usage: "<weapon> [T|CT] [P|H|F]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    [CommandHelper(minArgs: 1, usage: "<weapon> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -81,7 +81,7 @@ public class RetakesAllocator : BasePlugin
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
             team,
-            _currentRoundType ?? RoundType.Pistol
+            false
         );
         if (result != null)
         {
@@ -89,9 +89,9 @@ public class RetakesAllocator : BasePlugin
         }
     }
     
-    [ConsoleCommand("css_pistol")]
-    [CommandHelper(minArgs: 1, usage: "<pistol>", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-    public void OnPistolCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    [ConsoleCommand("css_removeweapon")]
+    [CommandHelper(minArgs: 1, usage: "<weapon> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    public void OnRemoveWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
         {
@@ -105,13 +105,15 @@ public class RetakesAllocator : BasePlugin
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
             team,
-            RoundType.Pistol
+            true
         );
         if (result != null)
         {
             commandInfo.ReplyToCommand(result);
         }
     }
+
+
 
     [ConsoleCommand("css_nextround", "Sets the next round type.")]
     [CommandHelper(minArgs: 1, usage: "[P/H/F]", whoCanExecute: CommandUsage.CLIENT_ONLY)]

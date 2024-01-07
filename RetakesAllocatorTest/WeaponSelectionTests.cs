@@ -46,51 +46,70 @@ public class WeaponSelectionTests
     }
 
     [Test]
-    [TestCase(CsTeam.Terrorist, RoundType.FullBuy, "galil", CsItem.Galil, "Galil' is now")]
-    [TestCase(CsTeam.Terrorist, RoundType.FullBuy, "krieg", CsItem.Krieg, "SG553' is now")]
-    [TestCase(CsTeam.Terrorist, RoundType.HalfBuy, "mac10", CsItem.Mac10, "Mac10' is now")]
-    [TestCase(CsTeam.CounterTerrorist, RoundType.Pistol, "deag", CsItem.Deagle, "Deagle' is now")]
-    [TestCase(CsTeam.CounterTerrorist, RoundType.FullBuy, "galil", null, "Galil' is not valid")]
-    [TestCase(CsTeam.CounterTerrorist, RoundType.Pistol, "tec9", null, "Tec9' is not valid")]
-    [TestCase(CsTeam.Terrorist, RoundType.Pistol, "ak47", null, "AK47' is not valid")]
-    [TestCase(CsTeam.Terrorist, RoundType.FullBuy, "poop", null, "not found")]
-    public void SetWeaponPreferenceCommandSingleArg(CsTeam team, RoundType roundType, string itemInput,
+    [TestCase(CsTeam.Terrorist, "galil", CsItem.Galil, "Galil' is now", "Galil' is no longer")]
+    [TestCase(CsTeam.Terrorist, "krieg", CsItem.Krieg, "SG553' is now", "SG553' is no longer")]
+    [TestCase(CsTeam.Terrorist, "mac10", CsItem.Mac10, "Mac10' is now", "Mac10' is no longer")]
+    [TestCase(CsTeam.CounterTerrorist, "deag", CsItem.Deagle, "Deagle' is now", "Deagle' is no longer")]
+    [TestCase(CsTeam.CounterTerrorist, "galil", null, "Galil' is not valid", null)]
+    [TestCase(CsTeam.CounterTerrorist, "tec9", null, "Tec9' is not valid", null)]
+    [TestCase(CsTeam.Terrorist, "poop", null, "not found", null)]
+    public void SetWeaponPreferenceCommandSingleArg(
+        CsTeam team, string itemInput,
         CsItem? expectedItem,
-        string message)
+        string message,
+        string? removeMessage
+    )
     {
         var args = new List<string> { itemInput };
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, team, roundType);
+        var result = OnWeaponCommandHelper.Handle(args, 1, team, false);
 
         Assert.That(result, Does.Contain(message));
+
+        var roundType = expectedItem != null
+            ? WeaponHelpers.GetRoundTypeForWeapon(expectedItem.Value) ?? RoundType.Pistol
+            : RoundType.Pistol;
 
         var setWeapon = Queries.GetUserSettings(1)?
             .GetWeaponsForTeamAndRound(team, roundType).FirstOrDefault();
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
+
+        if (removeMessage != null)
+        {
+            result = OnWeaponCommandHelper.Handle(args, 1, team, true);
+            Assert.That(result, Does.Contain(removeMessage));
+            
+            setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(team, roundType);
+            Assert.That(setWeapon, Is.EqualTo(null));
+            
+        }
     }
 
     [Test]
-    [TestCase("T", "F", "galil", CsItem.Galil, "Galil' is now")]
-    [TestCase("T", "F", "krieg", CsItem.Krieg, "SG553' is now")]
-    [TestCase("T", "H", "mac10", CsItem.Mac10, "Mac10' is now")]
-    [TestCase("CT", "P", "deag", CsItem.Deagle, "Deagle' is now")]
-    [TestCase("CT", "F", "galil", null, "Galil' is not valid")]
-    [TestCase("CT", "P", "tec9", null, "Tec9' is not valid")]
-    [TestCase("T", "P", "ak47", null, "AK47' is not valid")]
-    [TestCase("T", "F", "poop", null, "not found")]
-    public void SetWeaponPreferenceCommandMultiArg(string teamInput, string roundTypeInput, string itemInput,
+    [TestCase("T", "galil", CsItem.Galil, "Galil' is now")]
+    [TestCase("T", "krieg", CsItem.Krieg, "SG553' is now")]
+    [TestCase("T", "mac10", CsItem.Mac10, "Mac10' is now")]
+    [TestCase("CT", "deag", CsItem.Deagle, "Deagle' is now")]
+    [TestCase("CT", "galil", null, "Galil' is not valid")]
+    [TestCase("CT", "tec9", null, "Tec9' is not valid")]
+    [TestCase("T", "poop", null, "not found")]
+    public void SetWeaponPreferenceCommandMultiArg(
+        string teamInput, string itemInput,
         CsItem? expectedItem,
-        string message)
+        string message
+    )
     {
-        var args = new List<string> { itemInput, teamInput, roundTypeInput };
+        var args = new List<string> { itemInput, teamInput };
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, RoundType.Pistol);
+        var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, false);
 
         Assert.That(result, Does.Contain(message));
 
-        var setWeapon = Queries.GetUserSettings(1)?
-            .GetWeaponsForTeamAndRound(Utils.ParseTeam(teamInput),
-                RoundTypeHelpers.ParseRoundType(roundTypeInput)!.Value).FirstOrDefault();
+        var roundType = expectedItem != null
+            ? WeaponHelpers.GetRoundTypeForWeapon(expectedItem.Value) ?? RoundType.Pistol
+            : RoundType.Pistol;
+
+        var setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(Utils.ParseTeam(teamInput), roundType);
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
     }
 }
