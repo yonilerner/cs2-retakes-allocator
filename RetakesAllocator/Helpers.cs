@@ -100,12 +100,14 @@ public class Helpers
         return null;
     }
 
-    public static void RemoveWeapons(CCSPlayerController player, Func<CsItem, bool>? where = null)
+    public static bool RemoveWeapons(CCSPlayerController player, Func<CsItem, bool>? where = null)
     {
         if (!PlayerIsValid(player) || player.PlayerPawn.Value?.WeaponServices is null)
         {
-            return;
+            return false;
         }
+
+        var removed = false;
 
         foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
         {
@@ -130,6 +132,10 @@ public class Helpers
 
             player.PlayerPawn.Value.RemovePlayerItem(weapon.Value);
             weapon.Value.Remove();
+
+            removed = true;
         }
+
+        return removed;
     }
 }

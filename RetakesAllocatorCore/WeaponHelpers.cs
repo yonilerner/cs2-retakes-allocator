@@ -153,6 +153,11 @@ public static class WeaponHelpers
         return _allWeapons.ToList();
     }
 
+    public static bool IsWeapon(CsItem item)
+    {
+        return _allWeapons.Contains(item);
+    }
+
     public static bool IsValidWeapon(RoundType roundType, CsTeam team, CsItem weapon)
     {
         if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)

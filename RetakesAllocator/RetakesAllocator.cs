@@ -186,10 +186,10 @@ public class RetakesAllocator : BasePlugin
         var team = (CsTeam)@event.Userid.TeamNum;
         var playerId = Helpers.GetSteamId(@event.Userid);
         var weaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(item);
-        
+
         Log.Write($"item {item} team {team} player {playerId}");
         Log.Write($"curRound {_currentRoundType} weapon Round {weaponRoundType}");
-        
+
         if (weaponRoundType is not null &&
             (weaponRoundType == _currentRoundType || weaponRoundType == RoundType.Pistol))
         {
@@ -202,11 +202,18 @@ public class RetakesAllocator : BasePlugin
         }
         else
         {
-            var removedWeapon = Helpers.GetUserWeapon(@event.Userid, i => i == item);
-            Helpers.RemoveWeapons(@event.Userid, i => i == item);
-            Thread.Sleep(150);
-            Log.Write($"Removed {item}");
-            if (_currentRoundType is not null && WeaponHelpers.GetAllWeapons().Contains(item))
+            var removedAnyWeapons = Helpers.RemoveWeapons(@event.Userid,
+                i =>
+                {
+                    if (!WeaponHelpers.IsWeapon(i))
+                    {
+                        return i == item;
+                    }
+                    // Some weapons identify as other weapons, so we just remove them all
+                    return WeaponHelpers.GetRoundTypeForWeapon(i) == weaponRoundType;
+                });
+            Log.Write($"Removed {item}? {removedAnyWeapons}");
+            if (removedAnyWeapons && _currentRoundType is not null && WeaponHelpers.IsWeapon(item))
             {
                 var replacementItem = WeaponHelpers.GetWeaponForRoundType(_currentRoundType.Value, team,
                     Queries.GetUserSettings(playerId));
@@ -219,30 +226,12 @@ public class RetakesAllocator : BasePlugin
                     });
                 }
             }
-            removedWeapon?.Value?.Remove();
         }
-
-
-        Log.Write($"post item: {item}");
 
         _currentPistol = null;
         _currentWeapon = null;
         return HookResult.Continue;
     }
-
-    // [GameEventHandler(HookMode.Pre)]
-    // public HookResult OnPreWeaponhudSelection(EventWeaponhudSelection @event, GameEventInfo eventInfo)
-    // {
-    //     Log.Write($"Pre HUD Selection: {@event.Entindex} {@event.Mode}.");
-    //     return HookResult.Continue;
-    // }
-    //
-    // [GameEventHandler(HookMode.Post)]
-    // public HookResult OnPostWeaponhudSelection(EventWeaponhudSelection @event, GameEventInfo eventInfo)
-    // {
-    //     Log.Write($"Pre HUD Selection: {@event.Entindex} {@event.Mode}.");
-    //     return HookResult.Continue;
-    // }
 
     [GameEventHandler]
     public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
@@ -290,7 +279,6 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
-        var player = _tPlayers.First();
         OnRoundPostStartHelper.Handle(
             _nextRoundType,
             _tPlayers,
