@@ -13,8 +13,10 @@ This plugin is made to run alongside B3none's retakes implementation: https://gi
 - Download a release from https://github.com/yonilerner/cs2-retakes-allocator/releases
 - Extract the zip archive and upload the `RetakesAllocator` plugin to your CounterStrikeSharp plugins folder on your
   server
-    - [ADVANCED] If you want to reduce the upload size, you can delete all runtimes in the `RetakesAllocator` folder
-      except the one needed for your particular server
+    - Each build comes with two necessary runtimes for sqlite3, one for linux64 and one for win64. If you need a
+      different runtime, please submit an issue and I can provide more runtimes
+    - If you're wondering why so many DLLs in the build: They are necessary for the Entity Framework that enables modern
+      interfaces for databases
 
 ## Usage
 
