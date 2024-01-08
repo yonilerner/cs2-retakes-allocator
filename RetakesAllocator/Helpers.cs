@@ -52,13 +52,13 @@ public class Helpers
         itemServices.HasHeavyArmor = false;
     }
 
-    public static void RemoveWeapons(CCSPlayerController player, Func<CsItem, bool>? skip = null)
+    public static CsItem? GetUserWeaponItem(CCSPlayerController player, Func<CsItem, bool> pred)
     {
         if (!PlayerIsValid(player) || player.PlayerPawn.Value?.WeaponServices is null)
         {
-            return;
+            return null;
         }
-
+        
         foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
         {
             if (weapon is not { IsValid: true, Value.IsValid: true })
@@ -67,17 +67,66 @@ public class Helpers
             }
 
             CsItem? item = Utils.ToEnum<CsItem>(weapon.Value.DesignerName);
-            // Log.Write($"item: {item}");
+            if (item is not null && pred(item.Value))
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+    
+    public static CHandle<CBasePlayerWeapon>? GetUserWeapon(CCSPlayerController player, Func<CsItem, bool> pred)
+    {
+        if (!PlayerIsValid(player) || player.PlayerPawn.Value?.WeaponServices is null)
+        {
+            return null;
+        }
+        
+        foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
+        {
+            if (weapon is not { IsValid: true, Value.IsValid: true })
+            {
+                continue;
+            }
+
+            CsItem? item = Utils.ToEnum<CsItem>(weapon.Value.DesignerName);
+            if (item is not null && pred(item.Value))
+            {
+                return weapon;
+            }
+        }
+
+        return null;
+    }
+
+    public static void RemoveWeapons(CCSPlayerController player, Func<CsItem, bool>? where = null)
+    {
+        if (!PlayerIsValid(player) || player.PlayerPawn.Value?.WeaponServices is null)
+        {
+            return;
+        }
+
+        foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
+        {
+            Log.Write($"want to remove wep {weapon.Value?.DesignerName} {weapon.IsValid}");
+            if (weapon is not { IsValid: true, Value.IsValid: true })
+            {
+                continue;
+            }
+
+            CsItem? item = Utils.ToEnum<CsItem>(weapon.Value.DesignerName);
+            Log.Write($"item to remove: {item}");
 
             if (
-                skip is not null &&
-                (item is null || skip(item.Value))
+                where is not null &&
+                (item is null || !where(item.Value))
             )
             {
                 continue;
             }
 
-            // Log.Write($"Removing weapon {weapon.Value.DesignerName}");
+            Log.Write($"Removing weapon {weapon.Value.DesignerName} {weapon.IsValid}");
 
             player.PlayerPawn.Value.RemovePlayerItem(weapon.Value);
             weapon.Value.Remove();

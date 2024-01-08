@@ -252,7 +252,7 @@ public static class WeaponHelpers
         return Utils.Choice(collectionToCheck.Where(IsUsableWeapon).ToList());
     }
 
-    private static CsItem? GetWeaponForRoundType(RoundType roundType, CsTeam team, UserSetting? userSetting)
+    public static CsItem? GetWeaponForRoundType(RoundType roundType, CsTeam team, UserSetting? userSetting)
     {
         CsItem? weapon = null;
         if (Configs.GetConfigData().CanPlayersSelectWeapons() && userSetting is not null)
