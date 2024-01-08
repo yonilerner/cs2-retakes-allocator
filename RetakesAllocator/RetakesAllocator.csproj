@@ -19,11 +19,14 @@
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug'">
-        <Exec Command="powershell Copy-Item -Recurse -Force &quot;$(TargetDir)*&quot; &quot;$(CopyPath)&quot; "/>
+        <Exec Command="powershell Copy-Item -Recurse -Force &quot;$(TargetDir) $(CopyPath)&quot; "/>
     </Target>
     <Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release'">
         <Exec Command="powershell rm -Recurse -Force &quot;$(TargetDir)..\$(TargetName)&quot; " ContinueOnError="true"/>
-        <Exec Command="powershell mv -Force &quot;$(TargetDir) $(TargetDir)..\$(TargetName)&quot;" />
+        <Exec Command="powershell mkdir -p &quot;$(TargetDir)..\$(TargetName)&quot;" />
+        <Exec Command="powershell cp -Force &quot;$(TargetDir)* $(TargetDir)..\$(TargetName)&quot;" />
+        <Exec Command="powershell cp -Force -Recurse &quot;$(TargetDir)runtimes\linux-x64 $(TargetDir)..\$(TargetName)\runtimes&quot;" />
+        <Exec Command="powershell cp -Force -Recurse &quot;$(TargetDir)runtimes\win-x64 $(TargetDir)..\$(TargetName)\runtimes&quot;" />
         <Exec Command="powershell Compress-Archive -Force -Path &quot;$(TargetDir)..\$(TargetName)\*&quot; -DestinationPath &quot;$(TargetDir)..\$(TargetName).zip&quot; " />
     </Target>
 
