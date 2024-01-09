@@ -17,7 +17,7 @@ namespace RetakesAllocator;
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
-    public override string ModuleVersion => "0.0.1";
+    public override string ModuleVersion => "1.0.0-beta";
 
     private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
     private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
@@ -162,24 +162,7 @@ public class RetakesAllocator : BasePlugin
 
     #region Events
 
-    // TODO Make per-user
-    private CsItem? _currentWeapon = null;
-    private CsItem? _currentPistol = null;
-
-    [GameEventHandler(HookMode.Pre)]
-    public HookResult OnPreItemPurchase(EventItemPurchase @event, GameEventInfo info)
-    {
-        _currentWeapon = Helpers.GetUserWeaponItem(@event.Userid,
-            i => WeaponHelpers.GetRoundTypeForWeapon(i) == _currentRoundType);
-        _currentPistol = Helpers.GetUserWeaponItem(@event.Userid,
-            i => WeaponHelpers.GetRoundTypeForWeapon(i) == RoundType.Pistol);
-
-        Log.Write($"current: w={_currentWeapon} p={_currentPistol}");
-
-        return HookResult.Continue;
-    }
-
-    [GameEventHandler(HookMode.Post)]
+    [GameEventHandler]
     public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
     {
         var item = Utils.ToEnum<CsItem>(@event.Weapon);
@@ -228,8 +211,6 @@ public class RetakesAllocator : BasePlugin
             }
         }
 
-        _currentPistol = null;
-        _currentWeapon = null;
         return HookResult.Continue;
     }
 
@@ -288,13 +269,6 @@ public class RetakesAllocator : BasePlugin
             Helpers.GetTeam,
             GiveDefuseKit,
             AllocateItemsForPlayer,
-            (p, money) =>
-            {
-                if (Helpers.PlayerIsValid(p) && p.InGameMoneyServices is not null)
-                {
-                    p.InGameMoneyServices.Account = money;
-                }
-            },
             out var currentRoundType
         );
         _currentRoundType = currentRoundType;
@@ -308,8 +282,6 @@ public class RetakesAllocator : BasePlugin
 
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items)
     {
-        // Helpers.RemoveArmor(player);
-        // Helpers.RemoveWeapons(player);
         Log.Write($"Allocating items: {string.Join(",", items)}");
         AddTimer(0.1f, () =>
         {

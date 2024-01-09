@@ -17,7 +17,6 @@ public class OnRoundPostStartHelper
         Func<T, CsTeam> getTeam,
         Action<T> giveDefuseKit,
         Action<T, ICollection<CsItem>> allocateItemsForPlayer,
-        Action<T, int> setMoneyForPlayer,
         out RoundType currentRoundType
     )
     {
