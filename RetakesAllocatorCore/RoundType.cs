@@ -13,6 +13,15 @@ public enum RoundType
 
 public static class RoundTypeHelpers
 {
+    // public static int GetMoneyForRoundType(RoundType roundType)
+    // {
+    //     return roundType switch
+    //     {
+    //         RoundType.Pistol => 800,
+    //         RoundType.HalfBuy => 
+    //     }
+    // }
+    
     public static RoundType GetRandomRoundType()
     {
         var randomValue = new Random().NextDouble();

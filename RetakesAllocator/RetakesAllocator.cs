@@ -43,6 +43,8 @@ public class RetakesAllocator : BasePlugin
         {
             HandleHotReload();
         }
+
+        RegisterListener<Listeners.OnEntitySpawned>(i => { });
     }
 
     private void ResetState()
@@ -99,7 +101,7 @@ public class RetakesAllocator : BasePlugin
             {
                 Helpers.RemoveWeapons(
                     player,
-                    item => WeaponHelpers.GetRoundTypeForWeapon(item) != selectedWeaponRoundType
+                    item => WeaponHelpers.GetRoundTypeForWeapon(item) == selectedWeaponRoundType
                 );
                 AllocateItemsForPlayer(player, new List<CsItem> { selectedWeapon.Value });
             }
@@ -160,6 +162,77 @@ public class RetakesAllocator : BasePlugin
 
     #region Events
 
+    // TODO Make per-user
+    private CsItem? _currentWeapon = null;
+    private CsItem? _currentPistol = null;
+
+    [GameEventHandler(HookMode.Pre)]
+    public HookResult OnPreItemPurchase(EventItemPurchase @event, GameEventInfo info)
+    {
+        _currentWeapon = Helpers.GetUserWeaponItem(@event.Userid,
+            i => WeaponHelpers.GetRoundTypeForWeapon(i) == _currentRoundType);
+        _currentPistol = Helpers.GetUserWeaponItem(@event.Userid,
+            i => WeaponHelpers.GetRoundTypeForWeapon(i) == RoundType.Pistol);
+
+        Log.Write($"current: w={_currentWeapon} p={_currentPistol}");
+
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler(HookMode.Post)]
+    public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
+    {
+        var item = Utils.ToEnum<CsItem>(@event.Weapon);
+        var team = (CsTeam)@event.Userid.TeamNum;
+        var playerId = Helpers.GetSteamId(@event.Userid);
+        var weaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(item);
+
+        Log.Write($"item {item} team {team} player {playerId}");
+        Log.Write($"curRound {_currentRoundType} weapon Round {weaponRoundType}");
+
+        if (weaponRoundType is not null &&
+            (weaponRoundType == _currentRoundType || weaponRoundType == RoundType.Pistol))
+        {
+            Queries.SetWeaponPreferenceForUser(
+                playerId,
+                team,
+                weaponRoundType.Value,
+                item
+            );
+        }
+        else
+        {
+            var removedAnyWeapons = Helpers.RemoveWeapons(@event.Userid,
+                i =>
+                {
+                    if (!WeaponHelpers.IsWeapon(i))
+                    {
+                        return i == item;
+                    }
+                    // Some weapons identify as other weapons, so we just remove them all
+                    return WeaponHelpers.GetRoundTypeForWeapon(i) == weaponRoundType;
+                });
+            Log.Write($"Removed {item}? {removedAnyWeapons}");
+            if (removedAnyWeapons && _currentRoundType is not null && WeaponHelpers.IsWeapon(item))
+            {
+                var replacementItem = WeaponHelpers.GetWeaponForRoundType(_currentRoundType.Value, team,
+                    Queries.GetUserSettings(playerId));
+                Log.Write($"Replacement item: {replacementItem}");
+                if (replacementItem is not null)
+                {
+                    AllocateItemsForPlayer(@event.Userid, new List<CsItem>
+                    {
+                        replacementItem.Value
+                    });
+                }
+            }
+        }
+
+        _currentPistol = null;
+        _currentWeapon = null;
+        return HookResult.Continue;
+    }
+
     [GameEventHandler]
     public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
     {
@@ -215,6 +288,13 @@ public class RetakesAllocator : BasePlugin
             Helpers.GetTeam,
             GiveDefuseKit,
             AllocateItemsForPlayer,
+            (p, money) =>
+            {
+                if (Helpers.PlayerIsValid(p) && p.InGameMoneyServices is not null)
+                {
+                    p.InGameMoneyServices.Account = money;
+                }
+            },
             out var currentRoundType
         );
         _currentRoundType = currentRoundType;
