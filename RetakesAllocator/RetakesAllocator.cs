@@ -18,7 +18,7 @@ namespace RetakesAllocator;
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
-    public override string ModuleVersion => "1.0.0";
+    public override string ModuleVersion => "1.0.1";
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
@@ -222,7 +222,13 @@ public class RetakesAllocator : BasePlugin
         for (; pEntity is not null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
         {
             var p = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)pEntity.EntityInstance.Index);
-            if (!p.IsValid || !p.DesignerName.StartsWith("weapon") || playerPos is null || p.AbsOrigin is null)
+            if (
+                !p.IsValid ||
+                !p.DesignerName.StartsWith("weapon") ||
+                p.DesignerName.Equals("weapon_c4") ||
+                playerPos is null ||
+                p.AbsOrigin is null
+            )
             {
                 continue;
             }
