@@ -226,22 +226,15 @@ public class RetakesAllocator : BasePlugin
         for (; pEntity != null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
         {
             var p = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)pEntity.EntityInstance.Index);
-            if (!p.IsValid)
+            if (!p.IsValid || !p.DesignerName.StartsWith("weapon") || playerPos == null || p.AbsOrigin is null)
             {
                 continue;
             }
-
-            if (!p.DesignerName.StartsWith("weapon") || playerPos == null || p.AbsOrigin is null)
-            {
-                continue;
-            }
-
-            // Log.Write($"d: {p.DesignerName}. n: {p.Entity?.Name}");
 
             var distance = Helpers.GetVectorDistance(playerPos, p.AbsOrigin);
             if (distance < 20)
             {
-                AddTimer(1f, () =>
+                AddTimer(.5f, () =>
                 {
                     if (p.IsValid && !p.OwnerEntity.IsValid)
                     {
