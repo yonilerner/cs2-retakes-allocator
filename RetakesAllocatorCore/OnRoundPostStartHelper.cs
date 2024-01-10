@@ -23,12 +23,9 @@ public class OnRoundPostStartHelper
         var roundType = nextRoundType ?? RoundTypeHelpers.GetRandomRoundType();
         currentRoundType = roundType;
         
-        Log.Write($"Round type: {roundType}");
-        Log.Write($"#T Players: {tPlayers.Count}");
-        Log.Write($"#CT Players: {ctPlayers.Count}");
+        // Log.Write($"Round type: {roundType}");
 
         var allPlayers = ctPlayers.Concat(tPlayers).ToList();
-        
         
         var playerIds = allPlayers
             .Where(isPlayerValid)

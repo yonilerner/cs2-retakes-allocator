@@ -113,14 +113,14 @@ public class Helpers
 
         foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
         {
-            Log.Write($"want to remove wep {weapon.Value?.DesignerName} {weapon.IsValid}");
+            // Log.Write($"want to remove wep {weapon.Value?.DesignerName} {weapon.IsValid}");
             if (weapon is not { IsValid: true, Value.IsValid: true })
             {
                 continue;
             }
 
             CsItem? item = Utils.ToEnum<CsItem>(weapon.Value.DesignerName);
-            Log.Write($"item to remove: {item}");
+            // Log.Write($"item to remove: {item}");
 
             if (
                 where is not null &&
@@ -130,7 +130,7 @@ public class Helpers
                 continue;
             }
 
-            Log.Write($"Removing weapon {weapon.Value.DesignerName} {weapon.IsValid}");
+            // Log.Write($"Removing weapon {weapon.Value.DesignerName} {weapon.IsValid}");
 
             player.PlayerPawn.Value.RemovePlayerItem(weapon.Value);
             weapon.Value.Remove();
