@@ -17,6 +17,14 @@ This plugin is made to run alongside B3none's retakes implementation: https://gi
       different runtime, please submit an issue and I can provide more runtimes
     - If you're wondering why so many DLLs in the build: They are necessary for the Entity Framework that enables modern
       interfaces for databases
+- [Buy Menu - Optional] If you want buy menu weapon selection to work, ensure the following convars are set at the
+  bottom of `game/csgo/cfg/cs2-retakes/retakes.cfg`:
+    - `mp_buy_anywhere 1`
+    - `mp_buytime 60000`
+    - `mp_maxmoney 65535`
+    - `mp_startmoney 65535`
+    - `mp_afterroundmoney 65535`
+    - More info about this in the "Buy Menu" section below
 
 ## Usage
 
@@ -36,6 +44,15 @@ This plugin implements 3 different round types:
     - Weapons: Rifles, snipers, machine guns
     - Armor: Kevlar and helmet
     - Util: One nade + 50% chance of a 2nd nade. Every CT has a defuse kit
+
+### Buy Menu
+
+If the convars are set to give players money and let them buy, player weapon choices can be selected via the buy menu.
+The buy menu will look like it allows you to buy any weapon, but it will only let you have weapons that are appropriate
+for the current round type.
+
+The convars can be tweaked to customize the experience. For example, if you dont want to allow people to use the buy
+menu the entire round, you can tweak the `mp_buytime` variable as you see fit.
 
 ### Configuration
 
