@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
@@ -37,7 +38,7 @@ public class Helpers
 
     public static CsTeam GetTeam(CCSPlayerController player)
     {
-        return (CsTeam) player.TeamNum;
+        return (CsTeam)player.TeamNum;
     }
 
     public static void RemoveArmor(CCSPlayerController player)
@@ -52,13 +53,13 @@ public class Helpers
         itemServices.HasHeavyArmor = false;
     }
 
-    public static CsItem? GetUserWeaponItem(CCSPlayerController player, Func<CsItem, bool> pred)
+    public static CsItem? GetPlayerWeaponItem(CCSPlayerController player, Func<CsItem, bool> pred)
     {
         if (!PlayerIsValid(player) || player.PlayerPawn.Value?.WeaponServices is null)
         {
             return null;
         }
-        
+
         foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
         {
             if (weapon is not { IsValid: true, Value.IsValid: true })
@@ -75,14 +76,15 @@ public class Helpers
 
         return null;
     }
-    
-    public static CHandle<CBasePlayerWeapon>? GetUserWeapon(CCSPlayerController player, Func<CsItem, bool> pred)
+
+    public static CHandle<CBasePlayerWeapon>? GetPlayerWeapon(CCSPlayerController player,
+        Func<CBasePlayerWeapon, CsItem, bool> pred)
     {
         if (!PlayerIsValid(player) || player.PlayerPawn.Value?.WeaponServices is null)
         {
             return null;
         }
-        
+
         foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
         {
             if (weapon is not { IsValid: true, Value.IsValid: true })
@@ -91,7 +93,7 @@ public class Helpers
             }
 
             CsItem? item = Utils.ToEnum<CsItem>(weapon.Value.DesignerName);
-            if (item is not null && pred(item.Value))
+            if (item is not null && pred(weapon.Value, item.Value))
             {
                 return weapon;
             }
@@ -137,5 +139,34 @@ public class Helpers
         }
 
         return removed;
+    }
+
+    public static CCSGameRules GetGameRules()
+    {
+        var gameRulesEntities = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules");
+        var gameRules = gameRulesEntities.First().GameRules;
+        if (gameRules is null)
+        {
+            var message = "Game rules were null.";
+            Log.Write(message);
+            throw new Exception(message);
+        }
+
+        return gameRules;
+    }
+
+    public static bool IsWarmup()
+    {
+        return GetGameRules().WarmupPeriod;
+    }
+
+    public static double GetVectorDistance(Vector v1, Vector v2)
+    {
+        var dx = v1.X - v2.X;
+        var dy = v1.Y - v2.Y;
+
+        var distance = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
+        Log.Write($"Calculated distance {distance}");
+        return distance;
     }
 }

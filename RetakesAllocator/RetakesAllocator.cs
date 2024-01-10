@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
@@ -30,14 +31,19 @@ public class RetakesAllocator : BasePlugin
     public override void Load(bool hotReload)
     {
         Log.Write("Loaded");
+        ResetState();
         Batteries.Init();
-
-        Configs.Load(ModuleDirectory);
+        
+        RegisterListener<Listeners.OnMapStart>(mapName =>
+        {
+            ResetState();
+        });
 
         if (Configs.GetConfigData().MigrateOnStartup)
         {
             Queries.Migrate();
         }
+        
 
         if (hotReload)
         {
@@ -47,13 +53,15 @@ public class RetakesAllocator : BasePlugin
 
     private void ResetState()
     {
+        Configs.Load(ModuleDirectory);
         _tPlayers.Clear();
         _ctPlayers.Clear();
+        _nextRoundType = null;
+        _currentRoundType = null;
     }
 
     private void HandleHotReload()
     {
-        ResetState();
         Server.ExecuteCommand($"map {Server.MapName}");
     }
 
@@ -163,6 +171,10 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
     {
+        if (Helpers.IsWarmup())
+        {
+            return HookResult.Continue;
+        }
         var item = Utils.ToEnum<CsItem>(@event.Weapon);
         var team = (CsTeam)@event.Userid.TeamNum;
         var playerId = Helpers.GetSteamId(@event.Userid);
@@ -210,6 +222,55 @@ public class RetakesAllocator : BasePlugin
             }
         }
 
+        var playerPos = @event.Userid.PlayerPawn.Value!.AbsOrigin;
+
+        AddTimer(0.01f, () =>
+        {
+            var pEntity = new CEntityIdentity(EntitySystem.FirstActiveEntity);
+            for (; pEntity != null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
+            {
+                var p = new PointerTo<CEntityInstance>(pEntity.Handle).Value;
+                var p2 = new CBasePlayerWeapon(p.Handle);
+                if (!p.IsValid)
+                {
+                    continue;
+                }
+
+                if (!p.DesignerName.StartsWith("weapon") || playerPos == null || p2.AbsOrigin is null)
+                {
+                    continue;
+                }
+                
+                Log.Write($"d: {p.DesignerName}. n: {p.Entity?.Name} wgid: {p.Entity?.WorldGroupId}");
+
+                var distance = Helpers.GetVectorDistance(playerPos, p2.AbsOrigin);
+                if (distance is > 0 and < 20)
+                {
+                    p.Remove();
+                }
+                
+                // var found = false;
+                // foreach (var player in _ctPlayers.Concat(_tPlayers))
+                // {
+                //     var w = Helpers.GetPlayerWeapon(player, (wep, _) =>
+                //     {
+                //         return wep.Index == p.Index;
+                //     });
+                //     if (w is not null)
+                //     {
+                //         Log.Write($"Found {p.DesignerName} on {player}");
+                //         found = true;
+                //     }
+                // }
+                //
+                // if (!found)
+                // {
+                //     Log.Write($"Didnt find {p.DesignerName}, removing");
+                //     p.Remove();
+                // }
+            }
+        });
+
         return HookResult.Continue;
     }
 
@@ -251,6 +312,10 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
+        if (Helpers.IsWarmup())
+        {
+            return HookResult.Continue;
+        }
         Log.Write($"#T Players: {string.Join(",", _tPlayers.Select(Helpers.GetSteamId))}");
         Log.Write($"#CT Players: {string.Join(",", _ctPlayers.Select(Helpers.GetSteamId))}");
 
