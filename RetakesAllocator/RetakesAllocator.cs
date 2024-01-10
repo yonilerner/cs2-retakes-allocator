@@ -18,10 +18,7 @@ namespace RetakesAllocator;
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
-    public override string ModuleVersion => "1.0.0-beta";
-
-    private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
-    private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
+    public override string ModuleVersion => "1.0.0";
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
@@ -51,8 +48,6 @@ public class RetakesAllocator : BasePlugin
     private void ResetState()
     {
         Configs.Load(ModuleDirectory);
-        _tPlayers.Clear();
-        _ctPlayers.Clear();
         _nextRoundType = null;
         _currentRoundType = null;
     }
@@ -158,6 +153,7 @@ public class RetakesAllocator : BasePlugin
     [RequiresPermissions("@css/root")]
     public void OnReloadAllocatorConfigCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
+        commandInfo.ReplyToCommand($"Reloading config for version {ModuleVersion}");
         Configs.Load(ModuleDirectory);
     }
 
@@ -248,41 +244,6 @@ public class RetakesAllocator : BasePlugin
     }
 
     [GameEventHandler]
-    public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
-    {
-        var player = @event.Userid;
-        var playerTeam = (CsTeam)@event.Team;
-
-        _tPlayers.Remove(player);
-        _ctPlayers.Remove(player);
-
-        switch (playerTeam)
-        {
-            case CsTeam.Spectator:
-            case CsTeam.None:
-                _tPlayers.Remove(player);
-                _ctPlayers.Remove(player);
-                break;
-            case CsTeam.Terrorist:
-                _tPlayers.Add(player);
-                break;
-            case CsTeam.CounterTerrorist:
-                _ctPlayers.Add(player);
-                break;
-        }
-
-        return HookResult.Continue;
-    }
-
-    [GameEventHandler]
-    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
-    {
-        _tPlayers.Remove(@event.Userid);
-        _ctPlayers.Remove(@event.Userid);
-        return HookResult.Continue;
-    }
-
-    [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
         if (Helpers.IsWarmup())
@@ -290,14 +251,13 @@ public class RetakesAllocator : BasePlugin
             return HookResult.Continue;
         }
 
-        Log.Write($"#T Players: {string.Join(",", _tPlayers.Select(Helpers.GetSteamId))}");
-        Log.Write($"#CT Players: {string.Join(",", _ctPlayers.Select(Helpers.GetSteamId))}");
+        var allPlayers = Utilities.GetPlayers()
+            .Where(Helpers.PlayerIsValid)
+            .ToList();
 
         OnRoundPostStartHelper.Handle(
             _nextRoundType,
-            _tPlayers,
-            _ctPlayers,
-            Helpers.PlayerIsValid,
+            allPlayers,
             Helpers.GetSteamId,
             Helpers.GetTeam,
             GiveDefuseKit,

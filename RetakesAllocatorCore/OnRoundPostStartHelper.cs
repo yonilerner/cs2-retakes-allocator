@@ -5,14 +5,11 @@ using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorCore;
 
-
 public class OnRoundPostStartHelper
 {
     public static void Handle<T>(
         RoundType? nextRoundType,
-        ICollection<T> tPlayers,
-        ICollection<T> ctPlayers,
-        Func<T?, bool> isPlayerValid,
+        ICollection<T> allPlayers,
         Func<T?, ulong> getSteamId,
         Func<T, CsTeam> getTeam,
         Action<T> giveDefuseKit,
@@ -22,16 +19,32 @@ public class OnRoundPostStartHelper
     {
         var roundType = nextRoundType ?? RoundTypeHelpers.GetRandomRoundType();
         currentRoundType = roundType;
-        
-        // Log.Write($"Round type: {roundType}");
 
-        var allPlayers = ctPlayers.Concat(tPlayers).ToList();
-        
-        var playerIds = allPlayers
-            .Where(isPlayerValid)
-            .Select(getSteamId)
-            .Where(id => id != 0)
-            .ToList();
+        var tPlayers = new List<T>();
+        var ctPlayers = new List<T>();
+        var playerIds = new List<ulong>();
+        foreach (var player in allPlayers)
+        {
+            var steamId = getSteamId(player);
+            if (steamId != 0)
+            {
+                playerIds.Add(steamId);
+            }
+
+            var playerTeam = getTeam(player);
+            if (playerTeam == CsTeam.Terrorist)
+            {
+                tPlayers.Add(player);
+            }
+            else if (playerTeam == CsTeam.CounterTerrorist)
+            {
+                ctPlayers.Add(player);
+            }
+        }
+
+        Log.Write($"#T Players: {string.Join(",", tPlayers.Select(getSteamId))}");
+        Log.Write($"#CT Players: {string.Join(",", ctPlayers.Select(getSteamId))}");
+
         var userSettingsByPlayerId = Queries.GetUsersSettings(playerIds);
 
         var defusingPlayer = Utils.Choice(ctPlayers);
@@ -46,7 +59,7 @@ public class OnRoundPostStartHelper
                 RoundTypeHelpers.GetArmorForRoundType(roundType),
                 team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
             };
-            
+
             items.AddRange(
                 WeaponHelpers.GetWeaponsForRoundType(roundType, team, userSettings)
             );
