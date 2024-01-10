@@ -33,17 +33,14 @@ public class RetakesAllocator : BasePlugin
         Log.Write("Loaded");
         ResetState();
         Batteries.Init();
-        
-        RegisterListener<Listeners.OnMapStart>(mapName =>
-        {
-            ResetState();
-        });
+
+        RegisterListener<Listeners.OnMapStart>(mapName => { ResetState(); });
 
         if (Configs.GetConfigData().MigrateOnStartup)
         {
             Queries.Migrate();
         }
-        
+
 
         if (hotReload)
         {
@@ -171,10 +168,11 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
     {
-        if (Helpers.IsWarmup())
+        if (Helpers.IsWarmup() || !Helpers.PlayerIsValid(@event.Userid) || !@event.Userid.PlayerPawn.IsValid)
         {
             return HookResult.Continue;
         }
+
         var item = Utils.ToEnum<CsItem>(@event.Weapon);
         var team = (CsTeam)@event.Userid.TeamNum;
         var playerId = Helpers.GetSteamId(@event.Userid);
@@ -222,54 +220,36 @@ public class RetakesAllocator : BasePlugin
             }
         }
 
-        var playerPos = @event.Userid.PlayerPawn.Value!.AbsOrigin;
+        var playerPos = @event.Userid.PlayerPawn.Value?.AbsOrigin;
 
-        AddTimer(0.01f, () =>
+        var pEntity = new CEntityIdentity(EntitySystem.FirstActiveEntity);
+        for (; pEntity != null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
         {
-            var pEntity = new CEntityIdentity(EntitySystem.FirstActiveEntity);
-            for (; pEntity != null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
+            var p = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)pEntity.EntityInstance.Index);
+            if (!p.IsValid)
             {
-                var p = new PointerTo<CEntityInstance>(pEntity.Handle).Value;
-                var p2 = new CBasePlayerWeapon(p.Handle);
-                if (!p.IsValid)
-                {
-                    continue;
-                }
-
-                if (!p.DesignerName.StartsWith("weapon") || playerPos == null || p2.AbsOrigin is null)
-                {
-                    continue;
-                }
-                
-                Log.Write($"d: {p.DesignerName}. n: {p.Entity?.Name} wgid: {p.Entity?.WorldGroupId}");
-
-                var distance = Helpers.GetVectorDistance(playerPos, p2.AbsOrigin);
-                if (distance is > 0 and < 20)
-                {
-                    p.Remove();
-                }
-                
-                // var found = false;
-                // foreach (var player in _ctPlayers.Concat(_tPlayers))
-                // {
-                //     var w = Helpers.GetPlayerWeapon(player, (wep, _) =>
-                //     {
-                //         return wep.Index == p.Index;
-                //     });
-                //     if (w is not null)
-                //     {
-                //         Log.Write($"Found {p.DesignerName} on {player}");
-                //         found = true;
-                //     }
-                // }
-                //
-                // if (!found)
-                // {
-                //     Log.Write($"Didnt find {p.DesignerName}, removing");
-                //     p.Remove();
-                // }
+                continue;
             }
-        });
+
+            if (!p.DesignerName.StartsWith("weapon") || playerPos == null || p.AbsOrigin is null)
+            {
+                continue;
+            }
+
+            // Log.Write($"d: {p.DesignerName}. n: {p.Entity?.Name}");
+
+            var distance = Helpers.GetVectorDistance(playerPos, p.AbsOrigin);
+            if (distance < 20)
+            {
+                AddTimer(1f, () =>
+                {
+                    if (p.IsValid && !p.OwnerEntity.IsValid)
+                    {
+                        p.Remove();
+                    }
+                });
+            }
+        }
 
         return HookResult.Continue;
     }
@@ -316,6 +296,7 @@ public class RetakesAllocator : BasePlugin
         {
             return HookResult.Continue;
         }
+
         Log.Write($"#T Players: {string.Join(",", _tPlayers.Select(Helpers.GetSteamId))}");
         Log.Write($"#CT Players: {string.Join(",", _ctPlayers.Select(Helpers.GetSteamId))}");
 
