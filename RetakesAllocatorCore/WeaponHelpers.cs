@@ -209,7 +209,7 @@ public static class WeaponHelpers
     {
         var weapons = new List<CsItem>();
         var weapon = GetWeaponForRoundType(RoundType.Pistol, team, userSetting);
-        if (weapon != null)
+        if (weapon is not null)
         {
             weapons.Add(weapon.Value);
         }

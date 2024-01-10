@@ -223,10 +223,10 @@ public class RetakesAllocator : BasePlugin
         var playerPos = @event.Userid.PlayerPawn.Value?.AbsOrigin;
 
         var pEntity = new CEntityIdentity(EntitySystem.FirstActiveEntity);
-        for (; pEntity != null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
+        for (; pEntity is not null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
         {
             var p = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)pEntity.EntityInstance.Index);
-            if (!p.IsValid || !p.DesignerName.StartsWith("weapon") || playerPos == null || p.AbsOrigin is null)
+            if (!p.IsValid || !p.DesignerName.StartsWith("weapon") || playerPos is null || p.AbsOrigin is null)
             {
                 continue;
             }
