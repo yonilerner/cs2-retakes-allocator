@@ -190,6 +190,7 @@ public class RetakesAllocator : BasePlugin
                     {
                         return i == item;
                     }
+
                     // Some weapons identify as other weapons, so we just remove them all
                     return WeaponHelpers.GetRoundTypeForWeapon(i) == weaponRoundType;
                 });
@@ -216,18 +217,10 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        var oldTeam = (CsTeam)@event.Oldteam;
         var playerTeam = (CsTeam)@event.Team;
 
-        switch (oldTeam)
-        {
-            case CsTeam.Terrorist:
-                _tPlayers.Remove(player);
-                break;
-            case CsTeam.CounterTerrorist:
-                _ctPlayers.Remove(player);
-                break;
-        }
+        _tPlayers.Remove(player);
+        _ctPlayers.Remove(player);
 
         switch (playerTeam)
         {
@@ -258,6 +251,9 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
+        Log.Write($"#T Players: {string.Join(",", _tPlayers.Select(Helpers.GetSteamId))}");
+        Log.Write($"#CT Players: {string.Join(",", _ctPlayers.Select(Helpers.GetSteamId))}");
+
         OnRoundPostStartHelper.Handle(
             _nextRoundType,
             _tPlayers,
@@ -271,6 +267,12 @@ public class RetakesAllocator : BasePlugin
         );
         _currentRoundType = currentRoundType;
         _nextRoundType = null;
+
+        var messagePrefix = $"[{ChatColors.Green}RetakesAllocator{ChatColors.White}] ";
+        Server.PrintToChatAll(
+            $"{messagePrefix}{Enum.GetName(_currentRoundType.Value)} Round"
+        );
+
         return HookResult.Continue;
     }
 
