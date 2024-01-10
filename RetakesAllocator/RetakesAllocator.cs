@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
@@ -17,7 +18,7 @@ namespace RetakesAllocator;
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
-    public override string ModuleVersion => "0.0.1";
+    public override string ModuleVersion => "1.0.0-beta";
 
     private readonly IList<CCSPlayerController> _tPlayers = new List<CCSPlayerController>();
     private readonly IList<CCSPlayerController> _ctPlayers = new List<CCSPlayerController>();
@@ -30,14 +31,16 @@ public class RetakesAllocator : BasePlugin
     public override void Load(bool hotReload)
     {
         Log.Write("Loaded");
+        ResetState();
         Batteries.Init();
 
-        Configs.Load(ModuleDirectory);
+        RegisterListener<Listeners.OnMapStart>(mapName => { ResetState(); });
 
         if (Configs.GetConfigData().MigrateOnStartup)
         {
             Queries.Migrate();
         }
+
 
         if (hotReload)
         {
@@ -47,13 +50,15 @@ public class RetakesAllocator : BasePlugin
 
     private void ResetState()
     {
+        Configs.Load(ModuleDirectory);
         _tPlayers.Clear();
         _ctPlayers.Clear();
+        _nextRoundType = null;
+        _currentRoundType = null;
     }
 
     private void HandleHotReload()
     {
-        ResetState();
         Server.ExecuteCommand($"map {Server.MapName}");
     }
 
@@ -99,7 +104,7 @@ public class RetakesAllocator : BasePlugin
             {
                 Helpers.RemoveWeapons(
                     player,
-                    item => WeaponHelpers.GetRoundTypeForWeapon(item) != selectedWeaponRoundType
+                    item => WeaponHelpers.GetRoundTypeForWeapon(item) == selectedWeaponRoundType
                 );
                 AllocateItemsForPlayer(player, new List<CsItem> { selectedWeapon.Value });
             }
@@ -161,21 +166,95 @@ public class RetakesAllocator : BasePlugin
     #region Events
 
     [GameEventHandler]
+    public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
+    {
+        if (Helpers.IsWarmup() || !Helpers.PlayerIsValid(@event.Userid) || !@event.Userid.PlayerPawn.IsValid)
+        {
+            return HookResult.Continue;
+        }
+
+        var item = Utils.ToEnum<CsItem>(@event.Weapon);
+        var team = (CsTeam)@event.Userid.TeamNum;
+        var playerId = Helpers.GetSteamId(@event.Userid);
+        var weaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(item);
+
+        // Log.Write($"item {item} team {team} player {playerId}");
+        // Log.Write($"curRound {_currentRoundType} weapon Round {weaponRoundType}");
+
+        if (weaponRoundType is not null &&
+            (weaponRoundType == _currentRoundType || weaponRoundType == RoundType.Pistol))
+        {
+            Queries.SetWeaponPreferenceForUser(
+                playerId,
+                team,
+                weaponRoundType.Value,
+                item
+            );
+        }
+        else
+        {
+            var removedAnyWeapons = Helpers.RemoveWeapons(@event.Userid,
+                i =>
+                {
+                    if (!WeaponHelpers.IsWeapon(i))
+                    {
+                        return i == item;
+                    }
+
+                    // Some weapons identify as other weapons, so we just remove them all
+                    return WeaponHelpers.GetRoundTypeForWeapon(i) == weaponRoundType;
+                });
+            // Log.Write($"Removed {item}? {removedAnyWeapons}");
+            if (removedAnyWeapons && _currentRoundType is not null && WeaponHelpers.IsWeapon(item))
+            {
+                var replacementItem = WeaponHelpers.GetWeaponForRoundType(_currentRoundType.Value, team,
+                    Queries.GetUserSettings(playerId));
+                // Log.Write($"Replacement item: {replacementItem}");
+                if (replacementItem is not null)
+                {
+                    AllocateItemsForPlayer(@event.Userid, new List<CsItem>
+                    {
+                        replacementItem.Value
+                    });
+                }
+            }
+        }
+
+        var playerPos = @event.Userid.PlayerPawn.Value?.AbsOrigin;
+
+        var pEntity = new CEntityIdentity(EntitySystem.FirstActiveEntity);
+        for (; pEntity is not null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
+        {
+            var p = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)pEntity.EntityInstance.Index);
+            if (!p.IsValid || !p.DesignerName.StartsWith("weapon") || playerPos is null || p.AbsOrigin is null)
+            {
+                continue;
+            }
+
+            var distance = Helpers.GetVectorDistance(playerPos, p.AbsOrigin);
+            if (distance < 20)
+            {
+                AddTimer(.5f, () =>
+                {
+                    if (p.IsValid && !p.OwnerEntity.IsValid)
+                    {
+                        p.Remove();
+                    }
+                });
+            }
+        }
+
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
     public HookResult OnPlayerTeam(EventPlayerTeam @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        var oldTeam = (CsTeam)@event.Oldteam;
         var playerTeam = (CsTeam)@event.Team;
 
-        switch (oldTeam)
-        {
-            case CsTeam.Terrorist:
-                _tPlayers.Remove(player);
-                break;
-            case CsTeam.CounterTerrorist:
-                _ctPlayers.Remove(player);
-                break;
-        }
+        _tPlayers.Remove(player);
+        _ctPlayers.Remove(player);
 
         switch (playerTeam)
         {
@@ -206,6 +285,14 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
+        if (Helpers.IsWarmup())
+        {
+            return HookResult.Continue;
+        }
+
+        Log.Write($"#T Players: {string.Join(",", _tPlayers.Select(Helpers.GetSteamId))}");
+        Log.Write($"#CT Players: {string.Join(",", _ctPlayers.Select(Helpers.GetSteamId))}");
+
         OnRoundPostStartHelper.Handle(
             _nextRoundType,
             _tPlayers,
@@ -219,6 +306,12 @@ public class RetakesAllocator : BasePlugin
         );
         _currentRoundType = currentRoundType;
         _nextRoundType = null;
+
+        var messagePrefix = $"[{ChatColors.Green}RetakesAllocator{ChatColors.White}] ";
+        Server.PrintToChatAll(
+            $"{messagePrefix}{Enum.GetName(_currentRoundType.Value)} Round"
+        );
+
         return HookResult.Continue;
     }
 
@@ -228,14 +321,12 @@ public class RetakesAllocator : BasePlugin
 
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items)
     {
-        // Helpers.RemoveArmor(player);
-        // Helpers.RemoveWeapons(player);
-        Log.Write($"Allocating items: {string.Join(",", items)}");
+        // Log.Write($"Allocating items: {string.Join(",", items)}");
         AddTimer(0.1f, () =>
         {
             if (!Helpers.PlayerIsValid(player))
             {
-                Log.Write($"Player is not valid when allocating item");
+                // Log.Write($"Player is not valid when allocating item");
                 return;
             }
 
@@ -257,7 +348,7 @@ public class RetakesAllocator : BasePlugin
         {
             if (player.PlayerPawn.Value?.ItemServices?.Handle is null || !Helpers.PlayerIsValid(player))
             {
-                Log.Write($"Player is not valid when giving defuse kit");
+                // Log.Write($"Player is not valid when giving defuse kit");
                 return;
             }
 

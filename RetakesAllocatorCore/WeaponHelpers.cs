@@ -153,6 +153,11 @@ public static class WeaponHelpers
         return _allWeapons.ToList();
     }
 
+    public static bool IsWeapon(CsItem item)
+    {
+        return _allWeapons.Contains(item);
+    }
+
     public static bool IsValidWeapon(RoundType roundType, CsTeam team, CsItem weapon)
     {
         if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
@@ -204,7 +209,7 @@ public static class WeaponHelpers
     {
         var weapons = new List<CsItem>();
         var weapon = GetWeaponForRoundType(RoundType.Pistol, team, userSetting);
-        if (weapon != null)
+        if (weapon is not null)
         {
             weapons.Add(weapon.Value);
         }
@@ -252,7 +257,7 @@ public static class WeaponHelpers
         return Utils.Choice(collectionToCheck.Where(IsUsableWeapon).ToList());
     }
 
-    private static CsItem? GetWeaponForRoundType(RoundType roundType, CsTeam team, UserSetting? userSetting)
+    public static CsItem? GetWeaponForRoundType(RoundType roundType, CsTeam team, UserSetting? userSetting)
     {
         CsItem? weapon = null;
         if (Configs.GetConfigData().CanPlayersSelectWeapons() && userSetting is not null)

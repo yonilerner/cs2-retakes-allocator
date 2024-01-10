@@ -26,7 +26,7 @@ public class UserSetting
 
     public void SetWeaponPreference(CsTeam team, RoundType roundType, CsItem? weapon)
     {
-        Log.Write($"Setting preference for {UserId} {team} {roundType} {weapon}");
+        // Log.Write($"Setting preference for {UserId} {team} {roundType} {weapon}");
         if (!WeaponPreferences.TryGetValue(team, out var roundPreferences))
         {
             roundPreferences = new();
