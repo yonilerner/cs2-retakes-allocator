@@ -100,7 +100,7 @@ public class RetakesAllocator : BasePlugin
             commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
         }
 
-        if (selectedWeapon is not null)
+        if (Helpers.IsFreezeTime() && selectedWeapon is not null)
         {
             var selectedWeaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(selectedWeapon.Value);
             if (selectedWeaponRoundType == RoundType.Pistol || selectedWeaponRoundType == _currentRoundType)

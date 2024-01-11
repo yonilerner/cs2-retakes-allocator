@@ -160,6 +160,11 @@ public static class Helpers
     {
         return GetGameRules().WarmupPeriod;
     }
+    
+    public static bool IsFreezeTime()
+    {
+        return GetGameRules().FreezePeriod;
+    }
 
     public static double GetVectorDistance(Vector v1, Vector v2)
     {
