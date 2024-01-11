@@ -86,12 +86,12 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var team = (CsTeam)player!.TeamNum;
+        var currentTeam = (CsTeam)player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
-            team,
+            currentTeam,
             false,
             out var selectedWeapon
         );
@@ -116,7 +116,7 @@ public class RetakesAllocator : BasePlugin
     }
 
     [ConsoleCommand("css_removegun")]
-    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnRemoveWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -125,12 +125,12 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var team = (CsTeam)player!.TeamNum;
+        var currentTeam = (CsTeam)player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
-            team,
+            currentTeam,
             true,
             out _
         );
