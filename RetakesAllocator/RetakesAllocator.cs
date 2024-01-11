@@ -18,7 +18,7 @@ namespace RetakesAllocator;
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
-    public override string ModuleVersion => "1.0.1";
+    public override string ModuleVersion => "1.0.2";
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
