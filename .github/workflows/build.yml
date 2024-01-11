@@ -1,10 +1,13 @@
-﻿name: Build the plugin
+﻿name: Build RetakesAllocator.zip
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  release:
+    types:
+      - created
 
 jobs:
   build:
@@ -24,8 +27,20 @@ jobs:
       - name: Package
         working-directory: ${{github.workspace}}/RetakesAllocator/
         run: chmod +x release.bash; ./release.bash
-      - name: Publish DLL artifact
+      - name: Publish Archive for Branch
         uses: actions/upload-artifact@v4
+        if: !startsWith(github.ref, 'refs/tags/')
         with:
-          name: RetakesAllocator-${{github.sha}}
+          name: RetakesAllocator-${{github.sha}}.zip
           path: ${{github.workspace}}/RetakesAllocator/bin/Release/RetakesAllocator.zip
+      - name: Publish Archive for Release
+        uses: actions/upload-artifact@v4
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: RetakesAllocator-${{github.ref_name}}.zip
+          path: ${{github.workspace}}/RetakesAllocator/bin/Release/RetakesAllocator.zip
+      - name: Attach Release Files
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: RetakesAllocator-${{github.ref_name}}.zip
