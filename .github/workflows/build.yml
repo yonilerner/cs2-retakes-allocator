@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -22,10 +22,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
-        shell: pwsh
         run: dotnet build --no-restore -c Release
+      - name: Package
+        run: ./release.sh
       - name: Publish DLL artifact
         uses: actions/upload-artifact@v4
         with:
           name: RetakesAllocator-${{github.ref}}-${{github.sha}}
-          path: ./bin/Release/net7.0/RetakesAllocator.zip
+          path: RetakesAllocator.zip

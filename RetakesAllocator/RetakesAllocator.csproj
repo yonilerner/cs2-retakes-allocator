@@ -18,11 +18,11 @@
       <ProjectReference Include="..\RetakesAllocatorCore\RetakesAllocatorCore.csproj" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug'">
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug' and '$(OS)' == 'Windows_NT'">
         <Exec Command="powershell mkdir -p &quot;$(CopyPath)&quot;" ContinueOnError="true" />
         <Exec Command="powershell Copy-Item -Recurse -Force &quot;$(TargetDir)* $(CopyPath)&quot; "/>
     </Target>
-    <Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release'">
+    <Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release' and '$(OS)' == 'Windows_NT'">
         <Exec Command="powershell rm -Recurse -Force &quot;$(TargetDir)..\$(TargetName)&quot; " ContinueOnError="true"/>
         <Exec Command="powershell mkdir -p &quot;$(TargetDir)..\$(TargetName)&quot;" />
         <Exec Command="powershell cp -Force &quot;$(TargetDir)* $(TargetDir)..\$(TargetName)&quot;" />
