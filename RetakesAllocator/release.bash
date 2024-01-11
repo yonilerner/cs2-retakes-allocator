@@ -1,4 +1,6 @@
-﻿TARGET_NAME="RetakesAllocator"
+﻿#!/usr/bin/env bash
+
+TARGET_NAME="RetakesAllocator"
 TARGET_DIR="./bin/Release/net7.0"
 NEW_DIR="$TARGET_DIR/../$TARGET_NAME"
 
@@ -6,7 +8,7 @@ echo $TARGET_NAME
 echo $TARGET_DIR
 echo $NEW_DIR
 
-echo ls $TARGET_DIR/**
+ls $TARGET_DIR/**
 
 echo mkdir -p $NEW_DIR
 mkdir -p $NEW_DIR
