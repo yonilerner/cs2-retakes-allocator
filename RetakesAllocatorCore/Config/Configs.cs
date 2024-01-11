@@ -12,7 +12,7 @@ public static class Configs
     private static string? _configFilePath;
     private static ConfigData? _configData;
 
-    private static readonly JsonSerializerOptions SerializationOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions SerializationOptions = new()
     {
         Converters =
         {

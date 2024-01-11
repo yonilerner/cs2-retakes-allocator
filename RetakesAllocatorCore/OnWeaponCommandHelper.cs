@@ -7,7 +7,7 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
-    public static string? Handle(ICollection<string> args, ulong userId, CsTeam team, bool remove,
+    public static string? Handle(ICollection<string> args, ulong userId, CsTeam currentTeam, bool remove,
         out CsItem? outWeapon)
     {
         outWeapon = null;
@@ -18,6 +18,7 @@ public class OnWeaponCommandHelper
 
         var weaponInput = args.ElementAt(0).Trim();
 
+        CsTeam team;
         var teamInput = args.ElementAtOrDefault(1)?.Trim().ToLower();
         if (teamInput is not null)
         {
@@ -28,6 +29,14 @@ public class OnWeaponCommandHelper
             }
 
             team = parsedTeamInput;
+        }
+        else if (currentTeam is CsTeam.None or CsTeam.Spectator)
+        {
+            return "You must join a team before running this command.";
+        }
+        else
+        {
+            team = currentTeam;
         }
 
         var foundWeapons = WeaponHelpers.FindValidWeaponsByName(weaponInput);
@@ -62,7 +71,13 @@ public class OnWeaponCommandHelper
         else
         {
             Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, weapon);
-            outWeapon = weapon;
+            
+            if (currentTeam == team)
+            {
+                // Only set the outWeapon if the user is setting the preference for their current team
+                outWeapon = weapon;
+            }
+
             return $"Weapon '{weapon}' is now your {roundType} preference for {team}.";
         }
     }

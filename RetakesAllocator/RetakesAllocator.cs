@@ -11,6 +11,7 @@ using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using SQLitePCL;
+using static RetakesAllocatorCore.PluginInfo;
 
 namespace RetakesAllocator;
 
@@ -18,7 +19,7 @@ namespace RetakesAllocator;
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
-    public override string ModuleVersion => "1.0.3";
+    public override string ModuleVersion => PluginInfo.Version;
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
@@ -68,8 +69,15 @@ public class RetakesAllocator : BasePlugin
 
     #region Commands
 
+    [ConsoleCommand("css_guns")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        commandInfo.ReplyToCommand($"{MessagePrefix}Use the !gun command to set your weapons.");
+    }
+    
     [ConsoleCommand("css_gun")]
-    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -78,18 +86,18 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var team = (CsTeam)player!.TeamNum;
+        var currentTeam = (CsTeam)player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
-            team,
+            currentTeam,
             false,
             out var selectedWeapon
         );
         if (result is not null)
         {
-            commandInfo.ReplyToCommand(result);
+            commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
         }
 
         if (selectedWeapon is not null)
@@ -108,7 +116,7 @@ public class RetakesAllocator : BasePlugin
     }
 
     [ConsoleCommand("css_removegun")]
-    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnRemoveWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -117,18 +125,18 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var team = (CsTeam)player!.TeamNum;
+        var currentTeam = (CsTeam)player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
-            team,
+            currentTeam,
             true,
             out _
         );
         if (result is not null)
         {
-            commandInfo.ReplyToCommand(result);
+            commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
         }
     }
 
@@ -141,12 +149,12 @@ public class RetakesAllocator : BasePlugin
         var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
         if (roundType is null)
         {
-            commandInfo.ReplyToCommand($"Invalid round type: {roundTypeInput}.");
+            commandInfo.ReplyToCommand($"{MessagePrefix}Invalid round type: {roundTypeInput}.");
         }
         else
         {
             _nextRoundType = roundType;
-            commandInfo.ReplyToCommand($"Next round will be a {roundType} round.");
+            commandInfo.ReplyToCommand($"{MessagePrefix}Next round will be a {roundType} round.");
         }
     }
 
@@ -154,7 +162,7 @@ public class RetakesAllocator : BasePlugin
     [RequiresPermissions("@css/root")]
     public void OnReloadAllocatorConfigCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
-        commandInfo.ReplyToCommand($"Reloading config for version {ModuleVersion}");
+        commandInfo.ReplyToCommand($"{MessagePrefix}Reloading config for version {ModuleVersion}");
         Configs.Load(ModuleDirectory);
     }
 
@@ -289,10 +297,9 @@ public class RetakesAllocator : BasePlugin
         );
         _currentRoundType = currentRoundType;
         _nextRoundType = null;
-
-        var messagePrefix = $"[{ChatColors.Green}RetakesAllocator{ChatColors.White}] ";
+        
         Server.PrintToChatAll(
-            $"{messagePrefix}{Enum.GetName(_currentRoundType.Value)} Round"
+            $"{MessagePrefix}{Enum.GetName(_currentRoundType.Value)} Round"
         );
 
         return HookResult.Continue;
