@@ -2,7 +2,7 @@
 
 TARGET_NAME="RetakesAllocator"
 TARGET_DIR="./bin/Release/net7.0"
-NEW_DIR="$TARGET_DIR/../$TARGET_NAME"
+NEW_DIR="$TARGET_DIR/../$TARGET_NAME-2"
 
 echo $TARGET_NAME
 echo $TARGET_DIR
@@ -19,5 +19,4 @@ cp -rf "$TARGET_DIR/runtimes/win-x64" "$NEW_DIR/runtimes"
 echo zip -r "$TARGET_NAME.zip" "$NEW_DIR/"
 zip -r "$TARGET_NAME.zip" "$NEW_DIR/"
 
-ls ./bin
-ls ./bin/Release
+ls ./bin/**
