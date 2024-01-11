@@ -18,3 +18,6 @@ echo cp -rf "$TARGET_DIR/runtimes/win-x64" "$NEW_DIR/runtimes"
 cp -rf "$TARGET_DIR/runtimes/win-x64" "$NEW_DIR/runtimes"
 echo zip -r "$TARGET_NAME.zip" "$NEW_DIR/"
 zip -r "$TARGET_NAME.zip" "$NEW_DIR/"
+
+ls .bin
+ls .bin/Release
