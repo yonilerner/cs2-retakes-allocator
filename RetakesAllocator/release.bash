@@ -10,13 +10,15 @@ echo $NEW_DIR
 
 ls $TARGET_DIR/**
 
-echo mkdir -p $NEW_DIR
-mkdir -p $NEW_DIR
+#echo mkdir -p $NEW_DIR
+#mkdir -p $NEW_DIR
+cp -r $TARGET_DIR $NEW_DIR
 echo cp -rf "$TARGET_DIR/runtimes/linux-x64" "$NEW_DIR/runtimes"
 cp -rf "$TARGET_DIR/runtimes/linux-x64" "$NEW_DIR/runtimes"
 echo cp -rf "$TARGET_DIR/runtimes/win-x64" "$NEW_DIR/runtimes"
 cp -rf "$TARGET_DIR/runtimes/win-x64" "$NEW_DIR/runtimes"
-echo zip -r "$TARGET_NAME.zip" "$NEW_DIR/"
-zip -r "./bin/Release/$TARGET_NAME.zip" "$NEW_DIR/"
+#echo zip -r "$TARGET_NAME.zip" "$NEW_DIR/"
+#zip -r "./bin/Release/$TARGET_NAME.zip" "$NEW_DIR/"
 
 ls ./bin/**
+ls ./bin/Release/RetakesAllocator
