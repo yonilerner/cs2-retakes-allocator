@@ -26,5 +26,5 @@ jobs:
       - name: Publish DLL artifact
         uses: actions/upload-artifact@v4
         with:
-          name: $PROJECT_NAME-$GITHUB_REF_NAME-$GITHUB_SHA
-          path: ./bin/Release/net7.0/$PROJECT_NAME.zip
+          name: RetakesAllocator-${{github.ref}}-${{github.sha}}
+          path: ./bin/Release/net7.0/RetakesAllocator.zip
