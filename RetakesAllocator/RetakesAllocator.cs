@@ -101,7 +101,8 @@ public class RetakesAllocator : BasePlugin
                     player,
                     item => WeaponHelpers.GetRoundTypeForWeapon(item) == selectedWeaponRoundType
                 );
-                AllocateItemsForPlayer(player, new List<CsItem> { selectedWeapon.Value });
+                var slot = selectedWeaponRoundType == RoundType.Pistol ? "slot2" : "slot1";
+                AllocateItemsForPlayer(player, new List<CsItem> { selectedWeapon.Value }, slot);
             }
         }
     }
@@ -164,14 +165,15 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
     {
-        if (Helpers.IsWarmup() || !Helpers.PlayerIsValid(@event.Userid) || !@event.Userid.PlayerPawn.IsValid)
+        var player = @event.Userid;
+        if (Helpers.IsWarmup() || !Helpers.PlayerIsValid(player) || !player.PlayerPawn.IsValid)
         {
             return HookResult.Continue;
         }
 
         var item = Utils.ToEnum<CsItem>(@event.Weapon);
-        var team = (CsTeam)@event.Userid.TeamNum;
-        var playerId = Helpers.GetSteamId(@event.Userid);
+        var team = (CsTeam)player.TeamNum;
+        var playerId = Helpers.GetSteamId(player);
         var weaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(item);
 
         // Log.Write($"item {item} team {team} player {playerId}");
@@ -189,7 +191,7 @@ public class RetakesAllocator : BasePlugin
         }
         else
         {
-            var removedAnyWeapons = Helpers.RemoveWeapons(@event.Userid,
+            var removedAnyWeapons = Helpers.RemoveWeapons(player,
                 i =>
                 {
                     if (!WeaponHelpers.IsWeapon(i))
@@ -201,6 +203,9 @@ public class RetakesAllocator : BasePlugin
                     return WeaponHelpers.GetRoundTypeForWeapon(i) == weaponRoundType;
                 });
             // Log.Write($"Removed {item}? {removedAnyWeapons}");
+
+            var replacedWeapon = false;
+            var slotToSelect = _currentRoundType == RoundType.Pistol ? "slot2" : "slot1";
             if (removedAnyWeapons && _currentRoundType is not null && WeaponHelpers.IsWeapon(item))
             {
                 var replacementItem = WeaponHelpers.GetWeaponForRoundType(_currentRoundType.Value, team,
@@ -208,15 +213,27 @@ public class RetakesAllocator : BasePlugin
                 // Log.Write($"Replacement item: {replacementItem}");
                 if (replacementItem is not null)
                 {
-                    AllocateItemsForPlayer(@event.Userid, new List<CsItem>
+                    replacedWeapon = true;
+                    AllocateItemsForPlayer(player, new List<CsItem>
                     {
                         replacementItem.Value
-                    });
+                    }, slotToSelect);
                 }
+            }
+
+            if (!replacedWeapon)
+            {
+                AddTimer(0.1f, () =>
+                {
+                    if (Helpers.PlayerIsValid(player) && player.UserId is not null)
+                    {
+                        NativeAPI.IssueClientCommand((int)player.UserId, slotToSelect);
+                    }
+                });
             }
         }
 
-        var playerPos = @event.Userid.PlayerPawn.Value?.AbsOrigin;
+        var playerPos = player.PlayerPawn.Value?.AbsOrigin;
 
         var pEntity = new CEntityIdentity(EntitySystem.FirstActiveEntity);
         for (; pEntity is not null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
@@ -234,7 +251,7 @@ public class RetakesAllocator : BasePlugin
             }
 
             var distance = Helpers.GetVectorDistance(playerPos, p.AbsOrigin);
-            if (distance < 20)
+            if (distance < 30)
             {
                 AddTimer(.5f, () =>
                 {
@@ -285,7 +302,7 @@ public class RetakesAllocator : BasePlugin
 
     #region Helpers
 
-    private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items)
+    private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
         // Log.Write($"Allocating items: {string.Join(",", items)}");
         AddTimer(0.1f, () =>
@@ -301,9 +318,15 @@ public class RetakesAllocator : BasePlugin
                 player.GiveNamedItem(item);
             }
 
-            if ((CsTeam)player.TeamNum == CsTeam.Terrorist)
+            if (slotToSelect is not null)
             {
-                AddTimer(0.1f, () => { NativeAPI.IssueClientCommand((int)player.UserId!, "slot5"); });
+                AddTimer(0.1f, () =>
+                {
+                    if (Helpers.PlayerIsValid(player) && player.UserId is not null)
+                    {
+                        NativeAPI.IssueClientCommand((int)player.UserId, slotToSelect);
+                    }
+                });
             }
         });
     }

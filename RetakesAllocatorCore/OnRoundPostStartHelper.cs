@@ -13,7 +13,7 @@ public class OnRoundPostStartHelper
         Func<T?, ulong> getSteamId,
         Func<T, CsTeam> getTeam,
         Action<T> giveDefuseKit,
-        Action<T, ICollection<CsItem>> allocateItemsForPlayer,
+        Action<T, ICollection<CsItem>, string?> allocateItemsForPlayer,
         out RoundType currentRoundType
     )
     {
@@ -90,7 +90,7 @@ public class OnRoundPostStartHelper
                 items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
             }
 
-            allocateItemsForPlayer(player, items);
+            allocateItemsForPlayer(player, items, team == CsTeam.Terrorist ? "slot5" : "slot1");
         }
     }
 }
