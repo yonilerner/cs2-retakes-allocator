@@ -19,6 +19,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
+        shell: bash
         run: dotnet build --no-restore -c Release
       - name: Package
         run: chmod +x ${{github.workspace}}/RetakesAllocator/release.sh; ${{github.workspace}}/RetakesAllocator/release.sh
