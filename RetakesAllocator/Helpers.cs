@@ -7,7 +7,7 @@ using RetakesAllocatorCore;
 
 namespace RetakesAllocator;
 
-public class Helpers
+public static class Helpers
 {
     public static bool PlayerIsValid(CCSPlayerController? player)
     {
@@ -141,13 +141,14 @@ public class Helpers
         return removed;
     }
 
-    public static CCSGameRules GetGameRules()
+    private static CCSGameRules GetGameRules()
     {
         var gameRulesEntities = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules");
         var gameRules = gameRulesEntities.First().GameRules;
+        
         if (gameRules is null)
         {
-            var message = "Game rules were null.";
+            const string message = "Game rules were null.";
             Log.Write(message);
             throw new Exception(message);
         }
