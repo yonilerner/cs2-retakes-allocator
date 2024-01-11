@@ -1,7 +1,5 @@
 ﻿# CS2 Retakes Allocator
 
-Very early version, should be working as described below.
-
 ## Retakes
 
 This plugin is made to run alongside B3none's retakes implementation: https://github.com/b3none/cs2-retakes
