@@ -20,7 +20,7 @@
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug'">
         <Exec Command="powershell mkdir -p &quot;$(CopyPath)&quot;" ContinueOnError="true" />
-        <Exec Command=" powershell Copy-Item -Recurse -Force &quot;$(TargetDir)* $(CopyPath)&quot; "/>
+        <Exec Command="powershell Copy-Item -Recurse -Force &quot;$(TargetDir)* $(CopyPath)&quot; "/>
     </Target>
     <Target Name="PostBuildRelease" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release'">
         <Exec Command="powershell rm -Recurse -Force &quot;$(TargetDir)..\$(TargetName)&quot; " ContinueOnError="true"/>
