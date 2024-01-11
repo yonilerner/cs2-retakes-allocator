@@ -26,4 +26,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: RetakesAllocator-${{github.ref}}-${{github.sha}}
-          path: RetakesAllocator.zip
+          path: ${{github.workspace}}/RetakesAllocator/bin/Release/RetakesAllocator.zip
