@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: dotnet build --no-restore -c Release
       - name: Package
-        run: chmod +x ${{github.workspace}}/RetakesAllocator/release.sh; ${{github.workspace}}/RetakesAllocator/release.sh
+        run: chmod +x ${{github.workspace}}/RetakesAllocator/release.bash; ${{github.workspace}}/RetakesAllocator/release.sh
       - name: Publish DLL artifact
         uses: actions/upload-artifact@v4
         with:
