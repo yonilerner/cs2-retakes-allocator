@@ -227,12 +227,16 @@ public class RetakesAllocator : BasePlugin
         var team = (CsTeam) player.TeamNum;
         var playerId = Helpers.GetSteamId(player);
         var weaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(item);
+        var isSniper = WeaponHelpers.IsSniper(team, item);
+
 
         // Log.Write($"item {item} team {team} player {playerId}");
         // Log.Write($"curRound {_currentRoundType} weapon Round {weaponRoundType}");
 
         if (
             Helpers.IsWeaponAllocationAllowed() &&
+            // Snipers are treated like un-buy-able weapons, but at the end we'll set the user preference
+            !isSniper &&
             weaponRoundType is not null &&
             (weaponRoundType == _currentRoundType || weaponRoundType == RoundType.Pistol)
         )
@@ -315,6 +319,22 @@ public class RetakesAllocator : BasePlugin
                         p.Remove();
                     }
                 });
+            }
+        }
+
+        if (isSniper)
+        {
+            var itemName = Enum.GetName(item);
+            if (itemName is not null)
+            {
+                var message = OnWeaponCommandHelper.Handle(
+                    new List<string> {itemName},
+                    Helpers.GetSteamId(player),
+                    team,
+                    false,
+                    out _
+                );
+                player.PrintToChat(message);
             }
         }
 
