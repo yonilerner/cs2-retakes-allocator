@@ -16,8 +16,7 @@ public class WeaponsMenu
     
     private void OnMenuTimeout(CCSPlayerController player)
     {
-        player.PrintToChat($"{MessagePrefix}You have finished setting up your weapons!");
-        player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
+        player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {DefaultMenuTimeout} seconds!");
 
         PlayersInGunsMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
@@ -36,6 +35,9 @@ public class WeaponsMenu
     
     private void OnMenuComplete(CCSPlayerController player)
     {
+        player.PrintToChat($"{MessagePrefix}You have finished setting up your weapons!");
+        player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
+        
         PlayersInGunsMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
         _menuTimeoutTimers.Remove(player);
@@ -47,9 +49,6 @@ public class WeaponsMenu
         {
             return;
         }
-        
-        player.PrintToChat($"{MessagePrefix}You have finished setting up your weapons!");
-        player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
 
         OnMenuComplete(player);
     }
