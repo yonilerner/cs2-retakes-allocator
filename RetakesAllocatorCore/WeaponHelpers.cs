@@ -56,7 +56,7 @@ public static class WeaponHelpers
         CsItem.MAG7,
     };
 
-    private static readonly int _maxSmgItemValue = (int)CsItem.UMP;
+    private static readonly int _maxSmgItemValue = (int) CsItem.UMP;
 
     private static readonly ICollection<CsItem> _tRifles = new HashSet<CsItem>
     {
@@ -99,7 +99,7 @@ public static class WeaponHelpers
     };
 
     private static readonly ICollection<CsItem> _allWeapons = Enum.GetValues<CsItem>()
-        .Where(item => (int)item >= 200 && (int)item < 500)
+        .Where(item => (int) item >= 200 && (int) item < 500)
         .ToHashSet();
 
     private static readonly Dictionary<
@@ -110,17 +110,17 @@ public static class WeaponHelpers
         {
             CsTeam.Terrorist, new()
             {
-                { RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_tPistols)) },
-                { RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_tMidRange)) },
-                { RoundType.FullBuy, _tRifles.Concat(_sharedSnipers).Concat(_tSnipers).Concat(_heavys).ToHashSet() },
+                {RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_tPistols))},
+                {RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_tMidRange))},
+                {RoundType.FullBuy, _tRifles.Concat(_sharedSnipers).Concat(_tSnipers).Concat(_heavys).ToHashSet()},
             }
         },
         {
             CsTeam.CounterTerrorist, new()
             {
-                { RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_ctPistols)) },
-                { RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_ctMidRange)) },
-                { RoundType.FullBuy, _ctRifles.Concat(_sharedSnipers).Concat(_ctSnipers).Concat(_heavys).ToHashSet() },
+                {RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_ctPistols))},
+                {RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_ctMidRange))},
+                {RoundType.FullBuy, _ctRifles.Concat(_sharedSnipers).Concat(_ctSnipers).Concat(_heavys).ToHashSet()},
             }
         }
     };
@@ -133,19 +133,24 @@ public static class WeaponHelpers
         {
             CsTeam.Terrorist, new()
             {
-                { RoundType.Pistol, CsItem.Glock },
-                { RoundType.HalfBuy, CsItem.Mac10 },
-                { RoundType.FullBuy, CsItem.AK47 },
+                {RoundType.Pistol, CsItem.Glock},
+                {RoundType.HalfBuy, CsItem.Mac10},
+                {RoundType.FullBuy, CsItem.AK47},
             }
         },
         {
             CsTeam.CounterTerrorist, new()
             {
-                { RoundType.Pistol, CsItem.USPS },
-                { RoundType.HalfBuy, CsItem.MP9 },
-                { RoundType.FullBuy, CsItem.M4A4 },
+                {RoundType.Pistol, CsItem.USPS},
+                {RoundType.HalfBuy, CsItem.MP9},
+                {RoundType.FullBuy, CsItem.M4A4},
             }
         }
+    };
+
+    private static readonly Dictionary<string, CsItem> _weaponNameSearchOverrides = new()
+    {
+        {"m4a1", CsItem.M4A1S}
     };
 
     public static List<CsItem> GetAllWeapons()
@@ -230,6 +235,11 @@ public static class WeaponHelpers
 
     private static ICollection<CsItem> FindItemsByName(string needle)
     {
+        if (_weaponNameSearchOverrides.TryGetValue(needle, out var nameOverride))
+        {
+            return new List<CsItem> {nameOverride};
+        }
+
         return Enum.GetNames<CsItem>()
             .Where(name => name.ToLower().Contains(needle.ToLower()))
             .Select(Enum.Parse<CsItem>)
@@ -249,7 +259,7 @@ public static class WeaponHelpers
             RoundType.HalfBuy =>
                 _sharedMidRange
                     .Concat(team == CsTeam.Terrorist ? _tMidRange : _ctMidRange)
-                    .Where(item => (int)item <= _maxSmgItemValue)
+                    .Where(item => (int) item <= _maxSmgItemValue)
                     .ToHashSet(),
             RoundType.FullBuy => team == CsTeam.Terrorist ? _tRifles : _ctRifles,
             _ => _sharedPistols,
