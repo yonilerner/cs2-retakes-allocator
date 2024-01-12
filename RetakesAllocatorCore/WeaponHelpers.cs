@@ -164,6 +164,11 @@ public static class WeaponHelpers
         return _allWeapons.Contains(item);
     }
 
+    public static ICollection<CsItem> GetPossibleWeaponsForRoundType(RoundType roundType, CsTeam team)
+    {
+        return _validWeaponsByTeamAndRoundType[team][roundType];
+    }
+
     public static bool IsValidWeapon(RoundType roundType, CsTeam team, CsItem weapon)
     {
         if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)

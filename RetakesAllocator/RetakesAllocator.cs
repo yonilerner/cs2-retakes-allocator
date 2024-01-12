@@ -10,6 +10,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
+using RetakesAllocatorCore.Menus;
 using SQLitePCL;
 using static RetakesAllocatorCore.PluginInfo;
 
@@ -23,6 +24,7 @@ public class RetakesAllocator : BasePlugin
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
+    private WeaponsMenu _weaponsMenu = new();
 
     #region Setup
 
@@ -73,9 +75,25 @@ public class RetakesAllocator : BasePlugin
     [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
-        commandInfo.ReplyToCommand(
-            $"{MessagePrefix}Eventually this will be a weapon menu. For now, please use !gun <weapon>."
-        );
+        HandleGunsCommand(player, commandInfo);
+    }
+    
+    private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (player == null || !player.IsValid)
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}This command can only be executed by a valid player.");
+            return;
+        }
+
+        // If we can't add the player, they're already in the menu
+        if (!_weaponsMenu.PlayersInGunsMenu.Add(player))
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}You are already in the gun menu!");
+            return;
+        }
+
+        _weaponsMenu.OpenTPrimaryMenu(player);
     }
 
     [ConsoleCommand("css_gun")]
