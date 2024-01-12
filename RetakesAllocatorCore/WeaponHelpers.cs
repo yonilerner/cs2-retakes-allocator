@@ -229,6 +229,17 @@ public static class WeaponHelpers
         };
     }
 
+    public static ICollection<T> SelectSnipers<T>(ICollection<T> players)
+    {
+        var player = Utils.Choice(players);
+        if (player is null)
+        {
+            return new HashSet<T>();
+        }
+
+        return new HashSet<T> {player};
+    }
+
     public static bool IsUsableWeapon(CsItem weapon)
     {
         return Configs.GetConfigData().UsableWeapons.Contains(weapon);

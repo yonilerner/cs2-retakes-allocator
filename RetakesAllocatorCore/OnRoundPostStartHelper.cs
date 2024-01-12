@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
+﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
@@ -49,6 +50,14 @@ public class OnRoundPostStartHelper
 
         var defusingPlayer = Utils.Choice(ctPlayers);
 
+        ICollection<T> tSnipers = new HashSet<T>();
+        ICollection<T> ctSnipers = new HashSet<T>();
+        if (roundType == RoundType.FullBuy)
+        {
+            tSnipers = WeaponHelpers.SelectSnipers(tPlayers);
+            ctSnipers = WeaponHelpers.SelectSnipers(ctPlayers);
+        }
+
         foreach (var player in allPlayers)
         {
             var team = getTeam(player);
@@ -60,8 +69,17 @@ public class OnRoundPostStartHelper
                 team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
             };
 
+            var playerWeaponsRoundType = roundType;
+            switch (team)
+            {
+                case CsTeam.Terrorist when tSnipers.Contains(player):
+                case CsTeam.CounterTerrorist when ctSnipers.Contains(player):
+                    playerWeaponsRoundType = RoundType.Pistol;
+                    break;
+            }
+
             items.AddRange(
-                WeaponHelpers.GetWeaponsForRoundType(roundType, team, userSettings)
+                WeaponHelpers.GetWeaponsForRoundType(playerWeaponsRoundType, team, userSettings)
             );
 
             if (team == CsTeam.CounterTerrorist)
