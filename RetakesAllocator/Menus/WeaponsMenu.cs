@@ -1,10 +1,11 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using RetakesAllocatorCore;
 using static RetakesAllocatorCore.PluginInfo;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
-namespace RetakesAllocatorCore.Menus;
+namespace RetakesAllocator.Menus;
 
 public class WeaponsMenu
 {

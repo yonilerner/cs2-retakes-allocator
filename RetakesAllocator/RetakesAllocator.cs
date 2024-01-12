@@ -10,7 +10,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
-using RetakesAllocatorCore.Menus;
+using RetakesAllocator.Menus;
 using SQLitePCL;
 using static RetakesAllocatorCore.PluginInfo;
 
