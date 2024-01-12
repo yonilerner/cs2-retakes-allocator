@@ -52,7 +52,12 @@ public class WeaponsMenu
         OnMenuComplete(player);
     }
 
-    public void OpenTPrimaryMenu(CCSPlayerController player)
+    public void OpenGunsMenu(CCSPlayerController player)
+    {
+        OpenTPrimaryMenu(player);
+    }
+
+    private void OpenTPrimaryMenu(CCSPlayerController player)
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a T Primary Weapon");
 
@@ -113,7 +118,7 @@ public class WeaponsMenu
         OpenCtPrimaryMenu(player);
     }
 
-    public void OpenCtPrimaryMenu(CCSPlayerController player)
+    private void OpenCtPrimaryMenu(CCSPlayerController player)
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a CT Primary Weapon");
 

@@ -93,7 +93,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        _weaponsMenu.OpenTPrimaryMenu(player);
+        _weaponsMenu.OpenGunsMenu(player);
     }
 
     [ConsoleCommand("css_gun")]
