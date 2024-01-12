@@ -5,14 +5,8 @@ using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorTest;
 
-public class DbTests
+public class DbTests : BaseTestFixture
 {
-    [SetUp]
-    public void Setup()
-    {
-        Queries.Wipe();
-    }
-
     [Test]
     public void TestGetUsersSettings()
     {

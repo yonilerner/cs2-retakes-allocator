@@ -3,14 +3,8 @@ using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorTest;
 
-public class RoundTypeTests
+public class RoundTypeTests : BaseTestFixture
 {
-    [SetUp]
-    public void Setup()
-    {
-        Configs.Load(".");
-    }
-
     [Test]
     [TestCase(10, .1f)]
     [TestCase(100, 1f)]
