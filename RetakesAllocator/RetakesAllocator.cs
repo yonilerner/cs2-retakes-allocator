@@ -73,12 +73,17 @@ public class RetakesAllocator : BasePlugin
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
-        commandInfo.ReplyToCommand($"{MessagePrefix}Use the !gun command to set your weapons.");
+        HandleWeaponCommand(player, commandInfo);
     }
-    
+
     [ConsoleCommand("css_gun")]
     [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        HandleWeaponCommand(player, commandInfo);
+    }
+
+    private void HandleWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
         {
@@ -86,7 +91,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var currentTeam = (CsTeam)player!.TeamNum;
+        var currentTeam = (CsTeam) player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
@@ -110,7 +115,7 @@ public class RetakesAllocator : BasePlugin
                     item => WeaponHelpers.GetRoundTypeForWeapon(item) == selectedWeaponRoundType
                 );
                 var slot = selectedWeaponRoundType == RoundType.Pistol ? "slot2" : "slot1";
-                AllocateItemsForPlayer(player, new List<CsItem> { selectedWeapon.Value }, slot);
+                AllocateItemsForPlayer(player, new List<CsItem> {selectedWeapon.Value}, slot);
             }
         }
     }
@@ -125,7 +130,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
-        var currentTeam = (CsTeam)player!.TeamNum;
+        var currentTeam = (CsTeam) player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
@@ -180,7 +185,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var item = Utils.ToEnum<CsItem>(@event.Weapon);
-        var team = (CsTeam)player.TeamNum;
+        var team = (CsTeam) player.TeamNum;
         var playerId = Helpers.GetSteamId(player);
         var weaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(item);
 
@@ -235,7 +240,7 @@ public class RetakesAllocator : BasePlugin
                 {
                     if (Helpers.PlayerIsValid(player) && player.UserId is not null)
                     {
-                        NativeAPI.IssueClientCommand((int)player.UserId, slotToSelect);
+                        NativeAPI.IssueClientCommand((int) player.UserId, slotToSelect);
                     }
                 });
             }
@@ -246,7 +251,7 @@ public class RetakesAllocator : BasePlugin
         var pEntity = new CEntityIdentity(EntitySystem.FirstActiveEntity);
         for (; pEntity is not null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
         {
-            var p = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)pEntity.EntityInstance.Index);
+            var p = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int) pEntity.EntityInstance.Index);
             if (
                 !p.IsValid ||
                 !p.DesignerName.StartsWith("weapon") ||
@@ -297,7 +302,7 @@ public class RetakesAllocator : BasePlugin
         );
         _currentRoundType = currentRoundType;
         _nextRoundType = null;
-        
+
         Server.PrintToChatAll(
             $"{MessagePrefix}{Enum.GetName(_currentRoundType.Value)} Round"
         );
@@ -331,7 +336,7 @@ public class RetakesAllocator : BasePlugin
                 {
                     if (Helpers.PlayerIsValid(player) && player.UserId is not null)
                     {
-                        NativeAPI.IssueClientCommand((int)player.UserId, slotToSelect);
+                        NativeAPI.IssueClientCommand((int) player.UserId, slotToSelect);
                     }
                 });
             }
