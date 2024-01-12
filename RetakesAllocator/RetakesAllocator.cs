@@ -70,9 +70,12 @@ public class RetakesAllocator : BasePlugin
     #region Commands
 
     [ConsoleCommand("css_guns")]
-    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
+        commandInfo.ReplyToCommand(
+            $"{MessagePrefix}Note: !guns may change in the future. Please use !gun to set guns by name."
+        );
         HandleWeaponCommand(player, commandInfo);
     }
 
