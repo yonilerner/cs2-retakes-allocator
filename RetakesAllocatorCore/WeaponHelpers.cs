@@ -235,13 +235,14 @@ public static class WeaponHelpers
 
     private static ICollection<CsItem> FindItemsByName(string needle)
     {
+        needle = needle.ToLower();
         if (_weaponNameSearchOverrides.TryGetValue(needle, out var nameOverride))
         {
             return new List<CsItem> {nameOverride};
         }
 
         return Enum.GetNames<CsItem>()
-            .Where(name => name.ToLower().Contains(needle.ToLower()))
+            .Where(name => name.ToLower().Contains(needle))
             .Select(Enum.Parse<CsItem>)
             .ToList();
     }
