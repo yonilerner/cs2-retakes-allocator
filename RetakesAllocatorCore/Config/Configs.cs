@@ -80,23 +80,6 @@ public static class Configs
 
         File.WriteAllText(_configFilePath, JsonSerializer.Serialize(configData, SerializationOptions));
     }
-
-    public static ConfigData GetDefaultConfigData()
-    {
-        return new ConfigData
-        {
-            UsableWeapons = WeaponHelpers.GetAllWeapons(),
-            AllowedWeaponSelectionTypes = Enum.GetValues<WeaponSelectionType>().ToList(),
-            RoundTypePercentages = new()
-            {
-                {RoundType.Pistol, 15},
-                {RoundType.HalfBuy, 25},
-                {RoundType.FullBuy, 60},
-            },
-            MigrateOnStartup = true,
-            AllowAllocationAfterFreezeTime = false,
-        };
-    }
 }
 
 public enum WeaponSelectionType
