@@ -164,7 +164,7 @@ public static class Helpers
 
     public static bool IsWeaponAllocationAllowed()
     {
-        return Configs.GetConfigData().AllowAllocationAfterFreezeTime || GetGameRules().FreezePeriod;
+        return WeaponHelpers.IsWeaponAllocationAllowed(GetGameRules().FreezePeriod);
     }
 
     public static double GetVectorDistance(Vector v1, Vector v2)
