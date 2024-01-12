@@ -12,7 +12,7 @@ public class WeaponSelectionTests
     public void Setup()
     {
         Queries.Wipe();
-        Configs.Load(".", false);
+        Configs.Load(".");
     }
 
     [Test]
@@ -55,7 +55,7 @@ public class WeaponSelectionTests
         string? removeMessage
     )
     {
-        var args = new List<string> { itemInput };
+        var args = new List<string> {itemInput};
 
         var result = OnWeaponCommandHelper.Handle(args, 1, team, false, out var selectedItem);
 
@@ -97,7 +97,7 @@ public class WeaponSelectionTests
         string message
     )
     {
-        var args = new List<string> { itemInput, teamInput };
+        var args = new List<string> {itemInput, teamInput};
 
         var result = OnWeaponCommandHelper.Handle(args, 1, currentTeam, false, out var selectedItem);
 
@@ -125,14 +125,14 @@ public class WeaponSelectionTests
     )
     {
         var team = CsTeam.Terrorist;
-        Configs.GetConfigData().AllowedWeaponSelectionTypes = new List<WeaponSelectionType> { weaponSelectionType };
+        Configs.GetConfigData().AllowedWeaponSelectionTypes = new List<WeaponSelectionType> {weaponSelectionType};
         Configs.GetConfigData().UsableWeapons = new List<CsItem> { };
         if (allowedItem is not null)
         {
             Configs.GetConfigData().UsableWeapons.Add(allowedItem.Value);
         }
 
-        var args = new List<string> { itemName };
+        var args = new List<string> {itemName};
         var result = OnWeaponCommandHelper.Handle(args, 1, team, false, out var selectedItem);
 
         Assert.That(result, Does.Contain(message));

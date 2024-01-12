@@ -8,7 +8,7 @@ public class WeaponHelpersTests
     [SetUp]
     public void Setup()
     {
-        Configs.Load(".", false);
+        Configs.Load(".");
     }
 
     [Test]

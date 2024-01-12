@@ -33,7 +33,7 @@ public static class Configs
         return _configData;
     }
 
-    public static ConfigData Load(string modulePath, bool saveDefaults = true)
+    public static ConfigData Load(string modulePath, bool saveDefaults = false)
     {
         var configFileDirectory = Path.Combine(modulePath, ConfigDirectoryName);
         Directory.CreateDirectory(configFileDirectory);
@@ -124,7 +124,7 @@ public record ConfigData
 
     public double GetRoundTypePercentage(RoundType roundType)
     {
-        return RoundTypePercentages[roundType] / 100;
+        return Math.Round(RoundTypePercentages[roundType] / 100.0, 2);
     }
 
     public bool CanPlayersSelectWeapons()
