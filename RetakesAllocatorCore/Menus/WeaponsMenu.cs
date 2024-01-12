@@ -138,7 +138,7 @@ public class WeaponsMenu
         var weaponName = option.Text;
         
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Primary!");
-        HandleAllocation(player, CsTeam.Terrorist, weaponName);
+        HandleAllocation(player, CsTeam.CounterTerrorist, weaponName);
 
         OpenCtSecondaryMenu(player);
     }
@@ -169,7 +169,7 @@ public class WeaponsMenu
         
         // TODO: Separate allocation for CT pistol and T pistol
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
-        HandleAllocation(player, CsTeam.Terrorist, weaponName);
+        HandleAllocation(player, CsTeam.CounterTerrorist, weaponName);
 
         // OpenGiveAwpMenu(player);
         OnMenuComplete(player);
