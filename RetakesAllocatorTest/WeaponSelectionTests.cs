@@ -81,22 +81,25 @@ public class WeaponSelectionTests
     }
 
     [Test]
-    [TestCase("T", "galil", CsItem.Galil, "Galil' is now")]
-    [TestCase("T", "krieg", CsItem.Krieg, "SG553' is now")]
-    [TestCase("T", "mac10", CsItem.Mac10, "Mac10' is now")]
-    [TestCase("CT", "deag", CsItem.Deagle, "Deagle' is now")]
-    [TestCase("CT", "galil", null, "Galil' is not valid")]
-    [TestCase("CT", "tec9", null, "Tec9' is not valid")]
-    [TestCase("T", "poop", null, "not found")]
+    [TestCase("T", CsTeam.Terrorist, "galil", CsItem.Galil, "Galil' is now")]
+    [TestCase("T", CsTeam.Terrorist, "krieg", CsItem.Krieg, "SG553' is now")]
+    [TestCase("T", CsTeam.Terrorist, "mac10", CsItem.Mac10, "Mac10' is now")]
+    [TestCase("T", CsTeam.None, "mac10", null, "Mac10' is now")]
+    [TestCase("CT", CsTeam.CounterTerrorist, "deag", CsItem.Deagle, "Deagle' is now")]
+    [TestCase("CT", CsTeam.CounterTerrorist, "galil", null, "Galil' is not valid")]
+    [TestCase("CT", CsTeam.CounterTerrorist, "tec9", null, "Tec9' is not valid")]
+    [TestCase("T", CsTeam.Terrorist, "poop", null, "not found")]
     public void SetWeaponPreferenceCommandMultiArg(
-        string teamInput, string itemInput,
+        string teamInput,
+        CsTeam currentTeam,
+        string itemInput,
         CsItem? expectedItem,
         string message
     )
     {
         var args = new List<string> { itemInput, teamInput };
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, CsTeam.None, false, out var selectedItem);
+        var result = OnWeaponCommandHelper.Handle(args, 1, currentTeam, false, out var selectedItem);
 
         Assert.That(result, Does.Contain(message));
         Assert.That(selectedItem, Is.EqualTo(expectedItem));
