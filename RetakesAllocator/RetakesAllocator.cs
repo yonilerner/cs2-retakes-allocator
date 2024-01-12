@@ -80,7 +80,7 @@ public class RetakesAllocator : BasePlugin
     
     private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
-        if (Helpers.PlayerIsValid(player))
+        if (!Helpers.PlayerIsValid(player))
         {
             commandInfo.ReplyToCommand($"{MessagePrefix}This command can only be executed by a valid player.");
             return;
