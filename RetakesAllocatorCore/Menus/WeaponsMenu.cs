@@ -218,12 +218,18 @@ public class WeaponsMenu
 
     private static void HandleAllocation(CCSPlayerController player, CsTeam team, string weapon)
     {
-        OnWeaponCommandHelper.Handle(
+        var response = OnWeaponCommandHelper.Handle(
             new List<string>{weapon},
             player.AuthorizedSteamID?.SteamId64 ?? 0,
             team,
             false,
             out _
         );
+        
+        // TODO: Remove this debugging
+        if (response is not null)
+        {
+            player.PrintToChat($"{MessagePrefix}{response}");
+        }
     }
 }
