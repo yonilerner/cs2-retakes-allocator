@@ -80,20 +80,20 @@ public class RetakesAllocator : BasePlugin
     
     private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
-        if (player == null || !player.IsValid)
+        if (Helpers.PlayerIsValid(player))
         {
             commandInfo.ReplyToCommand($"{MessagePrefix}This command can only be executed by a valid player.");
             return;
         }
 
         // If we can't add the player, they're already in the menu
-        if (!_weaponsMenu.PlayersInGunsMenu.Add(player))
+        if (!_weaponsMenu.PlayersInGunsMenu.Add(player!))
         {
             commandInfo.ReplyToCommand($"{MessagePrefix}You are already in the gun menu!");
             return;
         }
 
-        _weaponsMenu.OpenGunsMenu(player);
+        _weaponsMenu.OpenGunsMenu(player!);
     }
 
     [ConsoleCommand("css_gun")]
