@@ -224,18 +224,12 @@ public class WeaponsMenu
 
     private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon)
     {
-        var response = OnWeaponCommandHelper.Handle(
+        OnWeaponCommandHelper.Handle(
             new List<string>{weapon},
             player.AuthorizedSteamID?.SteamId64 ?? 0,
             team,
             false,
             out _
         );
-        
-        // TODO: Remove this debugging
-        if (response is not null)
-        {
-            player.PrintToChat($"{MessagePrefix}{response}");
-        }
     }
 }
