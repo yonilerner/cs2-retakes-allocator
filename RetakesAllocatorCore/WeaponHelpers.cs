@@ -23,12 +23,19 @@ public static class WeaponHelpers
         CsItem.Tec9,
     };
 
+
     private static readonly ICollection<CsItem> _ctPistols = new HashSet<CsItem>
     {
         CsItem.USP,
         CsItem.P2000,
         CsItem.FiveSeven,
     };
+
+    private static readonly ICollection<CsItem> _pistolsForT =
+        _sharedPistols.Concat(_tPistols).ToHashSet();
+
+    private static readonly ICollection<CsItem> _pistolsForCt =
+        _sharedPistols.Concat(_ctPistols).ToHashSet();
 
     private static readonly ICollection<CsItem> _sharedMidRange = new HashSet<CsItem>
     {
@@ -50,13 +57,23 @@ public static class WeaponHelpers
         CsItem.SawedOff,
     };
 
+
     private static readonly ICollection<CsItem> _ctMidRange = new HashSet<CsItem>
     {
         CsItem.MP9,
         CsItem.MAG7,
     };
 
+    private static readonly ICollection<CsItem> _midRangeForCt = _sharedMidRange.Concat(_ctMidRange).ToHashSet();
+    private static readonly ICollection<CsItem> _midRangeForT = _sharedMidRange.Concat(_tMidRange).ToHashSet();
+
     private static readonly int _maxSmgItemValue = (int) CsItem.UMP;
+
+    private static readonly ICollection<CsItem> _smgsForT =
+        _sharedMidRange.Concat(_tMidRange).Where(i => (int) i <= _maxSmgItemValue).ToHashSet();
+
+    private static readonly ICollection<CsItem> _smgsForCt =
+        _sharedMidRange.Concat(_ctMidRange).Where(i => (int) i <= _maxSmgItemValue).ToHashSet();
 
     private static readonly ICollection<CsItem> _tRifles = new HashSet<CsItem>
     {
@@ -89,8 +106,11 @@ public static class WeaponHelpers
         CsItem.AutoSniperCT,
     };
 
+    private static readonly ICollection<CsItem> _snipersForT = _sharedSnipers.Concat(_tSnipers).ToHashSet();
+    private static readonly ICollection<CsItem> _snipersForCt = _sharedSnipers.Concat(_ctSnipers).ToHashSet();
+
     private static readonly ICollection<CsItem> _allSnipers =
-        _sharedSnipers.Concat(_ctSnipers).Concat(_tSnipers).ToHashSet();
+        _snipersForT.Concat(_snipersForCt).ToHashSet();
 
     private static readonly ICollection<CsItem> _heavys = new HashSet<CsItem>
     {
@@ -98,9 +118,24 @@ public static class WeaponHelpers
         CsItem.Negev,
     };
 
+    private static readonly ICollection<CsItem> _fullBuyForT =
+        _tRifles.Concat(_snipersForT).Concat(_heavys).ToHashSet();
+
+    private static readonly ICollection<CsItem> _fullBuyForCt =
+        _ctRifles.Concat(_snipersForCt).Concat(_heavys).ToHashSet();
+
     private static readonly ICollection<CsItem> _allWeapons = Enum.GetValues<CsItem>()
         .Where(item => (int) item >= 200 && (int) item < 500)
         .ToHashSet();
+
+    private static readonly ICollection<CsItem> _fullBuyRound =
+        _allSnipers.Concat(_heavys).Concat(_tRifles).Concat(_ctRifles).ToHashSet();
+
+    private static readonly ICollection<CsItem> _halfBuyRound =
+        _midRangeForT.Concat(_midRangeForCt).ToHashSet();
+
+    private static readonly ICollection<CsItem> _pistolRound =
+        _pistolsForT.Concat(_pistolsForCt).ToHashSet();
 
     private static readonly Dictionary<
         CsTeam,
@@ -110,17 +145,17 @@ public static class WeaponHelpers
         {
             CsTeam.Terrorist, new()
             {
-                {RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_tPistols))},
-                {RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_tMidRange))},
-                {RoundType.FullBuy, _tRifles.Concat(_sharedSnipers).Concat(_tSnipers).Concat(_heavys).ToHashSet()},
+                {RoundType.Pistol, _pistolsForT},
+                {RoundType.HalfBuy, _midRangeForT},
+                {RoundType.FullBuy, _fullBuyForT},
             }
         },
         {
             CsTeam.CounterTerrorist, new()
             {
-                {RoundType.Pistol, new HashSet<CsItem>(_sharedPistols.Concat(_ctPistols))},
-                {RoundType.HalfBuy, new HashSet<CsItem>(_sharedMidRange.Concat(_ctMidRange))},
-                {RoundType.FullBuy, _ctRifles.Concat(_sharedSnipers).Concat(_ctSnipers).Concat(_heavys).ToHashSet()},
+                {RoundType.Pistol, _pistolsForCt},
+                {RoundType.HalfBuy, _midRangeForCt},
+                {RoundType.FullBuy, _fullBuyForCt},
             }
         }
     };
@@ -169,7 +204,7 @@ public static class WeaponHelpers
         return _validWeaponsByTeamAndRoundType[team][roundType].Where(IsUsableWeapon).ToList();
     }
 
-    public static bool IsValidWeapon(RoundType roundType, CsTeam team, CsItem weapon)
+    public static bool IsValidWeaponForRound(RoundType roundType, CsTeam team, CsItem weapon)
     {
         if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
         {
@@ -184,6 +219,16 @@ public static class WeaponHelpers
         return _validWeaponsByTeamAndRoundType[team][roundType].Contains(weapon);
     }
 
+    public static bool IsSniper(CsTeam team, CsItem weapon)
+    {
+        return team switch
+        {
+            CsTeam.Terrorist => _snipersForT.Contains(weapon),
+            CsTeam.CounterTerrorist => _snipersForCt.Contains(weapon),
+            _ => false,
+        };
+    }
+
     public static bool IsUsableWeapon(CsItem weapon)
     {
         return Configs.GetConfigData().UsableWeapons.Contains(weapon);
@@ -191,17 +236,17 @@ public static class WeaponHelpers
 
     public static RoundType? GetRoundTypeForWeapon(CsItem weapon)
     {
-        if (_allSnipers.Concat(_heavys).Concat(_ctRifles).Concat(_tRifles).Contains(weapon))
+        if (_fullBuyRound.Contains(weapon))
         {
             return RoundType.FullBuy;
         }
 
-        if (_sharedMidRange.Concat(_ctMidRange).Concat(_tMidRange).Contains(weapon))
+        if (_halfBuyRound.Contains(weapon))
         {
             return RoundType.HalfBuy;
         }
 
-        if (_sharedPistols.Concat(_ctPistols).Concat(_tPistols).Contains(weapon))
+        if (_pistolRound.Contains(weapon))
         {
             return RoundType.Pistol;
         }
@@ -260,14 +305,15 @@ public static class WeaponHelpers
 
     private static CsItem GetRandomWeaponForRoundType(RoundType roundType, CsTeam team)
     {
+        if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
+        {
+            return CsItem.Deagle;
+        }
+
         var collectionToCheck = roundType switch
         {
-            RoundType.Pistol => _sharedPistols.Concat(team == CsTeam.Terrorist ? _tPistols : _ctPistols).ToHashSet(),
-            RoundType.HalfBuy =>
-                _sharedMidRange
-                    .Concat(team == CsTeam.Terrorist ? _tMidRange : _ctMidRange)
-                    .Where(item => (int) item <= _maxSmgItemValue)
-                    .ToHashSet(),
+            RoundType.Pistol => team == CsTeam.Terrorist ? _pistolsForT : _pistolsForCt,
+            RoundType.HalfBuy => team == CsTeam.Terrorist ? _smgsForT : _smgsForCt,
             RoundType.FullBuy => team == CsTeam.Terrorist ? _tRifles : _ctRifles,
             _ => _sharedPistols,
         };
@@ -298,7 +344,7 @@ public static class WeaponHelpers
 
         return weapon;
     }
-    
+
     public static bool IsWeaponAllocationAllowed(bool isFreezePeriod)
     {
         return Configs.GetConfigData().AllowAllocationAfterFreezeTime || isFreezePeriod;

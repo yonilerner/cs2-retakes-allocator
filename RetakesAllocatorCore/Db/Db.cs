@@ -48,10 +48,21 @@ public class Db : DbContext
         }
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserSetting>()
+            .Property(e => e.WeaponPreferences)
+            .IsRequired(false);
+        base.OnModelCreating(modelBuilder);
+    }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder
             .Properties<WeaponPreferencesType>()
             .HaveConversion<WeaponPreferencesConverter, WeaponPreferencesComparer>();
+        configurationBuilder
+            .Properties<CsItem>()
+            .HaveConversion<CsItemConverter>();
     }
 }

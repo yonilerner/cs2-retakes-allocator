@@ -11,22 +11,36 @@ public class Queries
         return Db.GetInstance().UserSettings.FirstOrDefault(u => u.UserId == userId);
     }
 
-    public static void SetWeaponPreferenceForUser(ulong userId, CsTeam team, RoundType roundType, CsItem? item)
+    private static UserSetting? UpsertUserSettings(ulong userId, Action<UserSetting> mutation)
     {
+        var instance = Db.GetInstance();
         var isNew = false;
-        var userSettings = Db.GetInstance().UserSettings.FirstOrDefault(u => u.UserId == userId);
+        var userSettings = instance.UserSettings.FirstOrDefault(u => u.UserId == userId);
         if (userSettings is null)
         {
             userSettings = new UserSetting {UserId = userId};
-            Db.GetInstance().UserSettings.Add(userSettings);
+            instance.UserSettings.Add(userSettings);
             isNew = true;
         }
 
-        userSettings.SetWeaponPreference(team, roundType, item);
-        Db.GetInstance().Entry(userSettings).State = isNew ? EntityState.Added : EntityState.Modified;
+        instance.Entry(userSettings).State = isNew ? EntityState.Added : EntityState.Modified;
 
-        Db.GetInstance().SaveChanges();
-        Db.GetInstance().Entry(userSettings).State = EntityState.Detached;
+        mutation(userSettings);
+
+        instance.SaveChanges();
+        instance.Entry(userSettings).State = EntityState.Detached;
+
+        return userSettings;
+    }
+
+    public static void SetWeaponPreferenceForUser(ulong userId, CsTeam team, RoundType roundType, CsItem? item)
+    {
+        UpsertUserSettings(userId, userSetting => { userSetting.SetWeaponPreference(team, roundType, item); });
+    }
+
+    public static void SetSniperPreference(ulong userId, CsItem? sniper)
+    {
+        UpsertUserSettings(userId, userSetting => { userSetting.SniperPreference = sniper; });
     }
 
     public static IDictionary<ulong, UserSetting> GetUsersSettings(ICollection<ulong> userIds)

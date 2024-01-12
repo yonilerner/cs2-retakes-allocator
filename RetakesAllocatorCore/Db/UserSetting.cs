@@ -5,7 +5,6 @@ using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
@@ -22,7 +21,10 @@ public class UserSetting
     public ulong UserId { get; set; }
 
     [Column(TypeName = "TEXT"), MaxLength(10000)]
-    public WeaponPreferencesType WeaponPreferences { get; set; } = new();
+    public WeaponPreferencesType? WeaponPreferences { get; set; } = new();
+
+    [Column(TypeName = "TEXT"), MaxLength(100)]
+    public CsItem? SniperPreference { get; set; } = null;
 
     public void SetWeaponPreference(CsTeam team, RoundType roundType, CsItem? weapon)
     {
@@ -54,6 +56,31 @@ public class UserSetting
         }
 
         return null;
+    }
+}
+
+public class CsItemConverter : ValueConverter<CsItem?, string>
+{
+    public CsItemConverter() : base(
+        v => CsItemSerializer(v),
+        s => CsItemDeserializer(s)
+    )
+    {
+    }
+
+    public static string CsItemSerializer(CsItem? item)
+    {
+        return JsonSerializer.Serialize(item);
+    }
+
+    public static CsItem? CsItemDeserializer(string? str)
+    {
+        if (str is null)
+        {
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<CsItem>(str);
     }
 }
 

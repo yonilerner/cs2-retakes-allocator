@@ -46,38 +46,57 @@ public class OnWeaponCommandHelper
 
         var weapon = foundWeapons.First();
 
+        if (!WeaponHelpers.IsUsableWeapon(weapon))
+        {
+            return $"Weapon '{weapon}' is not allowed to be selected.";
+        }
+
         var roundType = WeaponHelpers.GetRoundTypeForWeapon(weapon);
         if (roundType is null)
         {
             return $"Invalid weapon '{weapon}'";
         }
 
-        if (!WeaponHelpers.IsValidWeapon(roundType.Value, team, weapon))
+        if (!WeaponHelpers.IsValidWeaponForRound(roundType.Value, team, weapon))
         {
             return $"Weapon '{weapon}' is not valid for {roundType} rounds on {team}";
         }
 
-        if (!WeaponHelpers.IsUsableWeapon(weapon))
-        {
-            return $"Weapon '{weapon}' is not allowed to be selected.";
-        }
+        var isSniper = WeaponHelpers.IsSniper(team, weapon);
 
         if (remove)
         {
-            Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, null);
-            return $"Weapon '{weapon}' is no longer your {roundType} preference for {team}.";
+            if (isSniper)
+            {
+                Queries.SetSniperPreference(userId, null);
+                return $"You will no longer receive '{weapon}'.";
+            }
+            else
+            {
+                Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, null);
+                return $"Weapon '{weapon}' is no longer your {roundType} preference for {team}.";
+            }
+        }
+
+        string message;
+        if (isSniper)
+        {
+            Queries.SetSniperPreference(userId, weapon);
+            message = $"You will now get a '{weapon}' when its your turn.";
         }
         else
         {
             Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, weapon);
-            
-            if (currentTeam == team)
-            {
-                // Only set the outWeapon if the user is setting the preference for their current team
-                outWeapon = weapon;
-            }
-
-            return $"Weapon '{weapon}' is now your {roundType} preference for {team}.";
+            message = $"Weapon '{weapon}' is now your {roundType} preference for {team}.";
         }
+
+        // TODO dont set sniper immediately if its not a valid time to allocate it
+        if (currentTeam == team)
+        {
+            // Only set the outWeapon if the user is setting the preference for their current team
+            outWeapon = weapon;
+        }
+
+        return message;
     }
 }
