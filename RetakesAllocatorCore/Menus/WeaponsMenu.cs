@@ -82,7 +82,7 @@ public class WeaponsMenu
         var weaponName = option.Text;
         
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Primary!");
-        HandleAllocation(player, CsTeam.Terrorist, weaponName);
+        HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
         
         OpenTSecondaryMenu(player);
     }
@@ -113,7 +113,7 @@ public class WeaponsMenu
         
         // TODO: Separate allocation for CT pistol and T pistol
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Secondary!");
-        HandleAllocation(player, CsTeam.Terrorist, weaponName);
+        HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
         
         OpenCtPrimaryMenu(player);
     }
@@ -143,7 +143,7 @@ public class WeaponsMenu
         var weaponName = option.Text;
         
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Primary!");
-        HandleAllocation(player, CsTeam.CounterTerrorist, weaponName);
+        HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
         OpenCtSecondaryMenu(player);
     }
@@ -174,7 +174,7 @@ public class WeaponsMenu
         
         // TODO: Separate allocation for CT pistol and T pistol
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
-        HandleAllocation(player, CsTeam.CounterTerrorist, weaponName);
+        HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
         // OpenGiveAwpMenu(player);
         OnMenuComplete(player);
@@ -221,7 +221,7 @@ public class WeaponsMenu
     //     PlayersInGunsMenu.Remove(player);
     // }
 
-    private static void HandleAllocation(CCSPlayerController player, CsTeam team, string weapon)
+    private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon)
     {
         var response = OnWeaponCommandHelper.Handle(
             new List<string>{weapon},
