@@ -35,7 +35,8 @@ public class RetakesAllocator : BasePlugin
         Batteries.Init();
 
         RegisterListener<Listeners.OnMapStart>(mapName => { ResetState(); });
-
+        AddCommandListener("say", OnPlayerChat, HookMode.Post);
+        
         if (Configs.GetConfigData().MigrateOnStartup)
         {
             Queries.Migrate();
@@ -70,7 +71,25 @@ public class RetakesAllocator : BasePlugin
     #endregion
 
     #region Commands
+    private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo info)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            return HookResult.Continue;
+        }
 
+        var message = info.ArgByIndex(1).ToLower();
+
+        switch (message)
+        {
+            case "guns":
+                OnGunsCommand(player, info);
+                break;
+        }
+
+        return HookResult.Continue;
+    }
+    
     [ConsoleCommand("css_guns")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
