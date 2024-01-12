@@ -110,7 +110,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
+        var playerId = Helpers.GetSteamId(player);
         var currentTeam = (CsTeam) player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
@@ -149,7 +149,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
+        var playerId = Helpers.GetSteamId(player);
         var currentTeam = (CsTeam) player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
