@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
+using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocator;
 
@@ -38,7 +39,7 @@ public static class Helpers
 
     public static CsTeam GetTeam(CCSPlayerController player)
     {
-        return (CsTeam)player.TeamNum;
+        return (CsTeam) player.TeamNum;
     }
 
     public static void RemoveArmor(CCSPlayerController player)
@@ -62,7 +63,7 @@ public static class Helpers
 
         foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
         {
-            if (weapon is not { IsValid: true, Value.IsValid: true })
+            if (weapon is not {IsValid: true, Value.IsValid: true})
             {
                 continue;
             }
@@ -87,7 +88,7 @@ public static class Helpers
 
         foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
         {
-            if (weapon is not { IsValid: true, Value.IsValid: true })
+            if (weapon is not {IsValid: true, Value.IsValid: true})
             {
                 continue;
             }
@@ -114,7 +115,7 @@ public static class Helpers
         foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
         {
             // Log.Write($"want to remove wep {weapon.Value?.DesignerName} {weapon.IsValid}");
-            if (weapon is not { IsValid: true, Value.IsValid: true })
+            if (weapon is not {IsValid: true, Value.IsValid: true})
             {
                 continue;
             }
@@ -145,7 +146,7 @@ public static class Helpers
     {
         var gameRulesEntities = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules");
         var gameRules = gameRulesEntities.First().GameRules;
-        
+
         if (gameRules is null)
         {
             const string message = "Game rules were null.";
@@ -160,10 +161,10 @@ public static class Helpers
     {
         return GetGameRules().WarmupPeriod;
     }
-    
-    public static bool IsFreezeTime()
+
+    public static bool IsWeaponAllocationAllowed()
     {
-        return GetGameRules().FreezePeriod;
+        return Configs.GetConfigData().AllowAllocationAfterFreezeTime || GetGameRules().FreezePeriod;
     }
 
     public static double GetVectorDistance(Vector v1, Vector v2)

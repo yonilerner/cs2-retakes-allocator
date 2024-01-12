@@ -85,6 +85,7 @@ public static class Configs
                 {RoundType.FullBuy, 60},
             },
             MigrateOnStartup = true,
+            AllowAllocationAfterFreezeTime = false,
         };
     }
 }
@@ -102,6 +103,8 @@ public record ConfigData
     public required List<WeaponSelectionType> AllowedWeaponSelectionTypes {get; set; }
     public required Dictionary<RoundType, int> RoundTypePercentages {get; set; }
     public required bool MigrateOnStartup {get; set; }
+    public required bool AllowAllocationAfterFreezeTime { get; set; }
+    
     public void Validate()
     {
         if (RoundTypePercentages.Values.Sum() != 100)
