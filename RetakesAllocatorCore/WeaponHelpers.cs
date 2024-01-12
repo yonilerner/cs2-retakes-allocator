@@ -150,7 +150,8 @@ public static class WeaponHelpers
 
     private static readonly Dictionary<string, CsItem> _weaponNameSearchOverrides = new()
     {
-        {"m4a1", CsItem.M4A1S}
+        {"m4a1", CsItem.M4A1S},
+        {"m4a1-s", CsItem.M4A1S},
     };
 
     public static List<CsItem> GetAllWeapons()
