@@ -106,6 +106,7 @@ public record ConfigData
 
     public bool MigrateOnStartup { get; set; } = true;
     public bool AllowAllocationAfterFreezeTime { get; set; } = false;
+    public bool EnableRoundTypeAnnouncement { get; set; } = true;
 
     public void Validate()
     {
