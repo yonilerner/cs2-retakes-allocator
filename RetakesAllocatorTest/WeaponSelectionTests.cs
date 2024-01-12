@@ -134,4 +134,45 @@ public class WeaponSelectionTests : BaseTestFixture
         var setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(team, RoundType.FullBuy);
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
     }
+
+    [Test]
+    public void RandomWeaponSelection()
+    {
+        for (var j = 0; j < 1000; j++)
+        {
+            Configs.OverrideConfigDataForTests(new ConfigData
+            {
+                RoundTypePercentages = new()
+                {
+                    {RoundType.Pistol, 5},
+                    {RoundType.HalfBuy, 5},
+                    {RoundType.FullBuy, 90},
+                }
+            });
+            var numPistol = 0;
+            var numHalfBuy = 0;
+            var numFullBuy = 0;
+            for (var i = 0; i < 1000; i++)
+            {
+                var randomRoundType = RoundTypeHelpers.GetRandomRoundType();
+                switch (randomRoundType)
+                {
+                    case RoundType.Pistol:
+                        numPistol++;
+                        break;
+                    case RoundType.HalfBuy:
+                        numHalfBuy++;
+                        break;
+                    case RoundType.FullBuy:
+                        numFullBuy++;
+                        break;
+                }
+            }
+
+            // Ranges are very permissive to avoid flakes
+            Assert.That(numPistol, Is.InRange(20, 80));
+            Assert.That(numHalfBuy, Is.InRange(20, 80));
+            Assert.That(numFullBuy, Is.InRange(850, 950));
+        }
+    }
 }
