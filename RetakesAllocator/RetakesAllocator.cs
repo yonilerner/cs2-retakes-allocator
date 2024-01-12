@@ -74,9 +74,8 @@ public class RetakesAllocator : BasePlugin
     public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         commandInfo.ReplyToCommand(
-            $"{MessagePrefix}Note: !guns may change in the future. Please use !gun to set guns by name."
+            $"{MessagePrefix}Eventually this will be a weapon menu. For now, please use !gun <weapon>."
         );
-        HandleWeaponCommand(player, commandInfo);
     }
 
     [ConsoleCommand("css_gun")]
