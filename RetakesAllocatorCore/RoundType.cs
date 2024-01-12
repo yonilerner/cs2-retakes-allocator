@@ -17,12 +17,14 @@ public static class RoundTypeHelpers
     {
         var randomValue = new Random().NextDouble();
 
-        if (randomValue < Configs.GetConfigData().GetRoundTypePercentage(RoundType.Pistol))
+        var pistolPercentage = Configs.GetConfigData().GetRoundTypePercentage(RoundType.Pistol);
+
+        if (randomValue < pistolPercentage)
         {
             return RoundType.Pistol;
         }
 
-        if (randomValue < Configs.GetConfigData().GetRoundTypePercentage(RoundType.HalfBuy))
+        if (randomValue < Configs.GetConfigData().GetRoundTypePercentage(RoundType.HalfBuy) + pistolPercentage)
         {
             return RoundType.HalfBuy;
         }
