@@ -17,9 +17,15 @@ public class RoundTypeTests
     [TestCase(33, .33f)]
     public void TestRoundPercentages(int configPercentage, double expectedPercentage)
     {
-        var config = Configs.GetDefaultConfigData();
-        config.RoundTypePercentages[RoundType.Pistol] = configPercentage;
-        Configs.OverrideConfigDataForTests(config);
+        Configs.OverrideConfigDataForTests(
+            new ConfigData
+            {
+                RoundTypePercentages = new()
+                {
+                    {RoundType.Pistol, configPercentage}
+                }
+            }
+        );
 
         expectedPercentage = Math.Round(expectedPercentage, 2);
 

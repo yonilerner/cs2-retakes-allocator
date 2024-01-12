@@ -18,9 +18,7 @@ public class WeaponHelpersTests
     [TestCase(false, false, false)]
     public void TestIsWeaponAllocationAllowed(bool allowAfterFreezeTime, bool isFreezeTime, bool expected)
     {
-        var configData = Configs.GetDefaultConfigData();
-        configData.AllowAllocationAfterFreezeTime = allowAfterFreezeTime;
-        Configs.OverrideConfigDataForTests(configData);
+        Configs.OverrideConfigDataForTests(new ConfigData() {AllowAllocationAfterFreezeTime = allowAfterFreezeTime});
 
         var canAllocate = WeaponHelpers.IsWeaponAllocationAllowed(isFreezeTime);
 

@@ -33,7 +33,7 @@ public static class Configs
         return _configData;
     }
 
-    public static ConfigData Load(string modulePath, bool saveDefaults = false)
+    public static ConfigData Load(string modulePath, bool saveAfterLoad = false)
     {
         var configFileDirectory = Path.Combine(modulePath, ConfigDirectoryName);
         Directory.CreateDirectory(configFileDirectory);
@@ -46,16 +46,17 @@ public static class Configs
         }
         else
         {
-            _configData = GetDefaultConfigData();
-            if (saveDefaults)
-            {
-                SaveConfigData(_configData);
-            }
+            _configData = new ConfigData();
         }
 
         if (_configData is null)
         {
             throw new Exception("Failed to load configs.");
+        }
+
+        if (saveAfterLoad)
+        {
+            SaveConfigData(_configData);
         }
 
         _configData.Validate();
@@ -80,23 +81,6 @@ public static class Configs
 
         File.WriteAllText(_configFilePath, JsonSerializer.Serialize(configData, SerializationOptions));
     }
-
-    public static ConfigData GetDefaultConfigData()
-    {
-        return new ConfigData
-        {
-            UsableWeapons = WeaponHelpers.GetAllWeapons(),
-            AllowedWeaponSelectionTypes = Enum.GetValues<WeaponSelectionType>().ToList(),
-            RoundTypePercentages = new()
-            {
-                {RoundType.Pistol, 15},
-                {RoundType.HalfBuy, 25},
-                {RoundType.FullBuy, 60},
-            },
-            MigrateOnStartup = true,
-            AllowAllocationAfterFreezeTime = false,
-        };
-    }
 }
 
 public enum WeaponSelectionType
@@ -108,11 +92,20 @@ public enum WeaponSelectionType
 
 public record ConfigData
 {
-    public required List<CsItem> UsableWeapons { get; set; }
-    public required List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; }
-    public required Dictionary<RoundType, int> RoundTypePercentages { get; set; }
-    public required bool MigrateOnStartup { get; set; }
-    public required bool AllowAllocationAfterFreezeTime { get; set; }
+    public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.GetAllWeapons();
+
+    public List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; } =
+        Enum.GetValues<WeaponSelectionType>().ToList();
+
+    public Dictionary<RoundType, int> RoundTypePercentages { get; set; } = new()
+    {
+        {RoundType.Pistol, 15},
+        {RoundType.HalfBuy, 25},
+        {RoundType.FullBuy, 60},
+    };
+
+    public bool MigrateOnStartup { get; set; } = true;
+    public bool AllowAllocationAfterFreezeTime { get; set; } = false;
 
     public void Validate()
     {
