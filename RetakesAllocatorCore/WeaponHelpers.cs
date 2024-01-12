@@ -293,4 +293,9 @@ public static class WeaponHelpers
 
         return weapon;
     }
+    
+    public static bool IsWeaponAllocationAllowed(bool isFreezePeriod)
+    {
+        return Configs.GetConfigData().AllowAllocationAfterFreezeTime || isFreezePeriod;
+    }
 }

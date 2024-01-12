@@ -48,7 +48,7 @@ public class RetakesAllocator : BasePlugin
 
     private void ResetState()
     {
-        Configs.Load(ModuleDirectory);
+        Configs.Load(ModuleDirectory, true);
         _nextRoundType = null;
         _currentRoundType = null;
     }
@@ -107,7 +107,7 @@ public class RetakesAllocator : BasePlugin
             commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
         }
 
-        if (Helpers.IsFreezeTime() && selectedWeapon is not null)
+        if (Helpers.IsWeaponAllocationAllowed() && selectedWeapon is not null)
         {
             var selectedWeaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(selectedWeapon.Value);
             if (selectedWeaponRoundType == RoundType.Pistol || selectedWeaponRoundType == _currentRoundType)
@@ -194,8 +194,11 @@ public class RetakesAllocator : BasePlugin
         // Log.Write($"item {item} team {team} player {playerId}");
         // Log.Write($"curRound {_currentRoundType} weapon Round {weaponRoundType}");
 
-        if (weaponRoundType is not null &&
-            (weaponRoundType == _currentRoundType || weaponRoundType == RoundType.Pistol))
+        if (
+            Helpers.IsWeaponAllocationAllowed() &&
+            weaponRoundType is not null &&
+            (weaponRoundType == _currentRoundType || weaponRoundType == RoundType.Pistol)
+        )
         {
             Queries.SetWeaponPreferenceForUser(
                 playerId,
