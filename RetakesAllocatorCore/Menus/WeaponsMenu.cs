@@ -218,13 +218,11 @@ public class WeaponsMenu
 
     private static void HandleAllocation(CCSPlayerController player, CsTeam team, string weapon)
     {
-        // TODO: Separate allocation for CT pistol and T pistol
         OnWeaponCommandHelper.Handle(
             new List<string>{weapon},
             player.AuthorizedSteamID?.SteamId64 ?? 0,
             team,
             false,
-            true,
             out _
         );
     }

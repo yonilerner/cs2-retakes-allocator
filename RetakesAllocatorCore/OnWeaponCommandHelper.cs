@@ -7,13 +7,7 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
-    public static string? Handle(ICollection<string> args, ulong userId, CsTeam currentTeam, bool remove,
-        out CsItem? outWeapon)
-    {
-        return Handle(args, userId, currentTeam, remove, false, out outWeapon);
-    }
-
-    public static string? Handle(ICollection<string> args, ulong userId, CsTeam currentTeam, bool remove, bool silent, out CsItem? outWeapon)
+    public static string? Handle(ICollection<string> args, ulong userId, CsTeam currentTeam, bool remove, out CsItem? outWeapon)
     {
         outWeapon = null;
         if (!Configs.GetConfigData().CanPlayersSelectWeapons())
