@@ -7,5 +7,5 @@ public static class PluginInfo
     public const string Version = "1.0.8";
     
     public static readonly string LogPrefix = $"[RetakesAllocator {Version}] ";
-    public static readonly string MessagePrefix = $"[{ChatColors.Green}RetakesAllocator{ChatColors.White}] ";
+    public static readonly string MessagePrefix = $"[{ChatColors.Green}Retakes{ChatColors.White}] ";
 }
