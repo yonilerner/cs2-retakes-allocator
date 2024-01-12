@@ -33,7 +33,7 @@ public static class Configs
         return _configData;
     }
 
-    public static ConfigData Load(string modulePath, bool saveDefaults = false)
+    public static ConfigData Load(string modulePath, bool saveAfterLoad = false)
     {
         var configFileDirectory = Path.Combine(modulePath, ConfigDirectoryName);
         Directory.CreateDirectory(configFileDirectory);
@@ -47,15 +47,16 @@ public static class Configs
         else
         {
             _configData = new ConfigData();
-            if (saveDefaults)
-            {
-                SaveConfigData(_configData);
-            }
         }
 
         if (_configData is null)
         {
             throw new Exception("Failed to load configs.");
+        }
+
+        if (saveAfterLoad)
+        {
+            SaveConfigData(_configData);
         }
 
         _configData.Validate();
