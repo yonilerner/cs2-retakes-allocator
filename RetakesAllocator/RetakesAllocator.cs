@@ -308,9 +308,12 @@ public class RetakesAllocator : BasePlugin
         _currentRoundType = currentRoundType;
         _nextRoundType = null;
 
-        Server.PrintToChatAll(
-            $"{MessagePrefix}{Enum.GetName(_currentRoundType.Value)} Round"
-        );
+        if (Configs.GetConfigData().EnableRoundTypeAnnouncement)
+        {
+            Server.PrintToChatAll(
+                $"{MessagePrefix}{Enum.GetName(_currentRoundType.Value)} Round"
+            );
+        }
 
         return HookResult.Continue;
     }
