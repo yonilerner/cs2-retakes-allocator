@@ -1,5 +1,4 @@
 ﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using static RetakesAllocatorCore.PluginInfo;
@@ -75,10 +74,11 @@ public class WeaponsMenu
             return;
         }
 
-        player.PrintToChat($"{MessagePrefix} You selected {option.Text} as T Primary!");
-
-        // TODO: Implement weapon allocation selection
-
+        var weaponName = option.Text;
+        
+        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Primary!");
+        HandleAllocation(player, CsTeam.Terrorist, weaponName);
+        
         OpenTSecondaryMenu(player);
     }
     
@@ -104,9 +104,11 @@ public class WeaponsMenu
             return;
         }
 
-        player.PrintToChat($"{MessagePrefix} You selected {option.Text} as Secondary!");
-
-        // TODO: Implement weapon allocation selection
+        var weaponName = option.Text;
+        
+        // TODO: Separate allocation for CT pistol and T pistol
+        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Secondary!");
+        HandleAllocation(player, CsTeam.Terrorist, weaponName);
         
         OpenCtPrimaryMenu(player);
     }
@@ -132,10 +134,11 @@ public class WeaponsMenu
         {
             return;
         }
-
-        player.PrintToChat($"{MessagePrefix} You selected {option.Text} as CT Primary!");
-
-        // TODO: Implement weapon allocation selection
+        
+        var weaponName = option.Text;
+        
+        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Primary!");
+        HandleAllocation(player, CsTeam.Terrorist, weaponName);
 
         OpenCtSecondaryMenu(player);
     }
@@ -162,9 +165,11 @@ public class WeaponsMenu
             return;
         }
 
-        player.PrintToChat($"{MessagePrefix} You selected {option.Text} as CT Secondary!");
-
-        // TODO: Implement weapon allocation selection
+        var weaponName = option.Text;
+        
+        // TODO: Separate allocation for CT pistol and T pistol
+        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
+        HandleAllocation(player, CsTeam.Terrorist, weaponName);
 
         // OpenGiveAwpMenu(player);
         OnMenuComplete(player);
@@ -210,4 +215,17 @@ public class WeaponsMenu
     //
     //     PlayersInGunsMenu.Remove(player);
     // }
+
+    private static void HandleAllocation(CCSPlayerController player, CsTeam team, string weapon)
+    {
+        // TODO: Separate allocation for CT pistol and T pistol
+        OnWeaponCommandHelper.Handle(
+            new List<string>{weapon},
+            player.AuthorizedSteamID?.SteamId64 ?? 0,
+            team,
+            false,
+            true,
+            out _
+        );
+    }
 }
