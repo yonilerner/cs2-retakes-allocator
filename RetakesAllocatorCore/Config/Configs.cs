@@ -46,7 +46,7 @@ public static class Configs
         }
         else
         {
-            _configData = GetDefaultConfigData();
+            _configData = new ConfigData();
             if (saveDefaults)
             {
                 SaveConfigData(_configData);
@@ -108,11 +108,20 @@ public enum WeaponSelectionType
 
 public record ConfigData
 {
-    public required List<CsItem> UsableWeapons { get; set; }
-    public required List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; }
-    public required Dictionary<RoundType, int> RoundTypePercentages { get; set; }
-    public required bool MigrateOnStartup { get; set; }
-    public required bool AllowAllocationAfterFreezeTime { get; set; }
+    public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.GetAllWeapons();
+
+    public List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; } =
+        Enum.GetValues<WeaponSelectionType>().ToList();
+
+    public Dictionary<RoundType, int> RoundTypePercentages { get; set; } = new()
+    {
+        {RoundType.Pistol, 15},
+        {RoundType.HalfBuy, 25},
+        {RoundType.FullBuy, 60},
+    };
+
+    public bool MigrateOnStartup { get; set; } = true;
+    public bool AllowAllocationAfterFreezeTime { get; set; } = false;
 
     public void Validate()
     {
