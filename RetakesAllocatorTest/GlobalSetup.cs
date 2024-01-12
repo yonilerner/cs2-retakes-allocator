@@ -10,7 +10,7 @@ public class GlobalSetup
     public void Setup()
     {
         Queries.Migrate();
-        Configs.Load(".");
+        Configs.Load(".", false);
     }
 
     [OneTimeTearDown]

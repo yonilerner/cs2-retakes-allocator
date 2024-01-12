@@ -46,7 +46,7 @@ public static class Configs
         }
         else
         {
-            _configData = GetDefaultData();
+            _configData = GetDefaultConfigData();
             if (saveDefaults)
             {
                 SaveConfigData(_configData);
@@ -57,7 +57,7 @@ public static class Configs
         {
             throw new Exception("Failed to load configs.");
         }
-        
+
         _configData.Validate();
 
         return _configData;
@@ -73,9 +73,10 @@ public static class Configs
         File.WriteAllText(_configFilePath, JsonSerializer.Serialize(configData, SerializationOptions));
     }
 
-    private static ConfigData GetDefaultData()
+    public static ConfigData GetDefaultConfigData()
     {
-        return new ConfigData {
+        return new ConfigData
+        {
             UsableWeapons = WeaponHelpers.GetAllWeapons(),
             AllowedWeaponSelectionTypes = Enum.GetValues<WeaponSelectionType>().ToList(),
             RoundTypePercentages = new()
@@ -86,6 +87,14 @@ public static class Configs
             },
             MigrateOnStartup = true,
         };
+    }
+
+    public static ConfigData OverrideConfigDataForTests(
+        ConfigData configData
+    )
+    {
+        _configData = configData;
+        return _configData;
     }
 }
 
@@ -98,10 +107,11 @@ public enum WeaponSelectionType
 
 public record ConfigData
 {
-    public required List<CsItem> UsableWeapons {get; set; }
-    public required List<WeaponSelectionType> AllowedWeaponSelectionTypes {get; set; }
-    public required Dictionary<RoundType, int> RoundTypePercentages {get; set; }
-    public required bool MigrateOnStartup {get; set; }
+    public required List<CsItem> UsableWeapons { get; set; }
+    public required List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; }
+    public required Dictionary<RoundType, int> RoundTypePercentages { get; set; }
+    public required bool MigrateOnStartup { get; set; }
+
     public void Validate()
     {
         if (RoundTypePercentages.Values.Sum() != 100)
