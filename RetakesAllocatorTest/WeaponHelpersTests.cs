@@ -3,14 +3,8 @@ using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorTest;
 
-public class WeaponHelpersTests
+public class WeaponHelpersTests : BaseTestFixture
 {
-    [SetUp]
-    public void Setup()
-    {
-        Configs.Load(".");
-    }
-
     [Test]
     [TestCase(true, true, true)]
     [TestCase(true, false, true)]

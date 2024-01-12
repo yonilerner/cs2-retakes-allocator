@@ -6,15 +6,8 @@ using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorTest;
 
-public class WeaponSelectionTests
+public class WeaponSelectionTests : BaseTestFixture
 {
-    [SetUp]
-    public void Setup()
-    {
-        Queries.Wipe();
-        Configs.Load(".");
-    }
-
     [Test]
     public void SetWeaponPreferenceDirectly()
     {

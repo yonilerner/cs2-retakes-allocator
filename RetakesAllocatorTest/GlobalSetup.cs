@@ -19,3 +19,13 @@ public class GlobalSetup
         Queries.Disconnect();
     }
 }
+
+public abstract class BaseTestFixture
+{
+    [SetUp]
+    public void GlobalSetup()
+    {
+        Configs.Load(".");
+        Queries.Wipe();
+    }
+}
