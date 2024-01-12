@@ -20,6 +20,8 @@ jobs:
           dotnet-version: 7.0.x
       - name: Restore Dependencies
         run: dotnet restore
+      - name: Test
+        run: dotnet test
       - name: Build
         shell: bash
         run: dotnet build --no-restore -c Release
