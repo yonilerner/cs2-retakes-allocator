@@ -27,8 +27,8 @@ jobs:
         run: dotnet build --no-restore -c Release
 #      - name: Package
 #        run: chmod +x ./RetakesAllocator/release.bash; ./RetakesAllocator/release.bash
-      - name: Remove redundant DLLs
-        run: rm -rf ./RetakesAllocator/bin/Release/net7.0/CounterStrikeSharp.API.dll
+      - name: Remove redundant release DLLs
+        run: rm ./RetakesAllocator/bin/Release/net7.0/CounterStrikeSharp.API.dll
       - name: Publish Archive for Branch
         uses: actions/upload-artifact@v4
         if: "!startsWith(github.ref, 'refs/tags/')"
