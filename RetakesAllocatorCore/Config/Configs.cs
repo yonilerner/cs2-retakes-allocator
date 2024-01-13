@@ -23,6 +23,11 @@ public static class Configs
         ReadCommentHandling = JsonCommentHandling.Skip,
     };
 
+    public static bool IsLoaded()
+    {
+        return _configData is not null;
+    }
+
     public static ConfigData GetConfigData()
     {
         if (_configData is null)

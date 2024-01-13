@@ -54,6 +54,7 @@ public class OnRoundPostStartHelper
         ICollection<T> ctSnipers = new HashSet<T>();
         if (roundType == RoundType.FullBuy)
         {
+            // Filter by players that actually want a sniper
             tSnipers = WeaponHelpers.SelectSnipers(tPlayers);
             ctSnipers = WeaponHelpers.SelectSnipers(ctPlayers);
         }

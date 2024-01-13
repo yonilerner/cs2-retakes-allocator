@@ -33,14 +33,22 @@ public class Queries
         return userSettings;
     }
 
-    public static void SetWeaponPreferenceForUser(ulong userId, CsTeam team, RoundType roundType, CsItem? item)
+    public static void SetWeaponPreferenceForUser(ulong userId, CsTeam team, WeaponAllocationType weaponAllocationType,
+        CsItem? item)
     {
-        UpsertUserSettings(userId, userSetting => { userSetting.SetWeaponPreference(team, roundType, item); });
+        UpsertUserSettings(userId,
+            userSetting => { userSetting.SetWeaponPreference(team, weaponAllocationType, item); });
     }
 
     public static void SetSniperPreference(ulong userId, CsItem? sniper)
     {
-        UpsertUserSettings(userId, userSetting => { userSetting.SniperPreference = sniper; });
+        UpsertUserSettings(userId, userSetting =>
+        {
+            userSetting.SetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Sniper,
+                WeaponHelpers.CoerceSniperTeam(sniper, CsTeam.Terrorist));
+            userSetting.SetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Sniper,
+                WeaponHelpers.CoerceSniperTeam(sniper, CsTeam.CounterTerrorist));
+        });
     }
 
     public static IDictionary<ulong, UserSetting> GetUsersSettings(ICollection<ulong> userIds)

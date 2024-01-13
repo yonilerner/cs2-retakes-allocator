@@ -62,7 +62,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a T Primary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.FullBuy, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(RoundType.FullBuy, CsTeam.Terrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnTPrimarySelect);
         }
@@ -92,7 +92,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a T Secondary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.Pistol, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(RoundType.Pistol, CsTeam.Terrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnTSecondarySelect);
         }
@@ -123,7 +123,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a CT Primary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.FullBuy, CsTeam.CounterTerrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(RoundType.FullBuy, CsTeam.CounterTerrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnCTPrimarySelect);
         }
@@ -153,7 +153,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a CT Secondary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.Pistol, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(RoundType.Pistol, CsTeam.Terrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnCTSecondarySelect);
         }

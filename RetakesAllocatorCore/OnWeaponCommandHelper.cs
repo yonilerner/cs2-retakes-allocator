@@ -57,7 +57,11 @@ public class OnWeaponCommandHelper
             return $"Invalid weapon '{weapon}'";
         }
 
-        if (!WeaponHelpers.IsValidWeaponForRound(roundType.Value, team, weapon))
+        var allocationType = WeaponHelpers.WeaponAllocationTypeForWeaponAndRound(
+            roundType.Value, team, weapon
+        );
+
+        if (allocationType is null)
         {
             return $"Weapon '{weapon}' is not valid for {roundType} rounds on {team}";
         }
@@ -73,7 +77,8 @@ public class OnWeaponCommandHelper
             }
             else
             {
-                Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, null);
+                // TODO double check this
+                Queries.SetWeaponPreferenceForUser(userId, team, allocationType.Value, null);
                 return $"Weapon '{weapon}' is no longer your {roundType} preference for {team}.";
             }
         }
@@ -86,7 +91,8 @@ public class OnWeaponCommandHelper
         }
         else
         {
-            Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, weapon);
+            // TODO double check this
+            Queries.SetWeaponPreferenceForUser(userId, team, allocationType.Value, weapon);
             message = $"Weapon '{weapon}' is now your {roundType} preference for {team}.";
         }
 

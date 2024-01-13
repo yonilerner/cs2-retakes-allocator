@@ -36,7 +36,7 @@ public class RetakesAllocator : BasePlugin
 
         RegisterListener<Listeners.OnMapStart>(mapName => { ResetState(); });
         AddCommandListener("say", OnPlayerChat, HookMode.Post);
-        
+
         if (Configs.GetConfigData().MigrateOnStartup)
         {
             Queries.Migrate();
@@ -71,6 +71,7 @@ public class RetakesAllocator : BasePlugin
     #endregion
 
     #region Commands
+
     private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo info)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -89,14 +90,14 @@ public class RetakesAllocator : BasePlugin
 
         return HookResult.Continue;
     }
-    
+
     [ConsoleCommand("css_guns")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         HandleGunsCommand(player, commandInfo);
     }
-    
+
     private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -229,7 +230,6 @@ public class RetakesAllocator : BasePlugin
         var weaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(item);
         var isSniper = WeaponHelpers.IsSniper(team, item);
 
-
         // Log.Write($"item {item} team {team} player {playerId}");
         // Log.Write($"curRound {_currentRoundType} weapon Round {weaponRoundType}");
 
@@ -267,16 +267,22 @@ public class RetakesAllocator : BasePlugin
             var slotToSelect = _currentRoundType == RoundType.Pistol ? "slot2" : "slot1";
             if (removedAnyWeapons && _currentRoundType is not null && WeaponHelpers.IsWeapon(item))
             {
-                var replacementItem = WeaponHelpers.GetWeaponForRoundType(_currentRoundType.Value, team,
-                    Queries.GetUserSettings(playerId));
-                // Log.Write($"Replacement item: {replacementItem}");
-                if (replacementItem is not null)
+                var replacementAllocationType =
+                    WeaponHelpers.GetWeaponAllocationTypeForWeapon(item, _currentRoundType.Value);
+                if (replacementAllocationType is not null)
                 {
-                    replacedWeapon = true;
-                    AllocateItemsForPlayer(player, new List<CsItem>
+                    var replacementItem = WeaponHelpers.GetWeaponForAllocationType(replacementAllocationType.Value,
+                        team,
+                        Queries.GetUserSettings(playerId));
+                    // Log.Write($"Replacement item: {replacementItem}");
+                    if (replacementItem is not null)
                     {
-                        replacementItem.Value
-                    }, slotToSelect);
+                        replacedWeapon = true;
+                        AllocateItemsForPlayer(player, new List<CsItem>
+                        {
+                            replacementItem.Value
+                        }, slotToSelect);
+                    }
                 }
             }
 

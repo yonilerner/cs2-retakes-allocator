@@ -13,11 +13,12 @@ public class DbTests : BaseTestFixture
         var usersSettings = Queries.GetUsersSettings(new List<ulong>());
         Assert.That(usersSettings, Is.EqualTo(new Dictionary<ulong, UserSetting>()));
 
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, RoundType.HalfBuy, CsItem.Bizon);
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, RoundType.Pistol, null);
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, RoundType.HalfBuy, CsItem.MP5);
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.CounterTerrorist, RoundType.FullBuy, CsItem.AWP);
-        Queries.SetWeaponPreferenceForUser(2, CsTeam.Terrorist, RoundType.FullBuy, CsItem.AK47);
+        // TODO Add secondary and sniper allocation types
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary, CsItem.Bizon);
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.PistolRound, null);
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary, CsItem.MP5);
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.CounterTerrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AWP);
+        Queries.SetWeaponPreferenceForUser(2, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AK47);
 
         usersSettings = Queries.GetUsersSettings(new List<ulong> {1});
         Assert.Multiple(() =>
@@ -37,16 +38,16 @@ public class DbTests : BaseTestFixture
             Assert.That(usersSettings.Keys, Is.EquivalentTo(new List<ulong> {1, 2}));
             Assert.That(usersSettings.Values.Select(v => v.UserId), Is.EquivalentTo(new List<ulong> {1, 2}));
 
-            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.Terrorist][RoundType.HalfBuy],
+            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.Terrorist][WeaponAllocationType.HalfBuyPrimary],
                 Is.EqualTo(CsItem.MP5));
-            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.Terrorist].TryGetValue(RoundType.Pistol, out _),
+            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.Terrorist].TryGetValue(WeaponAllocationType.PistolRound, out _),
                 Is.EqualTo(false));
-            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.CounterTerrorist][RoundType.FullBuy],
+            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.CounterTerrorist][WeaponAllocationType.FullBuyPrimary],
                 Is.EqualTo(CsItem.AWP));
             Assert.That(
-                usersSettings[1].WeaponPreferences[CsTeam.CounterTerrorist].TryGetValue(RoundType.HalfBuy, out _),
+                usersSettings[1].WeaponPreferences[CsTeam.CounterTerrorist].TryGetValue(WeaponAllocationType.HalfBuyPrimary, out _),
                 Is.EqualTo(false));
-            Assert.That(usersSettings[2].WeaponPreferences[CsTeam.Terrorist][RoundType.FullBuy],
+            Assert.That(usersSettings[2].WeaponPreferences[CsTeam.Terrorist][WeaponAllocationType.FullBuyPrimary],
                 Is.EqualTo(CsItem.AK47));
         });
     }
