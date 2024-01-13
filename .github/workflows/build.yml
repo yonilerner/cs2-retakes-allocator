@@ -51,12 +51,8 @@ jobs:
         with:
           name: RetakesAllocator-${{github.ref_name}}
           path: ${{github.workspace}}/RetakesAllocator/
-      - name: tree
-        run: tree
       - name: Create Archive
         run: zip -r RetakesAllocator-${{github.ref_name}}.zip RetakesAllocator
-      - name: tree2
-        run: tree
       - name: Get Release Info
         id: get-release-info
         run: |
