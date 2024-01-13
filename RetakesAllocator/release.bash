@@ -10,6 +10,9 @@ echo $NEW_DIR
 
 ls $TARGET_DIR/**
 
+# Remove unnecessary files
+rm "$TARGET_DIR/CounterStrikeSharp.API.dll"
+
 echo cp -r $TARGET_DIR $NEW_DIR
 cp -r $TARGET_DIR $NEW_DIR
 echo rm -rf "$NEW_DIR/runtimes"
