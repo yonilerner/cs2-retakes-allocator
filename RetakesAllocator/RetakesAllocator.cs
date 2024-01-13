@@ -106,7 +106,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         // If we can't add the player, they're already in the menu
-        if (!_weaponsMenu.PlayersInGunsMenu.Add(player!))
+        if (!_weaponsMenu.PlayersInMenu.Add(player!))
         {
             commandInfo.ReplyToCommand($"{MessagePrefix}You are already in the gun menu!");
             return;
