@@ -9,7 +9,7 @@ public class MenuManager
     
     private readonly GunsMenu _gunsMenu = new();
     private readonly NextRoundMenu _nextRoundMenu = new();
-    
+
     public void OpenGunsMenu(CCSPlayerController player)
     {
         if (IsUserInMenu(player))
