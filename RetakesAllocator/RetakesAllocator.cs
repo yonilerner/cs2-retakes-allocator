@@ -24,7 +24,7 @@ public class RetakesAllocator : BasePlugin
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
-    private MenuManager _menuManager = new();
+    private readonly MenuManager _menuManager = new();
 
     #region Setup
 

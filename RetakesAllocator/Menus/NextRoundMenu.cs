@@ -54,6 +54,8 @@ public class NextRoundMenu : BaseMenu
 
     public void OpenNextRoundMenu(CCSPlayerController player)
     {
+        PlayersInMenu.Add(player);
+        
         var menu = new ChatMenu($"{MessagePrefix} Select your vote for the next round type!");
 
         foreach (var roundType in RoundTypeHelpers.GetRoundTypes())

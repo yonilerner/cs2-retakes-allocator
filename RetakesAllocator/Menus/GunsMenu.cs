@@ -53,6 +53,8 @@ public class GunsMenu: BaseMenu
 
     public void OpenGunsMenu(CCSPlayerController player)
     {
+        PlayersInMenu.Add(player);
+        
         OpenTPrimaryMenu(player);
     }
 
