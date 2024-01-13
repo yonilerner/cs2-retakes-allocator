@@ -21,7 +21,7 @@ public class UserSetting
     public ulong UserId { get; set; }
 
     [Column(TypeName = "TEXT"), MaxLength(10000)]
-    public WeaponPreferencesType? WeaponPreferences { get; set; } = new();
+    public WeaponPreferencesType WeaponPreferences { get; set; } = new();
 
     [Column(TypeName = "TEXT"), MaxLength(100)]
     public CsItem? SniperPreference { get; set; } = null;

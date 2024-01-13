@@ -31,7 +31,7 @@ namespace RetakesAllocator.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserSettings");
+                    b.ToTable("UserSettings", (string)null);
                 });
 #pragma warning restore 612, 618
         }
