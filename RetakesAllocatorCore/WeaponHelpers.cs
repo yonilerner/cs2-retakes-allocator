@@ -10,8 +10,8 @@ public static class WeaponHelpers
 {
     private static readonly ICollection<CsItem> _sharedPistols = new HashSet<CsItem>
     {
-        CsItem.P250,
         CsItem.Deagle,
+        CsItem.P250,
         CsItem.CZ,
         CsItem.Dualies,
         CsItem.R8,
@@ -33,11 +33,11 @@ public static class WeaponHelpers
     private static readonly ICollection<CsItem> _sharedMidRange = new HashSet<CsItem>
     {
         // SMG
-        CsItem.MP5,
-        CsItem.UMP45,
         CsItem.P90,
+        CsItem.UMP45,
         CsItem.MP7,
         CsItem.Bizon,
+        CsItem.MP5,
 
         // Shotgun
         CsItem.XM1014,
@@ -67,10 +67,10 @@ public static class WeaponHelpers
 
     private static readonly ICollection<CsItem> _ctRifles = new HashSet<CsItem>
     {
-        CsItem.Famas,
-        CsItem.AUG,
         CsItem.M4A1S,
         CsItem.M4A4,
+        CsItem.Famas,
+        CsItem.AUG,
     };
 
     private static readonly ICollection<CsItem> _sharedSnipers = new HashSet<CsItem>
@@ -166,7 +166,7 @@ public static class WeaponHelpers
 
     public static ICollection<CsItem> GetPossibleWeaponsForRoundType(RoundType roundType, CsTeam team)
     {
-        return _validWeaponsByTeamAndRoundType[team][roundType];
+        return _validWeaponsByTeamAndRoundType[team][roundType].Where(IsUsableWeapon).ToList();
     }
 
     public static bool IsValidWeapon(RoundType roundType, CsTeam team, CsItem weapon)

@@ -4,7 +4,7 @@ namespace RetakesAllocatorCore;
 
 public static class PluginInfo
 {
-    public const string Version = "1.1.0";
+    public const string Version = "1.1.1";
     
     public static readonly string LogPrefix = $"[RetakesAllocator {Version}] ";
     public static readonly string MessagePrefix = $"[{ChatColors.Green}Retakes{ChatColors.White}] ";

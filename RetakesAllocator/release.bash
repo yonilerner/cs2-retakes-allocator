@@ -21,4 +21,7 @@ cp -rf "$TARGET_DIR/runtimes/linux-x64" "$NEW_DIR/runtimes"
 echo cp -rf "$TARGET_DIR/runtimes/win-x64" "$NEW_DIR/runtimes"
 cp -rf "$TARGET_DIR/runtimes/win-x64" "$NEW_DIR/runtimes"
 
+# Remove unnecessary files
+rm "$NEW_DIR/CounterStrikeSharp.API.dll"
+
 tree ./bin
