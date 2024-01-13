@@ -93,7 +93,7 @@ public enum WeaponSelectionType
 public enum DatabaseProvider
 {
     Sqlite,
-    MySql
+    MySql,
 }
 
 public record ConfigData
