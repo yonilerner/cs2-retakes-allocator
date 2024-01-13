@@ -14,7 +14,7 @@ public class MenuManager
     {
         if (IsUserInMenu(player))
         {
-            player.PrintToChat($"{MessagePrefix}You are already in a menu!");
+            player.PrintToChat($"{MessagePrefix}You are already using another menu!");
             return;
         }
         
@@ -25,7 +25,7 @@ public class MenuManager
     {
         if (IsUserInMenu(player))
         {
-            player.PrintToChat($"{MessagePrefix}You are already in a menu!");
+            player.PrintToChat($"{MessagePrefix}You are already using another menu!");
             return;
         }
         

@@ -1,6 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
-using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocator.Menus.Interfaces;
 using RetakesAllocatorCore;
 using static RetakesAllocatorCore.PluginInfo;
