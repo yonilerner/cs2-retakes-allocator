@@ -7,17 +7,23 @@ public class MenuManager
 {
     public const float DefaultMenuTimeout = 30.0f;
     
-    // Menus
-    private WeaponsMenu _weaponsMenu = new();
+    private GunsMenu _gunsMenu = new();
     private NextRoundMenu _nextRoundMenu = new();
     
     public void OpenWeaponsMenu(CCSPlayerController player)
     {
-        _weaponsMenu.OpenGunsMenu(player);
+        _gunsMenu.OpenGunsMenu(player);
     }
     
     public void OpenNextRoundMenu(CCSPlayerController player)
     {
         _nextRoundMenu.OpenNextRoundMenu(player);
+    }
+    
+    public bool IsUserInMenu(CCSPlayerController player)
+    {
+        return
+            _gunsMenu.PlayersInMenu.Contains(player) 
+            || _nextRoundMenu.PlayersInMenu.Contains(player);
     }
 }
