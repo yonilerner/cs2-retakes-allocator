@@ -107,6 +107,19 @@ public class RetakesAllocator : BasePlugin
 
         _menuManager.OpenGunsMenu(player!);
     }
+    
+    [ConsoleCommand("css_nextround", "Opens the menu to vote for the next round type.")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}This command can only be executed by a valid player.");
+            return;
+        }
+
+        _menuManager.OpenNextRoundMenu(player!);
+    }
 
     [ConsoleCommand("css_gun")]
     [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -177,10 +190,10 @@ public class RetakesAllocator : BasePlugin
         }
     }
 
-    [ConsoleCommand("css_nextround", "Sets the next round type.")]
+    [ConsoleCommand("css_setnextround", "Sets the next round type.")]
     [CommandHelper(minArgs: 1, usage: "<P/H/F>", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     [RequiresPermissions("@css/root")]
-    public void OnNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    public void OnSetNextRoundCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         var roundTypeInput = commandInfo.GetArg(1).ToLower();
         var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);

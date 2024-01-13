@@ -76,7 +76,7 @@ public class NextRoundMenu : BaseMenu
 
         var selectedRound = option.Text;
         
-        player.PrintToChat($"{MessagePrefix} You selected {selectedRound} as T Primary!");
+        player.PrintToChat($"{MessagePrefix} You selected {selectedRound} as the next round!");
         // HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
         
         OnMenuComplete(player);
