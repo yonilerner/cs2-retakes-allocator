@@ -9,8 +9,8 @@ public class GlobalSetup
     [OneTimeSetUp]
     public void Setup()
     {
-        Queries.Migrate();
         Configs.Load(".", true);
+        Queries.Migrate();
     }
 
     [OneTimeTearDown]
