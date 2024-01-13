@@ -10,6 +10,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
+using RetakesAllocator.Menus;
 using SQLitePCL;
 using static RetakesAllocatorCore.PluginInfo;
 
@@ -23,6 +24,7 @@ public class RetakesAllocator : BasePlugin
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
+    private WeaponsMenu _weaponsMenu = new();
 
     #region Setup
 
@@ -33,7 +35,8 @@ public class RetakesAllocator : BasePlugin
         Batteries.Init();
 
         RegisterListener<Listeners.OnMapStart>(mapName => { ResetState(); });
-
+        AddCommandListener("say", OnPlayerChat, HookMode.Post);
+        
         if (Configs.GetConfigData().MigrateOnStartup)
         {
             Queries.Migrate();
@@ -68,14 +71,48 @@ public class RetakesAllocator : BasePlugin
     #endregion
 
     #region Commands
+    private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo info)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            return HookResult.Continue;
+        }
 
+        var message = info.ArgByIndex(1).ToLower();
+
+        switch (message)
+        {
+            case "guns":
+                OnGunsCommand(player, info);
+                break;
+        }
+
+        return HookResult.Continue;
+    }
+    
     [ConsoleCommand("css_guns")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
-        commandInfo.ReplyToCommand(
-            $"{MessagePrefix}Eventually this will be a weapon menu. For now, please use !gun <weapon>."
-        );
+        HandleGunsCommand(player, commandInfo);
+    }
+    
+    private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}This command can only be executed by a valid player.");
+            return;
+        }
+
+        // If we can't add the player, they're already in the menu
+        if (!_weaponsMenu.PlayersInGunsMenu.Add(player!))
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}You are already in the gun menu!");
+            return;
+        }
+
+        _weaponsMenu.OpenGunsMenu(player!);
     }
 
     [ConsoleCommand("css_gun")]
@@ -92,7 +129,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
+        var playerId = Helpers.GetSteamId(player);
         var currentTeam = (CsTeam) player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
@@ -131,7 +168,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        var playerId = player?.AuthorizedSteamID?.SteamId64 ?? 0;
+        var playerId = Helpers.GetSteamId(player);
         var currentTeam = (CsTeam) player!.TeamNum;
 
         var result = OnWeaponCommandHelper.Handle(
