@@ -24,7 +24,7 @@ public class RetakesAllocator : BasePlugin
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
-    private GunsMenu _gunsMenu = new();
+    private MenuManager _menuManager = new();
 
     #region Setup
 
@@ -83,7 +83,7 @@ public class RetakesAllocator : BasePlugin
         switch (message)
         {
             case "guns":
-                OnGunsCommand(player, info);
+                HandleGunsCommand(player, info);
                 break;
         }
 
@@ -105,14 +105,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        // If we can't add the player, they're already in the menu
-        if (!_gunsMenu.PlayersInMenu.Add(player!))
-        {
-            commandInfo.ReplyToCommand($"{MessagePrefix}You are already in the gun menu!");
-            return;
-        }
-
-        _gunsMenu.OpenGunsMenu(player!);
+        _menuManager.OpenGunsMenu(player!);
     }
 
     [ConsoleCommand("css_gun")]
