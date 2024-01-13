@@ -166,7 +166,7 @@ public static class WeaponHelpers
 
     public static ICollection<CsItem> GetPossibleWeaponsForRoundType(RoundType roundType, CsTeam team)
     {
-        return _validWeaponsByTeamAndRoundType[team][roundType];
+        return _validWeaponsByTeamAndRoundType[team][roundType].Where(IsUsableWeapon).ToList();
     }
 
     public static bool IsValidWeapon(RoundType roundType, CsTeam team, CsItem weapon)
