@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore;
+using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
@@ -34,8 +35,20 @@ public class Db : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-            .UseSqlite($"Data Source=data.db")
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
+        var databaseConnectionString = Configs.GetConfigData().DatabaseConnectionString;
+        switch (Configs.GetConfigData().DatabaseProvider)
+        {
+            case DatabaseProvider.Sqlite:
+                optionsBuilder.UseSqlite(databaseConnectionString);
+                break;
+            case DatabaseProvider.MySql:
+                optionsBuilder.UseMySQL(databaseConnectionString);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

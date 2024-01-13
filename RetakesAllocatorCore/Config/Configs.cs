@@ -90,6 +90,12 @@ public enum WeaponSelectionType
     Default,
 }
 
+public enum DatabaseProvider
+{
+    Sqlite,
+    MySql
+}
+
 public record ConfigData
 {
     public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.GetAllWeapons();
@@ -107,6 +113,9 @@ public record ConfigData
     public bool MigrateOnStartup { get; set; } = true;
     public bool AllowAllocationAfterFreezeTime { get; set; } = false;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
+
+    public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
+    public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
 
     public void Validate()
     {
