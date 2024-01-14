@@ -215,7 +215,8 @@ public static class WeaponHelpers
         return _allWeapons.Contains(item);
     }
 
-    public static ICollection<CsItem> GetPossibleWeaponsForAllocationType(WeaponAllocationType allocationType, CsTeam team)
+    public static ICollection<CsItem> GetPossibleWeaponsForAllocationType(WeaponAllocationType allocationType,
+        CsTeam team)
     {
         return _validWeaponsByTeamAndAllocationType[team][allocationType].Where(IsUsableWeapon).ToList();
     }
@@ -267,6 +268,7 @@ public static class WeaponHelpers
         };
     }
 
+    // TODO In the future this will be more complex based on sniper config
     public static ICollection<T> SelectSnipers<T>(ICollection<T> players)
     {
         var player = Utils.Choice(players);
@@ -355,14 +357,22 @@ public static class WeaponHelpers
         return null;
     }
 
-    public static ICollection<CsItem> GetWeaponsForRoundType(RoundType roundType, CsTeam team, UserSetting? userSetting)
+    public static ICollection<CsItem> GetWeaponsForRoundType(
+        RoundType roundType,
+        CsTeam team,
+        UserSetting? userSetting,
+        bool giveSniper
+    )
     {
-        WeaponAllocationType? primaryWeaponAllocation = roundType switch
-        {
-            RoundType.HalfBuy => WeaponAllocationType.HalfBuyPrimary,
-            RoundType.FullBuy => WeaponAllocationType.FullBuyPrimary,
-            _ => null,
-        };
+        WeaponAllocationType? primaryWeaponAllocation =
+            giveSniper
+                ? WeaponAllocationType.Sniper
+                : roundType switch
+                {
+                    RoundType.HalfBuy => WeaponAllocationType.HalfBuyPrimary,
+                    RoundType.FullBuy => WeaponAllocationType.FullBuyPrimary,
+                    _ => null,
+                };
 
         var secondaryWeaponAllocation = roundType switch
         {

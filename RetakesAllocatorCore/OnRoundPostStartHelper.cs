@@ -50,37 +50,45 @@ public class OnRoundPostStartHelper
 
         var defusingPlayer = Utils.Choice(ctPlayers);
 
+        HashSet<T> FilterBySniperPreference(IEnumerable<T> ps) =>
+            ps.Where(p =>
+                    userSettingsByPlayerId.TryGetValue(getSteamId(p), out var userSetting) &&
+                    userSetting.GetWeaponPreference(getTeam(p), WeaponAllocationType.Sniper) is not null)
+                .ToHashSet();
+
         ICollection<T> tSnipers = new HashSet<T>();
         ICollection<T> ctSnipers = new HashSet<T>();
         if (roundType == RoundType.FullBuy)
         {
-            // Filter by players that actually want a sniper
-            tSnipers = WeaponHelpers.SelectSnipers(tPlayers);
-            ctSnipers = WeaponHelpers.SelectSnipers(ctPlayers);
+            tSnipers = WeaponHelpers.SelectSnipers(FilterBySniperPreference(tPlayers));
+            ctSnipers = WeaponHelpers.SelectSnipers(FilterBySniperPreference(ctPlayers));
         }
 
         foreach (var player in allPlayers)
         {
             var team = getTeam(player);
             var playerSteamId = getSteamId(player);
-            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
+            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSetting);
             var items = new List<CsItem>
             {
                 RoundTypeHelpers.GetArmorForRoundType(roundType),
                 team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
             };
 
-            var playerWeaponsRoundType = roundType;
-            switch (team)
+            var giveSniper = team switch
             {
-                case CsTeam.Terrorist when tSnipers.Contains(player):
-                case CsTeam.CounterTerrorist when ctSnipers.Contains(player):
-                    playerWeaponsRoundType = RoundType.Pistol;
-                    break;
-            }
+                CsTeam.Terrorist => tSnipers.Contains(player),
+                CsTeam.CounterTerrorist => ctSnipers.Contains(player),
+                _ => false,
+            };
 
             items.AddRange(
-                WeaponHelpers.GetWeaponsForRoundType(playerWeaponsRoundType, team, userSettings)
+                WeaponHelpers.GetWeaponsForRoundType(
+                    roundType,
+                    team,
+                    userSetting,
+                    giveSniper
+                )
             );
 
             if (team == CsTeam.CounterTerrorist)
