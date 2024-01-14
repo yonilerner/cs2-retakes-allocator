@@ -40,14 +40,14 @@ public class Queries
             userSetting => { userSetting.SetWeaponPreference(team, weaponAllocationType, item); });
     }
 
-    public static void SetSniperPreference(ulong userId, CsItem? sniper)
+    public static void SetPreferredWeaponPreference(ulong userId, CsItem? item)
     {
         UpsertUserSettings(userId, userSetting =>
         {
-            userSetting.SetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Sniper,
-                WeaponHelpers.CoerceSniperTeam(sniper, CsTeam.Terrorist));
-            userSetting.SetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Sniper,
-                WeaponHelpers.CoerceSniperTeam(sniper, CsTeam.CounterTerrorist));
+            userSetting.SetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Preferred,
+                WeaponHelpers.CoercePreferredTeam(item, CsTeam.Terrorist));
+            userSetting.SetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Preferred,
+                WeaponHelpers.CoercePreferredTeam(item, CsTeam.CounterTerrorist));
         });
     }
 

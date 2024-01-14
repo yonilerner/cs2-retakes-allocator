@@ -61,16 +61,16 @@ public class OnWeaponCommandHelper
         var allocationType = WeaponHelpers.WeaponAllocationTypeForWeaponAndRound(
             roundType, team, weapon
         );
-        var isSniper = allocationType == WeaponAllocationType.Sniper;
+        var isPreferred = allocationType == WeaponAllocationType.Preferred;
 
         var allocateImmediately = (
             // Always true for pistols
             weaponRoundTypes.Contains(roundType) &&
             // Only set the outWeapon if the user is setting the preference for their current team
             currentTeam == team &&
-            // TODO Allow immediate allocation of sniper if the config permits it (eg. unlimited snipers)
+            // TODO Allow immediate allocation of preferred if the config permits it (eg. unlimited preferred)
             // Could be tricky for max # per team config, since this function doesnt know # of players on the team
-            !isSniper
+            !isPreferred
         );
 
         if (allocationType is null)
@@ -81,9 +81,9 @@ public class OnWeaponCommandHelper
 
         if (remove)
         {
-            if (isSniper)
+            if (isPreferred)
             {
-                Queries.SetSniperPreference(userId, null);
+                Queries.SetPreferredWeaponPreference(userId, null);
                 return $"You will no longer receive '{weapon}'.";
             }
             else
@@ -94,9 +94,10 @@ public class OnWeaponCommandHelper
         }
 
         string message;
-        if (isSniper)
+        if (isPreferred)
         {
-            Queries.SetSniperPreference(userId, weapon);
+            Queries.SetPreferredWeaponPreference(userId, weapon);
+            // If we ever add more preferred weapons, we need to change the wording of "sniper" here
             message = $"You will now get a '{weapon}' when its your turn for a sniper.";
         }
         else
@@ -109,7 +110,7 @@ public class OnWeaponCommandHelper
         {
             outWeapon = weapon;
         }
-        else if (!isSniper)
+        else if (!isPreferred)
         {
             message += $" You will get it at the next {weaponRoundTypes.First()} round.";
         }

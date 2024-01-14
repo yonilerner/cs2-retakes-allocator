@@ -18,13 +18,13 @@ public class DbTests : BaseTestFixture
         Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary, CsItem.MP5);
         Queries.SetWeaponPreferenceForUser(1, CsTeam.CounterTerrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AK47);
         // Should set for both T and CT
-        Queries.SetSniperPreference(1, CsItem.AWP);
+        Queries.SetPreferredWeaponPreference(1, CsItem.AWP);
         
         Queries.SetWeaponPreferenceForUser(2, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AK47);
         Queries.SetWeaponPreferenceForUser(2, CsTeam.Terrorist, WeaponAllocationType.Secondary, CsItem.Deagle);
         Queries.SetWeaponPreferenceForUser(2, CsTeam.CounterTerrorist, WeaponAllocationType.Secondary, CsItem.FiveSeven);
         // Will get different snipers for different teams
-        Queries.SetSniperPreference(2, CsItem.SCAR20);
+        Queries.SetPreferredWeaponPreference(2, CsItem.SCAR20);
 
         usersSettings = Queries.GetUsersSettings(new List<ulong> {1});
         Assert.Multiple(() =>
@@ -52,9 +52,9 @@ public class DbTests : BaseTestFixture
                 Is.EqualTo(CsItem.AK47));
             Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary),
                 Is.EqualTo(null));
-            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Sniper),
+            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Preferred),
                 Is.EqualTo(CsItem.AWP));
-            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Sniper),
+            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Preferred),
                 Is.EqualTo(CsItem.AWP));
 
             Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
@@ -63,9 +63,9 @@ public class DbTests : BaseTestFixture
                 Is.EqualTo(CsItem.Deagle));
             Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Secondary),
                 Is.EqualTo(CsItem.FiveSeven));
-            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Sniper),
+            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Preferred),
                 Is.EqualTo(CsItem.AutoSniperT));
-            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Sniper),
+            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Preferred),
                 Is.EqualTo(CsItem.AutoSniperCT));
             
         });

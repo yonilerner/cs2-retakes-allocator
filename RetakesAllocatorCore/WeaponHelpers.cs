@@ -12,7 +12,11 @@ public enum WeaponAllocationType
     HalfBuyPrimary,
     Secondary,
     PistolRound,
-    Sniper,
+    // eg. AWP is a preferred gun - you cant always get it even if its your preference
+    // Right now its only snipers, but if we make this configurable, we need to change:
+    // - CoercePreferredTeam
+    // - "your turn" wording in the weapon command handler
+    Preferred,
 }
 
 public static class WeaponHelpers
@@ -58,6 +62,9 @@ public static class WeaponHelpers
         // Shotgun
         CsItem.XM1014,
         CsItem.Nova,
+        
+        // Sniper
+        CsItem.Scout,
     };
 
     private static readonly ICollection<CsItem> _tMidRange = new HashSet<CsItem>
@@ -99,28 +106,26 @@ public static class WeaponHelpers
         CsItem.AUG,
     };
 
-    private static readonly ICollection<CsItem> _sharedSnipers = new HashSet<CsItem>
+    private static readonly ICollection<CsItem> _sharedPreferred = new HashSet<CsItem>
     {
-        // TODO Make Scout a half buy weapon
-        CsItem.Scout,
         CsItem.AWP,
     };
 
-    private static readonly ICollection<CsItem> _tSnipers = new HashSet<CsItem>
+    private static readonly ICollection<CsItem> _tPreferred = new HashSet<CsItem>
     {
         CsItem.AutoSniperT,
     };
 
-    private static readonly ICollection<CsItem> _ctSnipers = new HashSet<CsItem>
+    private static readonly ICollection<CsItem> _ctPreferred = new HashSet<CsItem>
     {
         CsItem.AutoSniperCT,
     };
 
-    private static readonly ICollection<CsItem> _snipersForT = _sharedSnipers.Concat(_tSnipers).ToHashSet();
-    private static readonly ICollection<CsItem> _snipersForCt = _sharedSnipers.Concat(_ctSnipers).ToHashSet();
+    private static readonly ICollection<CsItem> _preferredForT = _sharedPreferred.Concat(_tPreferred).ToHashSet();
+    private static readonly ICollection<CsItem> _preferredForCt = _sharedPreferred.Concat(_ctPreferred).ToHashSet();
 
-    private static readonly ICollection<CsItem> _allSnipers =
-        _snipersForT.Concat(_snipersForCt).ToHashSet();
+    private static readonly ICollection<CsItem> _allPreferred =
+        _preferredForT.Concat(_preferredForCt).ToHashSet();
 
     private static readonly ICollection<CsItem> _heavys = new HashSet<CsItem>
     {
@@ -128,18 +133,18 @@ public static class WeaponHelpers
         CsItem.Negev,
     };
 
-    private static readonly ICollection<CsItem> _fullBuyForT =
-        _tRifles.Concat(_snipersForT).Concat(_heavys).ToHashSet();
+    private static readonly ICollection<CsItem> _fullBuyPrimaryForT =
+        _tRifles.Concat(_heavys).ToHashSet();
 
-    private static readonly ICollection<CsItem> _fullBuyForCt =
-        _ctRifles.Concat(_snipersForCt).Concat(_heavys).ToHashSet();
+    private static readonly ICollection<CsItem> _fullBuyPrimaryForCt =
+        _ctRifles.Concat(_heavys).ToHashSet();
 
     private static readonly ICollection<CsItem> _allWeapons = Enum.GetValues<CsItem>()
         .Where(item => (int) item >= 200 && (int) item < 500)
         .ToHashSet();
 
     private static readonly ICollection<CsItem> _allFullBuy =
-        _allSnipers.Concat(_heavys).Concat(_tRifles).Concat(_ctRifles).ToHashSet();
+        _allPreferred.Concat(_heavys).Concat(_tRifles).Concat(_ctRifles).ToHashSet();
 
     private static readonly ICollection<CsItem> _allHalfBuy =
         _midRangeForT.Concat(_midRangeForCt).ToHashSet();
@@ -158,7 +163,7 @@ public static class WeaponHelpers
             {
                 RoundType.FullBuy,
                 new HashSet<WeaponAllocationType>
-                    {WeaponAllocationType.Secondary, WeaponAllocationType.FullBuyPrimary, WeaponAllocationType.Sniper}
+                    {WeaponAllocationType.Secondary, WeaponAllocationType.FullBuyPrimary, WeaponAllocationType.Preferred}
             },
         };
 
@@ -173,8 +178,8 @@ public static class WeaponHelpers
                 {WeaponAllocationType.PistolRound, _pistolsForT},
                 {WeaponAllocationType.Secondary, _pistolsForT},
                 {WeaponAllocationType.HalfBuyPrimary, _midRangeForT},
-                {WeaponAllocationType.FullBuyPrimary, _fullBuyForT},
-                {WeaponAllocationType.Sniper, _snipersForT},
+                {WeaponAllocationType.FullBuyPrimary, _fullBuyPrimaryForT},
+                {WeaponAllocationType.Preferred, _preferredForT},
             }
         },
         {
@@ -183,8 +188,8 @@ public static class WeaponHelpers
                 {WeaponAllocationType.PistolRound, _pistolsForCt},
                 {WeaponAllocationType.Secondary, _pistolsForCt},
                 {WeaponAllocationType.HalfBuyPrimary, _midRangeForCt},
-                {WeaponAllocationType.FullBuyPrimary, _fullBuyForCt},
-                {WeaponAllocationType.Sniper, _snipersForCt},
+                {WeaponAllocationType.FullBuyPrimary, _fullBuyPrimaryForCt},
+                {WeaponAllocationType.Preferred, _preferredForCt},
             }
         }
     };
@@ -201,7 +206,7 @@ public static class WeaponHelpers
                 {WeaponAllocationType.HalfBuyPrimary, CsItem.Mac10},
                 {WeaponAllocationType.Secondary, CsItem.Deagle},
                 {WeaponAllocationType.PistolRound, CsItem.Glock},
-                {WeaponAllocationType.Sniper, CsItem.AWP},
+                {WeaponAllocationType.Preferred, CsItem.AWP},
             }
         },
         {
@@ -211,7 +216,7 @@ public static class WeaponHelpers
                 {WeaponAllocationType.HalfBuyPrimary, CsItem.MP9},
                 {WeaponAllocationType.Secondary, CsItem.Deagle},
                 {WeaponAllocationType.PistolRound, CsItem.USPS},
-                {WeaponAllocationType.Sniper, CsItem.AWP},
+                {WeaponAllocationType.Preferred, CsItem.AWP},
             }
         }
     };
@@ -285,18 +290,18 @@ public static class WeaponHelpers
         return null;
     }
 
-    public static bool IsSniper(CsTeam team, CsItem weapon)
+    public static bool IsPreferred(CsTeam team, CsItem weapon)
     {
         return team switch
         {
-            CsTeam.Terrorist => _snipersForT.Contains(weapon),
-            CsTeam.CounterTerrorist => _snipersForCt.Contains(weapon),
+            CsTeam.Terrorist => _preferredForT.Contains(weapon),
+            CsTeam.CounterTerrorist => _preferredForCt.Contains(weapon),
             _ => false,
         };
     }
 
-    // TODO In the future this will be more complex based on sniper config
-    public static ICollection<T> SelectSnipers<T>(ICollection<T> players)
+    // TODO In the future this will be more complex based on sniper/preferred config and VIP status
+    public static ICollection<T> SelectPreferredPlayers<T>(ICollection<T> players)
     {
         var player = Utils.Choice(players);
         if (player is null)
@@ -312,9 +317,9 @@ public static class WeaponHelpers
         return Configs.GetConfigData().UsableWeapons.Contains(weapon);
     }
 
-    public static CsItem? CoerceSniperTeam(CsItem? sniper, CsTeam team)
+    public static CsItem? CoercePreferredTeam(CsItem? item, CsTeam team)
     {
-        if (sniper == null || !_allSnipers.Contains(sniper.Value))
+        if (item == null || !_allPreferred.Contains(item.Value))
         {
             return null;
         }
@@ -324,11 +329,13 @@ public static class WeaponHelpers
             return null;
         }
 
-        if (sniper is CsItem.AWP or CsItem.Scout)
+        if (item == CsItem.AWP)
         {
-            return sniper;
+            return item;
         }
 
+        // Right now these are the only other preferred guns
+        // If we make preferred guns configurable, we'll have to change this
         return team == CsTeam.Terrorist ? CsItem.AutoSniperT : CsItem.AutoSniperCT;
     }
 
@@ -408,12 +415,12 @@ public static class WeaponHelpers
         RoundType roundType,
         CsTeam team,
         UserSetting? userSetting,
-        bool giveSniper
+        bool givePreferred
     )
     {
         WeaponAllocationType? primaryWeaponAllocation =
-            giveSniper
-                ? WeaponAllocationType.Sniper
+            givePreferred
+                ? WeaponAllocationType.Preferred
                 : roundType switch
                 {
                     RoundType.HalfBuy => WeaponAllocationType.HalfBuyPrimary,
@@ -480,7 +487,7 @@ public static class WeaponHelpers
             WeaponAllocationType.Secondary => team == CsTeam.Terrorist ? _pistolsForT : _pistolsForCt,
             WeaponAllocationType.HalfBuyPrimary => team == CsTeam.Terrorist ? _smgsForT : _smgsForCt,
             WeaponAllocationType.FullBuyPrimary => team == CsTeam.Terrorist ? _tRifles : _ctRifles,
-            WeaponAllocationType.Sniper => team == CsTeam.Terrorist ? _snipersForT : _snipersForCt,
+            WeaponAllocationType.Preferred => team == CsTeam.Terrorist ? _preferredForT : _preferredForCt,
             _ => _sharedPistols,
         };
         return Utils.Choice(collectionToCheck.Where(IsUsableWeapon).ToList());

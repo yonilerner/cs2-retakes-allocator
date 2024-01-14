@@ -50,18 +50,18 @@ public class OnRoundPostStartHelper
 
         var defusingPlayer = Utils.Choice(ctPlayers);
 
-        HashSet<T> FilterBySniperPreference(IEnumerable<T> ps) =>
+        HashSet<T> FilterByPreferredWeaponPreference(IEnumerable<T> ps) =>
             ps.Where(p =>
                     userSettingsByPlayerId.TryGetValue(getSteamId(p), out var userSetting) &&
-                    userSetting.GetWeaponPreference(getTeam(p), WeaponAllocationType.Sniper) is not null)
+                    userSetting.GetWeaponPreference(getTeam(p), WeaponAllocationType.Preferred) is not null)
                 .ToHashSet();
 
-        ICollection<T> tSnipers = new HashSet<T>();
-        ICollection<T> ctSnipers = new HashSet<T>();
+        ICollection<T> tPreferredPlayers = new HashSet<T>();
+        ICollection<T> ctPreferredPlayers = new HashSet<T>();
         if (roundType == RoundType.FullBuy)
         {
-            tSnipers = WeaponHelpers.SelectSnipers(FilterBySniperPreference(tPlayers));
-            ctSnipers = WeaponHelpers.SelectSnipers(FilterBySniperPreference(ctPlayers));
+            tPreferredPlayers = WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers));
+            ctPreferredPlayers = WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers));
         }
 
         foreach (var player in allPlayers)
@@ -75,10 +75,10 @@ public class OnRoundPostStartHelper
                 team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
             };
 
-            var giveSniper = team switch
+            var givePreferred = team switch
             {
-                CsTeam.Terrorist => tSnipers.Contains(player),
-                CsTeam.CounterTerrorist => ctSnipers.Contains(player),
+                CsTeam.Terrorist => tPreferredPlayers.Contains(player),
+                CsTeam.CounterTerrorist => ctPreferredPlayers.Contains(player),
                 _ => false,
             };
 
@@ -87,7 +87,7 @@ public class OnRoundPostStartHelper
                     roundType,
                     team,
                     userSetting,
-                    giveSniper
+                    givePreferred
                 )
             );
 
