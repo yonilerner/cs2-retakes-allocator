@@ -110,7 +110,14 @@ public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, 
 
     public static WeaponPreferencesType WeaponPreferenceDeserialize(string value)
     {
-        var parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value);
+        WeaponPreferencesType? parseResult = null;
+        try { 
+            parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value);
+        } catch (Exception e)
+        {
+            Log.Write($"Failed to deserialize weapon preferences: {e.Message}");
+        }
+        
         return parseResult ?? new WeaponPreferencesType();
     }
 }
