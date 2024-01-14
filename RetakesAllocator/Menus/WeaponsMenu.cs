@@ -112,7 +112,6 @@ public class WeaponsMenu
 
         var weaponName = option.Text;
         
-        // TODO: Separate allocation for CT pistol and T pistol
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Secondary!");
         HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
         
@@ -173,13 +172,14 @@ public class WeaponsMenu
 
         var weaponName = option.Text;
         
-        // TODO: Separate allocation for CT pistol and T pistol
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
         // OpenGiveAwpMenu(player);
         OnMenuComplete(player);
     }
+    
+    // TODO: Add menu to select pistol round weapon
 
     // private void OpenGiveAwpMenu(CCSPlayerController player)
     // {
