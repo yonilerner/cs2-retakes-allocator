@@ -136,25 +136,32 @@ public class RetakesAllocator : BasePlugin
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
+            _currentRoundType,
             currentTeam,
             false,
             out var selectedWeapon
         );
-        if (result is not null)
-        {
-            commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
-        }
+        commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
 
         if (Helpers.IsWeaponAllocationAllowed() && selectedWeapon is not null)
         {
-            var selectedWeaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(selectedWeapon.Value);
-            if (selectedWeaponRoundType == RoundType.Pistol || selectedWeaponRoundType == _currentRoundType)
+            var selectedWeaponAllocationType = WeaponHelpers.GetWeaponAllocationTypeForWeapon(selectedWeapon.Value, _currentRoundType);
+            if (selectedWeaponAllocationType is not null)
             {
                 Helpers.RemoveWeapons(
                     player,
-                    item => WeaponHelpers.GetRoundTypeForWeapon(item) == selectedWeaponRoundType
+                    item => WeaponHelpers.GetWeaponAllocationTypeForWeapon(item, _currentRoundType) ==
+                            selectedWeaponAllocationType
                 );
-                var slot = selectedWeaponRoundType == RoundType.Pistol ? "slot2" : "slot1";
+                var slot = selectedWeaponAllocationType.Value switch
+                {
+                    WeaponAllocationType.FullBuyPrimary => "slot1",
+                    WeaponAllocationType.HalfBuyPrimary => "slot1",
+                    WeaponAllocationType.Secondary => "slot2",
+                    WeaponAllocationType.PistolRound => "slot2",
+                    WeaponAllocationType.Preferred => "slot1",
+                    _ => throw new ArgumentOutOfRangeException()
+                };
                 AllocateItemsForPlayer(player, new List<CsItem> {selectedWeapon.Value}, slot);
             }
         }
@@ -175,14 +182,12 @@ public class RetakesAllocator : BasePlugin
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
+            _currentRoundType,
             currentTeam,
             true,
             out _
         );
-        if (result is not null)
-        {
-            commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
-        }
+        commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
     }
 
     [ConsoleCommand("css_nextround", "Sets the next round type.")]
@@ -227,8 +232,13 @@ public class RetakesAllocator : BasePlugin
         var item = Utils.ToEnum<CsItem>(@event.Weapon);
         var team = (CsTeam) player.TeamNum;
         var playerId = Helpers.GetSteamId(player);
-        var weaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(item);
         var isPreferred = WeaponHelpers.IsPreferred(team, item);
+        
+        var purchasedAllocationType = _currentRoundType is not null ? WeaponHelpers.WeaponAllocationTypeForWeaponAndRound(
+            _currentRoundType.Value, team, item
+        ) : null;
+
+        var isValidAllocation = WeaponHelpers.IsAllocationTypeValidForRound(purchasedAllocationType, _currentRoundType);
 
         // Log.Write($"item {item} team {team} player {playerId}");
         // Log.Write($"curRound {_currentRoundType} weapon Round {weaponRoundType}");
@@ -237,14 +247,15 @@ public class RetakesAllocator : BasePlugin
             Helpers.IsWeaponAllocationAllowed() &&
             // Preferred weapons are treated like un-buy-able weapons, but at the end we'll set the user preference
             !isPreferred &&
-            weaponRoundType is not null &&
-            (weaponRoundType == _currentRoundType || weaponRoundType == RoundType.Pistol)
+            isValidAllocation &&
+            // redundant, just for null checker
+            purchasedAllocationType is not null
         )
         {
             Queries.SetWeaponPreferenceForUser(
                 playerId,
                 team,
-                weaponRoundType.Value,
+                purchasedAllocationType.Value,
                 item
             );
         }
@@ -258,8 +269,13 @@ public class RetakesAllocator : BasePlugin
                         return i == item;
                     }
 
-                    // Some weapons identify as other weapons, so we just remove them all
-                    return WeaponHelpers.GetRoundTypeForWeapon(i) == weaponRoundType;
+                    if (_currentRoundType is null)
+                    {
+                        return true;
+                    }
+
+                    var at = WeaponHelpers.GetWeaponAllocationTypeForWeapon(i, _currentRoundType.Value);
+                    return at is null || at == purchasedAllocationType;
                 });
             // Log.Write($"Removed {item}? {removedAnyWeapons}");
 
@@ -336,6 +352,7 @@ public class RetakesAllocator : BasePlugin
                 var message = OnWeaponCommandHelper.Handle(
                     new List<string> {itemName},
                     Helpers.GetSteamId(player),
+                    _currentRoundType,
                     team,
                     false,
                     out _

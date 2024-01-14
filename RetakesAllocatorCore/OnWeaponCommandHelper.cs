@@ -7,7 +7,7 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
-    public static string? Handle(ICollection<string> args, ulong userId, RoundType roundType, CsTeam currentTeam,
+    public static string Handle(ICollection<string> args, ulong userId, RoundType? roundType, CsTeam currentTeam,
         bool remove, out CsItem? outWeapon)
     {
         outWeapon = null;
@@ -65,7 +65,8 @@ public class OnWeaponCommandHelper
 
         var allocateImmediately = (
             // Always true for pistols
-            weaponRoundTypes.Contains(roundType) &&
+            roundType is not null &&
+            weaponRoundTypes.Contains(roundType.Value) &&
             // Only set the outWeapon if the user is setting the preference for their current team
             currentTeam == team &&
             // TODO Allow immediate allocation of preferred if the config permits it (eg. unlimited preferred)

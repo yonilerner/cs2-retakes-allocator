@@ -243,12 +243,16 @@ public static class WeaponHelpers
         return _validWeaponsByTeamAndAllocationType[team][allocationType].Where(IsUsableWeapon).ToList();
     }
 
-    public static bool IsAllocationTypeValidForRound(WeaponAllocationType allocationType, RoundType roundType)
+    public static bool IsAllocationTypeValidForRound(WeaponAllocationType? allocationType, RoundType? roundType)
     {
-        return _validAllocationTypesForRound[roundType].Contains(allocationType);
+        if (allocationType is null || roundType is null)
+        {
+            return false;
+        }
+        return _validAllocationTypesForRound[roundType.Value].Contains(allocationType.Value);
     }
 
-    public static WeaponAllocationType? WeaponAllocationTypeForWeaponAndRound(RoundType roundType, CsTeam team,
+    public static WeaponAllocationType? WeaponAllocationTypeForWeaponAndRound(RoundType? roundType, CsTeam team,
         CsItem weapon)
     {
         if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
@@ -359,27 +363,6 @@ public static class WeaponHelpers
         return new HashSet<RoundType>();
     }
 
-    // TODO Change all usages of this
-    public static RoundType? GetRoundTypeForWeapon(CsItem weapon)
-    {
-        if (_allFullBuy.Contains(weapon))
-        {
-            return RoundType.FullBuy;
-        }
-
-        if (_allHalfBuy.Contains(weapon))
-        {
-            return RoundType.HalfBuy;
-        }
-
-        if (_allPistols.Contains(weapon))
-        {
-            return RoundType.Pistol;
-        }
-
-        return null;
-    }
-
     public static ICollection<CsItem> FindValidWeaponsByName(string needle)
     {
         return FindItemsByName(needle)
@@ -387,14 +370,16 @@ public static class WeaponHelpers
             .ToList();
     }
 
-    public static WeaponAllocationType? GetWeaponAllocationTypeForWeapon(CsItem weapon, RoundType roundType)
+    public static WeaponAllocationType? GetWeaponAllocationTypeForWeapon(CsItem weapon, RoundType? roundType)
     {
         if (_allPistols.Contains(weapon))
         {
             return roundType switch
             {
                 RoundType.Pistol => WeaponAllocationType.PistolRound,
-                _ => WeaponAllocationType.Secondary,
+                RoundType.HalfBuy => WeaponAllocationType.Secondary,
+                RoundType.FullBuy => WeaponAllocationType.Secondary,
+                _ => null,
             };
         }
 

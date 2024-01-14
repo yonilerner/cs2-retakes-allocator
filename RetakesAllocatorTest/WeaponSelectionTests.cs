@@ -63,8 +63,11 @@ public class WeaponSelectionTests : BaseTestFixture
     [TestCase(RoundType.FullBuy, CsTeam.CounterTerrorist, "galil,CT", null, "Galil' is not valid", null)]
     [TestCase(RoundType.Pistol, CsTeam.CounterTerrorist, "tec9,CT", null, "Tec9' is not valid", null)]
     [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "poop,T", null, "not found", null)]
+    [TestCase(null, CsTeam.Terrorist, "ak", null, "AK47' is now", "AK47' is no longer")]
+    [TestCase(RoundType.FullBuy, CsTeam.Spectator, "ak", null, "must join a team", "must join a team")]
+    [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "ak,F", null, "Invalid team", "Invalid team")]
     public void SetWeaponPreferenceCommandSingleArg(
-        RoundType roundType,
+        RoundType? roundType,
         CsTeam team,
         string strArgs,
         CsItem? expectedItem,
