@@ -1,4 +1,5 @@
 using CounterStrikeSharp.API.Core;
+using static RetakesAllocatorCore.PluginInfo;
 
 namespace RetakesAllocator.Managers;
 
