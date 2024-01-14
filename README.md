@@ -1,5 +1,7 @@
 ﻿# CS2 Retakes Allocator
 
+ [![Build RetakesAllocator.zip](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml/badge.svg)](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml)
+
 ## Retakes
 
 This plugin is made to run alongside B3none's retakes implementation: https://github.com/b3none/cs2-retakes
