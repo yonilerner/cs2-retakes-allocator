@@ -13,12 +13,18 @@ public class DbTests : BaseTestFixture
         var usersSettings = Queries.GetUsersSettings(new List<ulong>());
         Assert.That(usersSettings, Is.EqualTo(new Dictionary<ulong, UserSetting>()));
 
-        // TODO Add secondary and sniper allocation types
         Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary, CsItem.Bizon);
         Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.PistolRound, null);
         Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary, CsItem.MP5);
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.CounterTerrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AWP);
+        Queries.SetWeaponPreferenceForUser(1, CsTeam.CounterTerrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AK47);
+        // Should set for both T and CT
+        Queries.SetSniperPreference(1, CsItem.AWP);
+        
         Queries.SetWeaponPreferenceForUser(2, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AK47);
+        Queries.SetWeaponPreferenceForUser(2, CsTeam.Terrorist, WeaponAllocationType.Secondary, CsItem.Deagle);
+        Queries.SetWeaponPreferenceForUser(2, CsTeam.CounterTerrorist, WeaponAllocationType.Secondary, CsItem.FiveSeven);
+        // Will get different snipers for different teams
+        Queries.SetSniperPreference(2, CsItem.SCAR20);
 
         usersSettings = Queries.GetUsersSettings(new List<ulong> {1});
         Assert.Multiple(() =>
@@ -38,17 +44,30 @@ public class DbTests : BaseTestFixture
             Assert.That(usersSettings.Keys, Is.EquivalentTo(new List<ulong> {1, 2}));
             Assert.That(usersSettings.Values.Select(v => v.UserId), Is.EquivalentTo(new List<ulong> {1, 2}));
 
-            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.Terrorist][WeaponAllocationType.HalfBuyPrimary],
+            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary),
                 Is.EqualTo(CsItem.MP5));
-            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.Terrorist].TryGetValue(WeaponAllocationType.PistolRound, out _),
-                Is.EqualTo(false));
-            Assert.That(usersSettings[1].WeaponPreferences[CsTeam.CounterTerrorist][WeaponAllocationType.FullBuyPrimary],
-                Is.EqualTo(CsItem.AWP));
-            Assert.That(
-                usersSettings[1].WeaponPreferences[CsTeam.CounterTerrorist].TryGetValue(WeaponAllocationType.HalfBuyPrimary, out _),
-                Is.EqualTo(false));
-            Assert.That(usersSettings[2].WeaponPreferences[CsTeam.Terrorist][WeaponAllocationType.FullBuyPrimary],
+            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.PistolRound),
+                Is.EqualTo(null));
+            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.FullBuyPrimary),
                 Is.EqualTo(CsItem.AK47));
+            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary),
+                Is.EqualTo(null));
+            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Sniper),
+                Is.EqualTo(CsItem.AWP));
+            Assert.That(usersSettings[1].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Sniper),
+                Is.EqualTo(CsItem.AWP));
+
+            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
+                Is.EqualTo(CsItem.AK47));
+            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Secondary),
+                Is.EqualTo(CsItem.Deagle));
+            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Secondary),
+                Is.EqualTo(CsItem.FiveSeven));
+            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Sniper),
+                Is.EqualTo(CsItem.AutoSniperT));
+            Assert.That(usersSettings[2].GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Sniper),
+                Is.EqualTo(CsItem.AutoSniperCT));
+            
         });
     }
 }

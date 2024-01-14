@@ -1,3 +1,4 @@
+using System.Collections;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Config;
@@ -100,8 +101,9 @@ public static class WeaponHelpers
 
     private static readonly ICollection<CsItem> _sharedSnipers = new HashSet<CsItem>
     {
-        CsItem.AWP,
+        // TODO Make Scout a half buy weapon
         CsItem.Scout,
+        CsItem.AWP,
     };
 
     private static readonly ICollection<CsItem> _tSnipers = new HashSet<CsItem>
@@ -144,6 +146,21 @@ public static class WeaponHelpers
 
     private static readonly ICollection<CsItem> _allPistols =
         _pistolsForT.Concat(_pistolsForCt).ToHashSet();
+
+    private static readonly Dictionary<RoundType, ICollection<WeaponAllocationType>>
+        _validAllocationTypesForRound = new()
+        {
+            {RoundType.Pistol, new HashSet<WeaponAllocationType> {WeaponAllocationType.PistolRound}},
+            {
+                RoundType.HalfBuy,
+                new HashSet<WeaponAllocationType> {WeaponAllocationType.Secondary, WeaponAllocationType.HalfBuyPrimary}
+            },
+            {
+                RoundType.FullBuy,
+                new HashSet<WeaponAllocationType>
+                    {WeaponAllocationType.Secondary, WeaponAllocationType.FullBuyPrimary, WeaponAllocationType.Sniper}
+            },
+        };
 
     private static readonly Dictionary<
         CsTeam,
@@ -221,16 +238,9 @@ public static class WeaponHelpers
         return _validWeaponsByTeamAndAllocationType[team][allocationType].Where(IsUsableWeapon).ToList();
     }
 
-    // TODO Im not convinced this is reasonable
     public static bool IsAllocationTypeValidForRound(WeaponAllocationType allocationType, RoundType roundType)
     {
-        return roundType switch
-        {
-            RoundType.Pistol => allocationType is WeaponAllocationType.PistolRound or WeaponAllocationType.Secondary,
-            RoundType.HalfBuy => allocationType == WeaponAllocationType.HalfBuyPrimary,
-            RoundType.FullBuy => allocationType is WeaponAllocationType.FullBuyPrimary or WeaponAllocationType.Sniper,
-            _ => false
-        };
+        return _validAllocationTypesForRound[roundType].Contains(allocationType);
     }
 
     public static WeaponAllocationType? WeaponAllocationTypeForWeaponAndRound(RoundType roundType, CsTeam team,
@@ -241,15 +251,32 @@ public static class WeaponHelpers
             return null;
         }
 
-        if (_allSnipers.Contains(weapon))
+        // First populate all allocation types that could match
+        // For a pistol this could be multiple allocation types, for any other weapon type only one can match
+        var potentialAllocationTypes = new HashSet<WeaponAllocationType>();
+        foreach (var (allocationType, items) in _validWeaponsByTeamAndAllocationType[team])
         {
-            return WeaponAllocationType.Sniper;
+            if (items.Contains(weapon))
+            {
+                potentialAllocationTypes.Add(allocationType);
+            }
         }
 
-        var allocationsByTeam = _validWeaponsByTeamAndAllocationType[team];
-        foreach (var (allocationType, items) in allocationsByTeam)
+        // If theres only 1 to choose from, return that, or return null if there are none
+        if (potentialAllocationTypes.Count == 1)
         {
-            if (items.Contains(weapon) && IsAllocationTypeValidForRound(allocationType, roundType))
+            return potentialAllocationTypes.First();
+        }
+        if (potentialAllocationTypes.Count == 0)
+        {
+            return null;
+        }
+
+        // For a pistol, the set will be {PistolRound, Secondary}
+        // We need to find which of those matches the current round type
+        foreach (var allocationType in potentialAllocationTypes)
+        {
+            if (IsAllocationTypeValidForRound(allocationType, roundType))
             {
                 return allocationType;
             }
@@ -303,6 +330,26 @@ public static class WeaponHelpers
         }
 
         return team == CsTeam.Terrorist ? CsItem.AutoSniperT : CsItem.AutoSniperCT;
+    }
+
+    public static ICollection<RoundType> GetRoundTypesForWeapon(CsItem weapon)
+    {
+        if (_allPistols.Contains(weapon))
+        {
+            return new HashSet<RoundType> {RoundType.Pistol, RoundType.HalfBuy, RoundType.FullBuy};
+        }
+
+        if (_allHalfBuy.Contains(weapon))
+        {
+            return new HashSet<RoundType> {RoundType.HalfBuy};
+        }
+
+        if (_allFullBuy.Contains(weapon))
+        {
+            return new HashSet<RoundType> {RoundType.FullBuy};
+        }
+
+        return new HashSet<RoundType>();
     }
 
     // TODO Change all usages of this
