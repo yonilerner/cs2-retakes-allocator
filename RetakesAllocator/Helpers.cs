@@ -15,6 +15,14 @@ public static class Helpers
         return player is not null && player.IsValid && player.AuthorizedSteamID is not null;
     }
 
+    public static void WriteNewlineDelimited(string message, Action<string> writer)
+    {
+        foreach (var line in message.Split("\n"))
+        {
+            writer($"{PluginInfo.MessagePrefix}{line}");
+        }
+    }
+
     public static ICollection<string> CommandInfoToArgList(CommandInfo commandInfo, bool includeFirst = false)
     {
         var result = new List<string>();
