@@ -67,7 +67,7 @@ public class RetakesAllocator : BasePlugin
     public override void Unload(bool hotReload)
     {
         Log.Write($"Unloaded");
-        ResetState(loadConfig:false);
+        ResetState(loadConfig: false);
         Queries.Disconnect();
     }
 
@@ -144,10 +144,7 @@ public class RetakesAllocator : BasePlugin
             false,
             out var selectedWeapon
         );
-        foreach (var line in result.Split("\n"))
-        {
-            commandInfo.ReplyToCommand($"{MessagePrefix}{line}");
-        }
+        Helpers.WriteNewlineDelimited(result, l => commandInfo.ReplyToCommand(l));
 
         if (Helpers.IsWeaponAllocationAllowed() && selectedWeapon is not null)
         {
@@ -174,6 +171,32 @@ public class RetakesAllocator : BasePlugin
                 AllocateItemsForPlayer(player, new List<CsItem> {selectedWeapon.Value}, slot);
             }
         }
+    }
+
+    [ConsoleCommand("css_awp", "Join or leave the AWP queue.")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnAwpCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            return;
+        }
+
+        var playerId = Helpers.GetSteamId(player);
+        var currentTeam = (CsTeam) player!.TeamNum;
+
+        var currentPreferredSetting = Queries.GetUserSettings(playerId)
+            ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
+
+        var result = OnWeaponCommandHelper.Handle(
+            new List<string> {CsItem.AWP.ToString()},
+            playerId,
+            _currentRoundType,
+            currentTeam,
+            currentPreferredSetting is not null,
+            out _
+        );
+        Helpers.WriteNewlineDelimited(result, l => commandInfo.ReplyToCommand(l));
     }
 
     [ConsoleCommand("css_removegun")]
@@ -372,10 +395,7 @@ public class RetakesAllocator : BasePlugin
                     false,
                     out _
                 );
-                foreach (var line in message.Split("\n"))
-                {
-                    player.PrintToChat(line);
-                }
+                Helpers.WriteNewlineDelimited(message, player.PrintToChat);
             }
         }
 

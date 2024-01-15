@@ -40,6 +40,14 @@ public class Queries
             userSetting => { userSetting.SetWeaponPreference(team, weaponAllocationType, item); });
     }
 
+    public static void ClearWeaponPreferencesForUser(ulong userId)
+    {
+        UpsertUserSettings(userId, userSetting =>
+        {
+            userSetting.WeaponPreferences = new();
+        });
+    }
+
     public static void SetPreferredWeaponPreference(ulong userId, CsItem? item)
     {
         UpsertUserSettings(userId, userSetting =>
