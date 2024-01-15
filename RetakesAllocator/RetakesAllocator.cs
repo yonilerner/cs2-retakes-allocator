@@ -30,7 +30,7 @@ public class RetakesAllocator : BasePlugin
 
     public override void Load(bool hotReload)
     {
-        Log.Write("Loaded");
+        Log.Write($"Loaded. Hot reload: {hotReload}");
         ResetState();
         Batteries.Init();
 
@@ -48,9 +48,13 @@ public class RetakesAllocator : BasePlugin
         }
     }
 
-    private void ResetState()
+    private void ResetState(bool loadConfig = true)
     {
-        Configs.Load(ModuleDirectory, true);
+        if (loadConfig)
+        {
+            Configs.Load(ModuleDirectory, true);
+        }
+
         _nextRoundType = null;
         _currentRoundType = null;
     }
@@ -63,7 +67,7 @@ public class RetakesAllocator : BasePlugin
     public override void Unload(bool hotReload)
     {
         Log.Write($"Unloaded");
-        ResetState();
+        ResetState(loadConfig:false);
         Queries.Disconnect();
     }
 
@@ -116,7 +120,7 @@ public class RetakesAllocator : BasePlugin
     }
 
     [ConsoleCommand("css_gun")]
-    [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [CommandHelper(usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         HandleWeaponCommand(player, commandInfo);
@@ -140,18 +144,23 @@ public class RetakesAllocator : BasePlugin
             false,
             out var selectedWeapon
         );
-        commandInfo.ReplyToCommand($"{MessagePrefix}{result}");
+        foreach (var line in result.Split("\n"))
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}{line}");
+        }
 
         if (Helpers.IsWeaponAllocationAllowed() && selectedWeapon is not null)
         {
             var selectedWeaponAllocationType =
-                WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType, currentTeam, selectedWeapon.Value);
+                WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType, currentTeam,
+                    selectedWeapon.Value);
             if (selectedWeaponAllocationType is not null)
             {
                 Helpers.RemoveWeapons(
                     player,
-                    item => WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType, currentTeam, item) ==
-                            selectedWeaponAllocationType
+                    item =>
+                        WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType, currentTeam, item) ==
+                        selectedWeaponAllocationType
                 );
                 var slot = selectedWeaponAllocationType.Value switch
                 {
@@ -363,7 +372,10 @@ public class RetakesAllocator : BasePlugin
                     false,
                     out _
                 );
-                player.PrintToChat(message);
+                foreach (var line in message.Split("\n"))
+                {
+                    player.PrintToChat(line);
+                }
             }
         }
 
