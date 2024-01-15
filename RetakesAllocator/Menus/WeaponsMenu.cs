@@ -224,7 +224,7 @@ public class WeaponsMenu
 
     private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon)
     {
-        OnWeaponCommandHelper.Handle(
+        var message = OnWeaponCommandHelper.Handle(
             new List<string>{weapon},
             player.AuthorizedSteamID?.SteamId64 ?? 0,
             null,
@@ -232,5 +232,6 @@ public class WeaponsMenu
             false,
             out _
         );
+        // Log.Write(message);
     }
 }

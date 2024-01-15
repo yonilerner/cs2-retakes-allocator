@@ -361,7 +361,7 @@ public static class WeaponHelpers
         // We need to find which of those matches the current round type
         foreach (var allocationType in potentialAllocationTypes)
         {
-            if (IsAllocationTypeValidForRound(allocationType, roundType))
+            if (roundType is null || IsAllocationTypeValidForRound(allocationType, roundType))
             {
                 return allocationType;
             }

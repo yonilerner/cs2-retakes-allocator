@@ -65,6 +65,7 @@ public class OnWeaponCommandHelper
 
         var allocateImmediately = (
             // Always true for pistols
+            allocationType is not null &&
             roundType is not null &&
             weaponRoundTypes.Contains(roundType.Value) &&
             // Only set the outWeapon if the user is setting the preference for their current team
