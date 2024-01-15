@@ -16,6 +16,19 @@ public class OnWeaponCommandHelper
             return "Players cannot choose their weapons on this server.";
         }
 
+        if (args.Count == 0)
+        {
+            var gunsMessage =
+                $"Usage: !gun <gun>. Partial matches for any gun will be found.\nValid guns for {currentTeam}:\n";
+            gunsMessage +=
+                $"Pistols: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound, currentTeam))}\n";
+            gunsMessage +=
+                $"Half buy: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary, currentTeam))}\n";
+            gunsMessage +=
+                $"Full buy: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, currentTeam))}";
+            return gunsMessage;
+        }
+
         var weaponInput = args.ElementAt(0).Trim();
 
         CsTeam team;
