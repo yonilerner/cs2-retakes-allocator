@@ -152,7 +152,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a CT Secondary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary, CsTeam.CounterTerrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnCTSecondarySelect);
         }
