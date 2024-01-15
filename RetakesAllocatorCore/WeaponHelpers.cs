@@ -252,48 +252,6 @@ public static class WeaponHelpers
         return _validAllocationTypesForRound[roundType.Value].Contains(allocationType.Value);
     }
 
-    public static WeaponAllocationType? WeaponAllocationTypeForWeaponAndRound(RoundType? roundType, CsTeam team,
-        CsItem weapon)
-    {
-        if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
-        {
-            return null;
-        }
-
-        // First populate all allocation types that could match
-        // For a pistol this could be multiple allocation types, for any other weapon type only one can match
-        var potentialAllocationTypes = new HashSet<WeaponAllocationType>();
-        foreach (var (allocationType, items) in _validWeaponsByTeamAndAllocationType[team])
-        {
-            if (items.Contains(weapon))
-            {
-                potentialAllocationTypes.Add(allocationType);
-            }
-        }
-
-        // If theres only 1 to choose from, return that, or return null if there are none
-        if (potentialAllocationTypes.Count == 1)
-        {
-            return potentialAllocationTypes.First();
-        }
-        if (potentialAllocationTypes.Count == 0)
-        {
-            return null;
-        }
-
-        // For a pistol, the set will be {PistolRound, Secondary}
-        // We need to find which of those matches the current round type
-        foreach (var allocationType in potentialAllocationTypes)
-        {
-            if (IsAllocationTypeValidForRound(allocationType, roundType))
-            {
-                return allocationType;
-            }
-        }
-
-        return null;
-    }
-
     public static bool IsPreferred(CsTeam team, CsItem weapon)
     {
         return team switch
@@ -369,31 +327,62 @@ public static class WeaponHelpers
             .Where(item => _allWeapons.Contains(item))
             .ToList();
     }
-
-    public static WeaponAllocationType? GetWeaponAllocationTypeForWeapon(CsItem weapon, RoundType? roundType)
+    
+    public static WeaponAllocationType? GetWeaponAllocationTypeForWeaponAndRound(RoundType? roundType, CsTeam team,
+        CsItem weapon)
     {
-        if (_allPistols.Contains(weapon))
+        if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
         {
-            return roundType switch
+            return null;
+        }
+
+        // First populate all allocation types that could match
+        // For a pistol this could be multiple allocation types, for any other weapon type only one can match
+        var potentialAllocationTypes = new HashSet<WeaponAllocationType>();
+        foreach (var (allocationType, items) in _validWeaponsByTeamAndAllocationType[team])
+        {
+            if (items.Contains(weapon))
             {
-                RoundType.Pistol => WeaponAllocationType.PistolRound,
-                RoundType.HalfBuy => WeaponAllocationType.Secondary,
-                RoundType.FullBuy => WeaponAllocationType.Secondary,
-                _ => null,
-            };
+                potentialAllocationTypes.Add(allocationType);
+            }
         }
 
-        if (_allHalfBuy.Contains(weapon) && roundType == RoundType.HalfBuy)
+        // If theres only 1 to choose from, return that, or return null if there are none
+        if (potentialAllocationTypes.Count == 1)
         {
-            return WeaponAllocationType.HalfBuyPrimary;
+            return potentialAllocationTypes.First();
+        }
+        if (potentialAllocationTypes.Count == 0)
+        {
+            return null;
         }
 
-        if (_allFullBuy.Contains(weapon) && roundType == RoundType.FullBuy)
+        // For a pistol, the set will be {PistolRound, Secondary}
+        // We need to find which of those matches the current round type
+        foreach (var allocationType in potentialAllocationTypes)
         {
-            return WeaponAllocationType.FullBuyPrimary;
+            if (IsAllocationTypeValidForRound(allocationType, roundType))
+            {
+                return allocationType;
+            }
         }
 
         return null;
+    }
+
+    /**
+     * This function should only be used when you have an item that you want to find out what *replacement*
+     * allocation type it belongs to. Eg. if you have a Preferred, it should be replaced with a PrimaryFullBuy
+     */
+    public static WeaponAllocationType? GetReplacementWeaponAllocationTypeForWeapon(RoundType? roundType)
+    {
+        return roundType switch
+        {
+            RoundType.Pistol => WeaponAllocationType.PistolRound,
+            RoundType.HalfBuy => WeaponAllocationType.HalfBuyPrimary,
+            RoundType.FullBuy => WeaponAllocationType.FullBuyPrimary,
+            _ => null,
+        };
     }
 
     public static ICollection<CsItem> GetWeaponsForRoundType(

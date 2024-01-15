@@ -89,7 +89,7 @@ public class WeaponSelectionTests : BaseTestFixture
 
         var allocationType =
             selectedItem is not null
-                ? WeaponHelpers.GetWeaponAllocationTypeForWeapon(selectedItem.Value, roundType)
+                ? WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(roundType, team, selectedItem.Value)
                 : null;
 
         var setWeapon = allocationType is not null

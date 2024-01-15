@@ -42,7 +42,6 @@ public class RetakesAllocator : BasePlugin
             Queries.Migrate();
         }
 
-
         if (hotReload)
         {
             HandleHotReload();
@@ -145,12 +144,13 @@ public class RetakesAllocator : BasePlugin
 
         if (Helpers.IsWeaponAllocationAllowed() && selectedWeapon is not null)
         {
-            var selectedWeaponAllocationType = WeaponHelpers.GetWeaponAllocationTypeForWeapon(selectedWeapon.Value, _currentRoundType);
+            var selectedWeaponAllocationType =
+                WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType, currentTeam, selectedWeapon.Value);
             if (selectedWeaponAllocationType is not null)
             {
                 Helpers.RemoveWeapons(
                     player,
-                    item => WeaponHelpers.GetWeaponAllocationTypeForWeapon(item, _currentRoundType) ==
+                    item => WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType, currentTeam, item) ==
                             selectedWeaponAllocationType
                 );
                 var slot = selectedWeaponAllocationType.Value switch
@@ -233,15 +233,18 @@ public class RetakesAllocator : BasePlugin
         var team = (CsTeam) player.TeamNum;
         var playerId = Helpers.GetSteamId(player);
         var isPreferred = WeaponHelpers.IsPreferred(team, item);
-        
-        var purchasedAllocationType = _currentRoundType is not null ? WeaponHelpers.WeaponAllocationTypeForWeaponAndRound(
-            _currentRoundType.Value, team, item
-        ) : null;
+
+        var purchasedAllocationType = _currentRoundType is not null
+            ? WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(
+                _currentRoundType.Value, team, item
+            )
+            : null;
 
         var isValidAllocation = WeaponHelpers.IsAllocationTypeValidForRound(purchasedAllocationType, _currentRoundType);
 
         // Log.Write($"item {item} team {team} player {playerId}");
-        // Log.Write($"curRound {_currentRoundType} weapon Round {weaponRoundType}");
+        // Log.Write($"curRound {_currentRoundType} weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
+        // Log.Write($"Preferred? {isPreferred}");
 
         if (
             Helpers.IsWeaponAllocationAllowed() &&
@@ -274,17 +277,19 @@ public class RetakesAllocator : BasePlugin
                         return true;
                     }
 
-                    var at = WeaponHelpers.GetWeaponAllocationTypeForWeapon(i, _currentRoundType.Value);
+                    var at = WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType.Value, team, i);
+                    // Log.Write($"at: {at}");
                     return at is null || at == purchasedAllocationType;
                 });
-            // Log.Write($"Removed {item}? {removedAnyWeapons}");
+            Log.Write($"Removed {item}? {removedAnyWeapons}");
 
             var replacedWeapon = false;
             var slotToSelect = _currentRoundType == RoundType.Pistol ? "slot2" : "slot1";
             if (removedAnyWeapons && _currentRoundType is not null && WeaponHelpers.IsWeapon(item))
             {
                 var replacementAllocationType =
-                    WeaponHelpers.GetWeaponAllocationTypeForWeapon(item, _currentRoundType.Value);
+                    WeaponHelpers.GetReplacementWeaponAllocationTypeForWeapon(_currentRoundType.Value);
+                // Log.Write($"Replacement allocation type {replacementAllocationType}");
                 if (replacementAllocationType is not null)
                 {
                     var replacementItem = WeaponHelpers.GetWeaponForAllocationType(replacementAllocationType.Value,
@@ -338,6 +343,7 @@ public class RetakesAllocator : BasePlugin
                 {
                     if (p.IsValid && !p.OwnerEntity.IsValid)
                     {
+                        // Log.Write($"Removing {p.DesignerName}");
                         p.Remove();
                     }
                 });
