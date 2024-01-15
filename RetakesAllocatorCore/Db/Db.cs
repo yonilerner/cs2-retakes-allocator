@@ -14,16 +14,11 @@ public class Db : DbContext
 {
     public DbSet<UserSetting> UserSettings { get; set; }
 
-    public static Db? Instance { get; set; }
+    private static Db? Instance { get; set; }
 
     public static Db GetInstance()
     {
-        if (Instance is null)
-        {
-            Instance = new Db();
-        }
-
-        return Instance;
+        return Instance ??= new Db();
     }
 
     public static void Disconnect()
@@ -38,13 +33,15 @@ public class Db : DbContext
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
         var databaseConnectionString = Configs.GetConfigData().DatabaseConnectionString;
+
         switch (Configs.GetConfigData().DatabaseProvider)
         {
             case DatabaseProvider.Sqlite:
                 optionsBuilder.UseSqlite(databaseConnectionString);
                 break;
             case DatabaseProvider.MySql:
-                optionsBuilder.UseMySQL(databaseConnectionString);
+                var version = ServerVersion.AutoDetect(databaseConnectionString);
+                optionsBuilder.UseMySql(databaseConnectionString, version);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
