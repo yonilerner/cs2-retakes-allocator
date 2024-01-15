@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
+﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
@@ -49,19 +50,45 @@ public class OnRoundPostStartHelper
 
         var defusingPlayer = Utils.Choice(ctPlayers);
 
+        HashSet<T> FilterByPreferredWeaponPreference(IEnumerable<T> ps) =>
+            ps.Where(p =>
+                    userSettingsByPlayerId.TryGetValue(getSteamId(p), out var userSetting) &&
+                    userSetting.GetWeaponPreference(getTeam(p), WeaponAllocationType.Preferred) is not null)
+                .ToHashSet();
+
+        ICollection<T> tPreferredPlayers = new HashSet<T>();
+        ICollection<T> ctPreferredPlayers = new HashSet<T>();
+        if (roundType == RoundType.FullBuy)
+        {
+            tPreferredPlayers = WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers));
+            ctPreferredPlayers = WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers));
+        }
+
         foreach (var player in allPlayers)
         {
             var team = getTeam(player);
             var playerSteamId = getSteamId(player);
-            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSettings);
+            userSettingsByPlayerId.TryGetValue(playerSteamId, out var userSetting);
             var items = new List<CsItem>
             {
                 RoundTypeHelpers.GetArmorForRoundType(roundType),
                 team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
             };
 
+            var givePreferred = team switch
+            {
+                CsTeam.Terrorist => tPreferredPlayers.Contains(player),
+                CsTeam.CounterTerrorist => ctPreferredPlayers.Contains(player),
+                _ => false,
+            };
+
             items.AddRange(
-                WeaponHelpers.GetWeaponsForRoundType(roundType, team, userSettings)
+                WeaponHelpers.GetWeaponsForRoundType(
+                    roundType,
+                    team,
+                    userSetting,
+                    givePreferred
+                )
             );
 
             if (team == CsTeam.CounterTerrorist)

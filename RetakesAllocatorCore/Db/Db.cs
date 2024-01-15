@@ -5,11 +5,6 @@ using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
-using WeaponPreferencesType = Dictionary<
-    CsTeam,
-    Dictionary<RoundType, CsItem>
->;
-
 public class Db : DbContext
 {
     public DbSet<UserSetting> UserSettings { get; set; }
@@ -32,9 +27,11 @@ public class Db : DbContext
         optionsBuilder
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
-        var databaseConnectionString = Configs.GetConfigData().DatabaseConnectionString;
-
-        switch (Configs.GetConfigData().DatabaseProvider)
+        // TODO This whole thing needs to be fixed per
+        // https://jasonwatmore.com/post/2020/01/03/aspnet-core-ef-core-migrations-for-multiple-databases-sqlite-and-sql-server
+        var configData = Configs.IsLoaded() ? Configs.GetConfigData() : new ConfigData();
+        var databaseConnectionString = configData.DatabaseConnectionString;
+        switch (configData.DatabaseProvider)
         {
             case DatabaseProvider.Sqlite:
                 optionsBuilder.UseSqlite(databaseConnectionString);
@@ -48,10 +45,19 @@ public class Db : DbContext
         }
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserSetting>()
+            .Property(e => e.WeaponPreferences)
+            .IsRequired(false);
+        base.OnModelCreating(modelBuilder);
+    }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
+        UserSetting.Configure(configurationBuilder);
         configurationBuilder
-            .Properties<WeaponPreferencesType>()
-            .HaveConversion<WeaponPreferencesConverter, WeaponPreferencesComparer>();
+            .Properties<CsItem>()
+            .HaveConversion<CsItemConverter>();
     }
 }

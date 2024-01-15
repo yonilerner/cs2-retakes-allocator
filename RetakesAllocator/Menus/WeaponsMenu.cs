@@ -62,7 +62,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a T Primary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.FullBuy, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, CsTeam.Terrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnTPrimarySelect);
         }
@@ -92,7 +92,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a T Secondary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.Pistol, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary, CsTeam.Terrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnTSecondarySelect);
         }
@@ -112,7 +112,6 @@ public class WeaponsMenu
 
         var weaponName = option.Text;
         
-        // TODO: Separate allocation for CT pistol and T pistol
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Secondary!");
         HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
         
@@ -123,7 +122,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a CT Primary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.FullBuy, CsTeam.CounterTerrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, CsTeam.CounterTerrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnCTPrimarySelect);
         }
@@ -153,7 +152,7 @@ public class WeaponsMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a CT Secondary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.Pistol, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary, CsTeam.CounterTerrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnCTSecondarySelect);
         }
@@ -173,13 +172,14 @@ public class WeaponsMenu
 
         var weaponName = option.Text;
         
-        // TODO: Separate allocation for CT pistol and T pistol
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
         // OpenGiveAwpMenu(player);
         OnMenuComplete(player);
     }
+    
+    // TODO: Add menu to select pistol round weapon
 
     // private void OpenGiveAwpMenu(CCSPlayerController player)
     // {
@@ -224,12 +224,14 @@ public class WeaponsMenu
 
     private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon)
     {
-        OnWeaponCommandHelper.Handle(
+        var message = OnWeaponCommandHelper.Handle(
             new List<string>{weapon},
             player.AuthorizedSteamID?.SteamId64 ?? 0,
+            null,
             team,
             false,
             out _
         );
+        // Log.Write(message);
     }
 }
