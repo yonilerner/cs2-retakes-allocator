@@ -34,11 +34,10 @@ public class Db : DbContext
         switch (configData.DatabaseProvider)
         {
             case DatabaseProvider.Sqlite:
-                optionsBuilder.UseSqlite(databaseConnectionString);
+                Utils.SetupSqlite(databaseConnectionString, optionsBuilder);
                 break;
             case DatabaseProvider.MySql:
-                var version = ServerVersion.AutoDetect(databaseConnectionString);
-                optionsBuilder.UseMySql(databaseConnectionString, version);
+                Utils.SetupMySql(databaseConnectionString, optionsBuilder);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
