@@ -11,6 +11,7 @@ using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using RetakesAllocator.Menus;
+using RetakesAllocatorCore.Helpers;
 using SQLitePCL;
 using static RetakesAllocatorCore.PluginInfo;
 
@@ -146,7 +147,7 @@ public class RetakesAllocator : BasePlugin
             false,
             out var selectedWeapon
         );
-        Helpers.WriteNewlineDelimited(result, l => commandInfo.ReplyToCommand(l));
+        Utils.WriteNewlineDelimited(result, l => commandInfo.ReplyToCommand(l));
 
         if (Helpers.IsWeaponAllocationAllowed() && selectedWeapon is not null)
         {
@@ -198,7 +199,7 @@ public class RetakesAllocator : BasePlugin
             currentPreferredSetting is not null,
             out _
         );
-        Helpers.WriteNewlineDelimited(result, l => commandInfo.ReplyToCommand(l));
+        Utils.WriteNewlineDelimited(result, l => commandInfo.ReplyToCommand(l));
     }
 
     [ConsoleCommand("css_removegun")]
@@ -397,7 +398,7 @@ public class RetakesAllocator : BasePlugin
                     false,
                     out _
                 );
-                Helpers.WriteNewlineDelimited(message, player.PrintToChat);
+                Utils.WriteNewlineDelimited(message, player.PrintToChat);
             }
         }
 
@@ -407,35 +408,8 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
-        if (Helpers.IsWarmup())
-        {
-            return HookResult.Continue;
-        }
-
-        var allPlayers = Utilities.GetPlayers()
-            .Where(Helpers.PlayerIsValid)
-            .ToList();
-
-        OnRoundPostStartHelper.Handle(
-            _nextRoundType,
-            allPlayers,
-            Helpers.GetSteamId,
-            Helpers.GetTeam,
-            GiveDefuseKit,
-            AllocateItemsForPlayer,
-            out var currentRoundType
-        );
-        _currentRoundType = currentRoundType;
-        _nextRoundType = null;
-
-        if (Configs.GetConfigData().EnableRoundTypeAnnouncement)
-        {
-            Server.PrintToChatAll(
-                $"{MessagePrefix}{Enum.GetName(_currentRoundType.Value)} Round"
-            );
-        }
-
-        return HookResult.Continue;
+        var css = new CounterStrikeSharpImpl(this);
+        return OnRoundPostStartHelper.Handle(_nextRoundType, css, out _currentRoundType);
     }
 
     #endregion
@@ -444,31 +418,7 @@ public class RetakesAllocator : BasePlugin
 
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
-        // Log.Write($"Allocating items: {string.Join(",", items)}");
-        AddTimer(0.1f, () =>
-        {
-            if (!Helpers.PlayerIsValid(player))
-            {
-                // Log.Write($"Player is not valid when allocating item");
-                return;
-            }
-
-            foreach (var item in items)
-            {
-                player.GiveNamedItem(item);
-            }
-
-            if (slotToSelect is not null)
-            {
-                AddTimer(0.1f, () =>
-                {
-                    if (Helpers.PlayerIsValid(player) && player.UserId is not null)
-                    {
-                        NativeAPI.IssueClientCommand((int) player.UserId, slotToSelect);
-                    }
-                });
-            }
-        });
+        // TODO refactor to CounterStrikeSharpImpl
     }
 
     private void GiveDefuseKit(CCSPlayerController player)

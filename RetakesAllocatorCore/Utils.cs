@@ -72,4 +72,12 @@ public static class Utils
     {
         optionsBuilder.UseSqlite(connectionString);
     }
+
+    public static void WriteNewlineDelimited(string message, Action<string> writer)
+    {
+        foreach (var line in message.Split("\n"))
+        {
+            writer($"{PluginInfo.MessagePrefix}{line}");
+        }
+    }
 }
