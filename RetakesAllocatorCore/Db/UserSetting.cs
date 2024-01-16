@@ -3,15 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
 using WeaponPreferencesType = Dictionary<
     CsTeam,
-    Dictionary<RoundType, CsItem>
+    Dictionary<WeaponAllocationType, CsItem>
 >;
 
 public class UserSetting
@@ -24,36 +24,68 @@ public class UserSetting
     [Column(TypeName = "TEXT"), MaxLength(10000)]
     public WeaponPreferencesType WeaponPreferences { get; set; } = new();
 
-    public void SetWeaponPreference(CsTeam team, RoundType roundType, CsItem? weapon)
+    public static void Configure(ModelConfigurationBuilder configurationBuilder)
     {
-        // Log.Write($"Setting preference for {UserId} {team} {roundType} {weapon}");
-        if (!WeaponPreferences.TryGetValue(team, out var roundPreferences))
+        configurationBuilder
+            .Properties<WeaponPreferencesType>()
+            .HaveConversion<WeaponPreferencesConverter, WeaponPreferencesComparer>();
+    }
+
+    public void SetWeaponPreference(CsTeam team, WeaponAllocationType weaponAllocationType, CsItem? weapon)
+    {
+        // Log.Write($"Setting preference for {UserId} {team} {weaponAllocationType} {weapon}");
+        if (!WeaponPreferences.TryGetValue(team, out var allocationPreference))
         {
-            roundPreferences = new();
-            WeaponPreferences.Add(team, roundPreferences);
+            allocationPreference = new();
+            WeaponPreferences.Add(team, allocationPreference);
         }
 
         if (weapon is not null)
         {
-            roundPreferences[roundType] = (CsItem) weapon;
+            allocationPreference[weaponAllocationType] = (CsItem) weapon;
         }
         else
         {
-            roundPreferences.Remove(roundType);
+            allocationPreference.Remove(weaponAllocationType);
         }
     }
 
-    public CsItem? GetWeaponPreference(CsTeam team, RoundType roundType)
+    public CsItem? GetWeaponPreference(CsTeam team, WeaponAllocationType weaponAllocationType)
     {
-        if (WeaponPreferences.TryGetValue(team, out var roundPreferences))
+        if (WeaponPreferences.TryGetValue(team, out var allocationPreference))
         {
-            if (roundPreferences.TryGetValue(roundType, out var weapon))
+            if (allocationPreference.TryGetValue(weaponAllocationType, out var weapon))
             {
                 return weapon;
             }
         }
 
         return null;
+    }
+}
+
+public class CsItemConverter : ValueConverter<CsItem?, string>
+{
+    public CsItemConverter() : base(
+        v => CsItemSerializer(v),
+        s => CsItemDeserializer(s)
+    )
+    {
+    }
+
+    public static string CsItemSerializer(CsItem? item)
+    {
+        return JsonSerializer.Serialize(item);
+    }
+
+    public static CsItem? CsItemDeserializer(string? str)
+    {
+        if (str is null)
+        {
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<CsItem>(str);
     }
 }
 
@@ -78,7 +110,14 @@ public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, 
 
     public static WeaponPreferencesType WeaponPreferenceDeserialize(string value)
     {
-        var parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value);
+        WeaponPreferencesType? parseResult = null;
+        try { 
+            parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value);
+        } catch (Exception e)
+        {
+            Log.Write($"Failed to deserialize weapon preferences: {e.Message}");
+        }
+        
         return parseResult ?? new WeaponPreferencesType();
     }
 }

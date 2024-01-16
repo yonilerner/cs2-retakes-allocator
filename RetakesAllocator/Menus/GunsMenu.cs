@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocator.Menus.Interfaces;
@@ -10,8 +11,11 @@ namespace RetakesAllocator.Menus;
 
 public class GunsMenu: BaseMenu
 {
+    private const float DefaultMenuTimeout = 30.0f;
+
+    public readonly HashSet<CCSPlayerController> PlayersInGunsMenu = new();
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
-    
+
     private void OnMenuTimeout(CCSPlayerController player)
     {
         player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {MenuTimeout} seconds!");
@@ -20,7 +24,7 @@ public class GunsMenu: BaseMenu
         _menuTimeoutTimers[player].Kill();
         _menuTimeoutTimers.Remove(player);
     }
-    
+
     private void CreateMenuTimeoutTimer(CCSPlayerController player)
     {
         if (_menuTimeoutTimers.TryGetValue(player, out var existingTimer))
@@ -28,19 +32,24 @@ public class GunsMenu: BaseMenu
             existingTimer.Kill();
             _menuTimeoutTimers.Remove(player);
         }
-        _menuTimeoutTimers[player] = new Timer(MenuTimeout, () => OnMenuTimeout(player));
+
+        _menuTimeoutTimers[player] = new Timer(DefaultMenuTimeout, () => OnMenuTimeout(player));
     }
-    
+
     private void OnMenuComplete(CCSPlayerController player)
     {
         player.PrintToChat($"{MessagePrefix}You have finished setting up your weapons!");
         player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
         
         PlayersInMenu.Remove(player);
+        player.PrintToChat(
+            $"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
+
+        PlayersInGunsMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
         _menuTimeoutTimers.Remove(player);
     }
-    
+
     private void OnSelectExit(CCSPlayerController player, ChatMenuOption option)
     {
         if (!PlayersInMenu.Contains(player))
@@ -62,7 +71,8 @@ public class GunsMenu: BaseMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a T Primary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.FullBuy, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary,
+                     CsTeam.Terrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnTPrimarySelect);
         }
@@ -81,18 +91,19 @@ public class GunsMenu: BaseMenu
         }
 
         var weaponName = option.Text;
-        
+
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Primary!");
         HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
-        
+
         OpenTSecondaryMenu(player);
     }
-    
+
     private void OpenTSecondaryMenu(CCSPlayerController player)
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a T Secondary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.Pistol, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary,
+                     CsTeam.Terrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnTSecondarySelect);
         }
@@ -111,11 +122,10 @@ public class GunsMenu: BaseMenu
         }
 
         var weaponName = option.Text;
-        
-        // TODO: Separate allocation for CT pistol and T pistol
+
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Secondary!");
         HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
-        
+
         OpenCtPrimaryMenu(player);
     }
 
@@ -123,7 +133,8 @@ public class GunsMenu: BaseMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a CT Primary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.FullBuy, CsTeam.CounterTerrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary,
+                     CsTeam.CounterTerrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnCTPrimarySelect);
         }
@@ -140,9 +151,9 @@ public class GunsMenu: BaseMenu
         {
             return;
         }
-        
+
         var weaponName = option.Text;
-        
+
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Primary!");
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
@@ -153,7 +164,8 @@ public class GunsMenu: BaseMenu
     {
         var menu = new ChatMenu($"{MessagePrefix} Select a CT Secondary Weapon");
 
-        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForRoundType(RoundType.Pistol, CsTeam.Terrorist))
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary,
+                     CsTeam.CounterTerrorist))
         {
             menu.AddMenuOption(weapon.ToString(), OnCTSecondarySelect);
         }
@@ -172,64 +184,67 @@ public class GunsMenu: BaseMenu
         }
 
         var weaponName = option.Text;
-        
-        // TODO: Separate allocation for CT pistol and T pistol
+
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
-        // OpenGiveAwpMenu(player);
+        OpenGiveAwpMenu(player);
+    }
+
+    // TODO: Add menu to select pistol round weapon
+
+    private const string AwpNeverOption = "Never";
+    private const string AwpMyTurnOption = "Always when it's my turn";
+
+    private void OpenGiveAwpMenu(CCSPlayerController player)
+    {
+        var menu = new ChatMenu($"{MessagePrefix} Select when to give the AWP");
+
+        menu.AddMenuOption(AwpNeverOption, OnGiveAwpSelect);
+        // Implementing "Sometimes" will require a more complex AWP queue
+        // menu.AddMenuOption("Sometimes", OnGiveAwpSelect);
+        menu.AddMenuOption(AwpMyTurnOption, OnGiveAwpSelect);
+
+        menu.AddMenuOption("Exit", OnSelectExit);
+
+        ChatMenus.OpenMenu(player, menu);
+        CreateMenuTimeoutTimer(player);
+    }
+
+    private void OnGiveAwpSelect(CCSPlayerController player, ChatMenuOption option)
+    {
+        if (!PlayersInGunsMenu.Contains(player))
+        {
+            return;
+        }
+
+        player.PrintToChat($"{MessagePrefix} You selected '{option.Text}' as when to give the AWP!");
+
+        switch (option.Text)
+        {
+            case AwpNeverOption:
+                // Team doesnt matter for AWP
+                HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: true);
+                break;
+            case AwpMyTurnOption:
+                HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: false);
+                break;
+        }
+
         OnMenuComplete(player);
     }
 
-    // private void OpenGiveAwpMenu(CCSPlayerController player)
-    // {
-    //     var menu = new ChatMenu($"{MessagePrefix} Select when to give the AWP");
-    //
-    //     menu.AddMenuOption("Never", OnGiveAwpSelect);
-    //     menu.AddMenuOption("Sometimes", OnGiveAwpSelect);
-    //     menu.AddMenuOption("Always", OnGiveAwpSelect);
-    //
-    //     menu.AddMenuOption("Exit", OnSelectExit);
-    //
-    //     ChatMenus.OpenMenu(player, menu);
-    // }
-    //
-    // private void OnGiveAwpSelect(CCSPlayerController player, ChatMenuOption option)
-    // {
-    //     if (!PlayersInGunsMenu.Contains(player))
-    //     {
-    //         return;
-    //     }
-    //
-    //     player.PrintToChat($"{MessagePrefix} You selected {option.Text} as when to give the AWP!");
-    //
-    //     switch (option.Text)
-    //     {
-    //         case "Never":
-    //             TODO: Implement weapon allocation selection
-    //             break;
-    //         case "Sometimes":
-    //             TODO: Implement weapon allocation selection
-    //             break;
-    //         case "Always":
-    //             TODO: Implement weapon allocation selection
-    //             break;
-    //     }
-    //
-    //     player.PrintToChat($"{MessagePrefix} You have finished setting up your weapons!");
-    //     player.PrintToChat($"{MessagePrefix} The weapons you have selected will be given to you at the start of the next round!");
-    //
-    //     PlayersInGunsMenu.Remove(player);
-    // }
-
-    private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon)
+    private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon,
+        bool remove = false)
     {
-        OnWeaponCommandHelper.Handle(
-            new List<string>{weapon},
+        var message = OnWeaponCommandHelper.Handle(
+            new List<string> {weapon},
             player.AuthorizedSteamID?.SteamId64 ?? 0,
+            null,
             team,
-            false,
+            remove,
             out _
         );
+        // Log.Write(message);
     }
 }

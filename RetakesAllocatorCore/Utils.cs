@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace RetakesAllocatorCore;
 
@@ -59,5 +60,16 @@ public static class Utils
         }
 
         return default;
+    }
+
+    public static void SetupMySql(string connectionString, DbContextOptionsBuilder optionsBuilder)
+    {
+        var version = ServerVersion.AutoDetect(connectionString);
+        optionsBuilder.UseMySql(connectionString, version);
+    }
+    
+    public static void SetupSqlite(string connectionString, DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlite(connectionString);
     }
 }

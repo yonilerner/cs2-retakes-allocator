@@ -7,12 +7,26 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
-    public static string? Handle(ICollection<string> args, ulong userId, CsTeam currentTeam, bool remove, out CsItem? outWeapon)
+    public static string Handle(ICollection<string> args, ulong userId, RoundType? roundType, CsTeam currentTeam,
+        bool remove, out CsItem? outWeapon)
     {
         outWeapon = null;
         if (!Configs.GetConfigData().CanPlayersSelectWeapons())
         {
             return "Players cannot choose their weapons on this server.";
+        }
+
+        if (args.Count == 0)
+        {
+            var gunsMessage =
+                $"Usage: !gun <gun>. Partial matches for any gun will be found.\nValid guns for {currentTeam}:\n";
+            gunsMessage +=
+                $"Pistols: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound, currentTeam))}\n";
+            gunsMessage +=
+                $"Half buy: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary, currentTeam))}\n";
+            gunsMessage +=
+                $"Full buy: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, currentTeam))}";
+            return gunsMessage;
         }
 
         var weaponInput = args.ElementAt(0).Trim();
@@ -46,38 +60,76 @@ public class OnWeaponCommandHelper
 
         var weapon = foundWeapons.First();
 
-        var roundType = WeaponHelpers.GetRoundTypeForWeapon(weapon);
-        if (roundType is null)
-        {
-            return $"Invalid weapon '{weapon}'";
-        }
-
-        if (!WeaponHelpers.IsValidWeapon(roundType.Value, team, weapon))
-        {
-            return $"Weapon '{weapon}' is not valid for {roundType} rounds on {team}";
-        }
-
         if (!WeaponHelpers.IsUsableWeapon(weapon))
         {
             return $"Weapon '{weapon}' is not allowed to be selected.";
         }
 
+        var weaponRoundTypes = WeaponHelpers.GetRoundTypesForWeapon(weapon);
+        if (weaponRoundTypes.Count == 0)
+        {
+            return $"Invalid weapon '{weapon}'";
+        }
+
+        var allocationType = WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(
+            roundType, team, weapon
+        );
+        var isPreferred = allocationType == WeaponAllocationType.Preferred;
+
+        var allocateImmediately = (
+            // Always true for pistols
+            allocationType is not null &&
+            roundType is not null &&
+            weaponRoundTypes.Contains(roundType.Value) &&
+            // Only set the outWeapon if the user is setting the preference for their current team
+            currentTeam == team &&
+            // TODO Allow immediate allocation of preferred if the config permits it (eg. unlimited preferred)
+            // Could be tricky for max # per team config, since this function doesnt know # of players on the team
+            !isPreferred
+        );
+
+        if (allocationType is null)
+        {
+            return $"Weapon '{weapon}' is not valid for {team}";
+        }
+
+
         if (remove)
         {
-            Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, null);
-            return $"Weapon '{weapon}' is no longer your {roundType} preference for {team}.";
+            if (isPreferred)
+            {
+                Queries.SetPreferredWeaponPreference(userId, null);
+                return $"You will no longer receive '{weapon}'.";
+            }
+            else
+            {
+                Queries.SetWeaponPreferenceForUser(userId, team, allocationType.Value, null);
+                return $"Weapon '{weapon}' is no longer your {allocationType.Value} preference for {team}.";
+            }
+        }
+
+        string message;
+        if (isPreferred)
+        {
+            Queries.SetPreferredWeaponPreference(userId, weapon);
+            // If we ever add more preferred weapons, we need to change the wording of "sniper" here
+            message = $"You will now get a '{weapon}' when its your turn for a sniper.";
         }
         else
         {
-            Queries.SetWeaponPreferenceForUser(userId, team, roundType.Value, weapon);
-            
-            if (currentTeam == team)
-            {
-                // Only set the outWeapon if the user is setting the preference for their current team
-                outWeapon = weapon;
-            }
-
-            return $"Weapon '{weapon}' is now your {roundType} preference for {team}.";
+            Queries.SetWeaponPreferenceForUser(userId, team, allocationType.Value, weapon);
+            message = $"Weapon '{weapon}' is now your {allocationType.Value} preference for {team}.";
         }
+
+        if (allocateImmediately)
+        {
+            outWeapon = weapon;
+        }
+        else if (!isPreferred)
+        {
+            message += $" You will get it at the next {weaponRoundTypes.First()} round.";
+        }
+
+        return message;
     }
 }

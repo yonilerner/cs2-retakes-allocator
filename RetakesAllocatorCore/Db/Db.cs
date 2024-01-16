@@ -5,25 +5,15 @@ using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
-using WeaponPreferencesType = Dictionary<
-    CsTeam,
-    Dictionary<RoundType, CsItem>
->;
-
 public class Db : DbContext
 {
     public DbSet<UserSetting> UserSettings { get; set; }
 
-    public static Db? Instance { get; set; }
+    private static Db? Instance { get; set; }
 
     public static Db GetInstance()
     {
-        if (Instance is null)
-        {
-            Instance = new Db();
-        }
-
-        return Instance;
+        return Instance ??= new Db();
     }
 
     public static void Disconnect()
@@ -37,24 +27,36 @@ public class Db : DbContext
         optionsBuilder
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
-        var databaseConnectionString = Configs.GetConfigData().DatabaseConnectionString;
-        switch (Configs.GetConfigData().DatabaseProvider)
+        // TODO This whole thing needs to be fixed per
+        // https://jasonwatmore.com/post/2020/01/03/aspnet-core-ef-core-migrations-for-multiple-databases-sqlite-and-sql-server
+        var configData = Configs.IsLoaded() ? Configs.GetConfigData() : new ConfigData();
+        var databaseConnectionString = configData.DatabaseConnectionString;
+        switch (configData.DatabaseProvider)
         {
             case DatabaseProvider.Sqlite:
-                optionsBuilder.UseSqlite(databaseConnectionString);
+                Utils.SetupSqlite(databaseConnectionString, optionsBuilder);
                 break;
             case DatabaseProvider.MySql:
-                optionsBuilder.UseMySQL(databaseConnectionString);
+                Utils.SetupMySql(databaseConnectionString, optionsBuilder);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserSetting>()
+            .Property(e => e.WeaponPreferences)
+            .IsRequired(false);
+        base.OnModelCreating(modelBuilder);
+    }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
+        UserSetting.Configure(configurationBuilder);
         configurationBuilder
-            .Properties<WeaponPreferencesType>()
-            .HaveConversion<WeaponPreferencesConverter, WeaponPreferencesComparer>();
+            .Properties<CsItem>()
+            .HaveConversion<CsItemConverter>();
     }
 }

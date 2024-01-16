@@ -1,6 +1,6 @@
 ﻿# CS2 Retakes Allocator
 
- [![Build RetakesAllocator.zip](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml/badge.svg)](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml)
+[![Build RetakesAllocator.zip](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml/badge.svg)](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml)
 
 ## Retakes
 
@@ -45,6 +45,23 @@ This plugin implements 3 different round types:
     - Armor: Kevlar and helmet
     - Util: One nade + 50% chance of a 2nd nade. Every CT has a defuse kit
 
+### Weapon Preferences
+
+There are a few different ways to set weapon preferences:
+
+- Built-in buy menu (See "Buy Menu" section for more info on how to set that up)
+- `!gun <gun>` - Set a preference for a particular gun (will automatically figure out the round type)
+- `!awp` - Toggles if you want an AWP or not.
+- `!guns` - Opens a chat-based menu for weapon preferences
+
+See more info below about the commands in the "Commands" section.
+
+#### AWP Queue
+
+Currently one AWPer will be selected per team as long as at least one person on the team has chosen to get an AWP. AWP
+queue features will be expanded over time, you can take a look at existing Github Issues to see what has been proposed
+so far.
+
 ### Buy Menu
 
 If the convars are set to give players money and let them buy, player weapon choices can be selected via the buy menu.
@@ -78,13 +95,14 @@ The config file is located in the plugin folder under `config/config.json`.
 - `DatabaseProvider`: Which database provider you want to use. The default is `Sqlite`, which requires no setup. The
   available options are:
     - `Sqlite`
-    - `MySql`
+    - [Coming Soon] `MySql`
 - `DatabaseConnectionString`: How you connect to the database
     - The connection string for `Sqlite` probably doesnt need to be changed from the default, but you can change it if
       you want the db file to be in a different location.
         - More info on formatting the string here: https://www.connectionstrings.com/sqlite/
-    - The connection string for `MySql` should be configured per instructions
-      here: https://www.connectionstrings.com/mysql/
+
+[//]: # (    - The connection string for `MySql` should be configured per instructions here: https://www.connectionstrings.com/mysql/)
+
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
 
@@ -95,16 +113,14 @@ You can use the following commands to select specific weapon preferences per-use
 - `!gun <weapon> [T|CT]` - Set a preference the chosen weapon for the team you are currently on, or T/CT if provided
     - For example, if you are currently a terrorist and you do `!gun galil`, your preference for rifle rounds will be
       Galil
+- `!guns` - Opens up a chat-based menu for setting weapon preferences.
+- `!awp` - Toggle whether or not you want to get an AWP.
 - `!removegun <weapon> [T|CT]` - Remove a preference for the chosen weapon for the team you are currently on, or T/CT if
   provided
     - For example, if you previously did `!gun galil` while a terrorist, and you do `!removegun galil` while a
       terrorist, you will no longer prefer the galil, and will instead get a random weapon
 - `!nextround <P|H|F>` - For admins only. Force the next round to be the selected type.
 - `!reload_allocator_config` - For admins only. Reload the JSON config in-place.
-
-## Roadmap
-
-See https://github.com/yonilerner/cs2-retakes-allocator/discussions/11
 
 # Building
 
