@@ -130,7 +130,7 @@ public class WeaponsMenu
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary,
                      CsTeam.CounterTerrorist))
         {
-            menu.AddMenuOption(weapon.ToString(), OnCTPrimarySelect);
+            menu.AddMenuOption(weapon.ToString(), OnCtPrimarySelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);
@@ -139,7 +139,7 @@ public class WeaponsMenu
         CreateMenuTimeoutTimer(player);
     }
 
-    private void OnCTPrimarySelect(CCSPlayerController player, ChatMenuOption option)
+    private void OnCtPrimarySelect(CCSPlayerController player, ChatMenuOption option)
     {
         if (!PlayersInGunsMenu.Contains(player))
         {
@@ -161,7 +161,7 @@ public class WeaponsMenu
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary,
                      CsTeam.CounterTerrorist))
         {
-            menu.AddMenuOption(weapon.ToString(), OnCTSecondarySelect);
+            menu.AddMenuOption(weapon.ToString(), OnCtSecondarySelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);
@@ -170,7 +170,7 @@ public class WeaponsMenu
         CreateMenuTimeoutTimer(player);
     }
 
-    private void OnCTSecondarySelect(CCSPlayerController player, ChatMenuOption option)
+    private void OnCtSecondarySelect(CCSPlayerController player, ChatMenuOption option)
     {
         if (!PlayersInGunsMenu.Contains(player))
         {
@@ -182,13 +182,73 @@ public class WeaponsMenu
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
+        OpenTPistolMenu(player);
+    }
+
+    private void OpenTPistolMenu(CCSPlayerController player)
+    {
+        var menu = new ChatMenu($"{MessagePrefix} Select a T Pistol Round Weapon");
+
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound,
+                     CsTeam.Terrorist))
+        {
+            menu.AddMenuOption(weapon.ToString(), OnTPistolSelect);
+        }
+
+        menu.AddMenuOption("Exit", OnSelectExit);
+
+        ChatMenus.OpenMenu(player, menu);
+        CreateMenuTimeoutTimer(player);
+    }
+
+    private void OnTPistolSelect(CCSPlayerController player, ChatMenuOption option)
+    {
+        if (!PlayersInGunsMenu.Contains(player))
+        {
+            return;
+        }
+
+        var weaponName = option.Text;
+
+        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Pistol Round Weapon!");
+        HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
+
+        OpenCtPistolMenu(player);
+    }
+
+    private void OpenCtPistolMenu(CCSPlayerController player)
+    {
+        var menu = new ChatMenu($"{MessagePrefix} Select a CT Pistol Round Weapon");
+
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound,
+                     CsTeam.CounterTerrorist))
+        {
+            menu.AddMenuOption(weapon.ToString(), OnCtPistolSelect);
+        }
+
+        menu.AddMenuOption("Exit", OnSelectExit);
+
+        ChatMenus.OpenMenu(player, menu);
+        CreateMenuTimeoutTimer(player);
+    }
+
+    private void OnCtPistolSelect(CCSPlayerController player, ChatMenuOption option)
+    {
+        if (!PlayersInGunsMenu.Contains(player))
+        {
+            return;
+        }
+
+        var weaponName = option.Text;
+
+        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Pistol Round Weapon!");
+        HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
+
         OpenGiveAwpMenu(player);
     }
 
-    // TODO: Add menu to select pistol round weapon
-
     private const string AwpNeverOption = "Never";
-    private const string AwpMyTurnOption = "Always when it's my turn";
+    private const string AwpMyTurnOption = "Always";
 
     private void OpenGiveAwpMenu(CCSPlayerController player)
     {
