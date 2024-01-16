@@ -16,7 +16,7 @@ using static RetakesAllocatorCore.PluginInfo;
 
 namespace RetakesAllocator;
 
-[MinimumApiVersion(142)]
+[MinimumApiVersion(147)]
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
@@ -134,7 +134,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = Helpers.GetSteamId(player);
-        var currentTeam = (CsTeam) player!.TeamNum;
+        var currentTeam = player!.Team;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
@@ -183,7 +183,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = Helpers.GetSteamId(player);
-        var currentTeam = (CsTeam) player!.TeamNum;
+        var currentTeam = player!.Team;
 
         var currentPreferredSetting = Queries.GetUserSettings(playerId)
             ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
@@ -209,7 +209,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = Helpers.GetSteamId(player);
-        var currentTeam = (CsTeam) player!.TeamNum;
+        var currentTeam = player!.Team;
 
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
@@ -262,7 +262,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var item = Utils.ToEnum<CsItem>(@event.Weapon);
-        var team = (CsTeam) player.TeamNum;
+        var team = player.Team;
         var playerId = Helpers.GetSteamId(player);
         var isPreferred = WeaponHelpers.IsPreferred(team, item);
 
