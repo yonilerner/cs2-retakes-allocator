@@ -16,18 +16,18 @@ namespace RetakesAllocator.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.14");
 
-            modelBuilder.Entity("RetakesAllocator.db.UserSetting", b =>
+            modelBuilder.Entity("RetakesAllocatorCore.Db.UserSetting", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("WeaponPreferences")
                         .HasMaxLength(10000)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserSettings", (string)null);
+                    b.ToTable("UserSettings");
                 });
 #pragma warning restore 612, 618
         }
