@@ -21,6 +21,8 @@ public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
     public override string ModuleVersion => PluginInfo.Version;
+    public override string ModuleAuthor => "Yoni Lerner";
+    public override string ModuleDescription => "https://github.com/yonilerner/cs2-retakes-allocator";
 
     private RoundType? _nextRoundType;
     private RoundType? _currentRoundType;
