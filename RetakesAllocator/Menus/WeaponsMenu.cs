@@ -302,7 +302,7 @@ public class WeaponsMenu
         var message = OnWeaponCommandHelper.Handle(
             new List<string> {weapon},
             player.AuthorizedSteamID?.SteamId64 ?? 0,
-            null,
+            roundTypeOverride,
             team,
             remove,
             out _
