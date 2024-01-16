@@ -16,7 +16,7 @@ using static RetakesAllocatorCore.PluginInfo;
 
 namespace RetakesAllocator;
 
-[MinimumApiVersion(142)]
+[MinimumApiVersion(147)]
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
