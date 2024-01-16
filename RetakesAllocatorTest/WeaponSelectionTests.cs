@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
+using static RetakesAllocatorTest.TestConstants;
 
 namespace RetakesAllocatorTest;
 
@@ -12,40 +13,51 @@ public class WeaponSelectionTests : BaseTestFixture
     public void SetWeaponPreferenceDirectly()
     {
         Assert.That(
-            Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
+            Queries.GetUserSettings(TestSteamId)
+                ?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
             Is.EqualTo(null));
 
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary, CsItem.Galil);
+        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary,
+            CsItem.Galil);
         Assert.That(
-            Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
+            Queries.GetUserSettings(TestSteamId)
+                ?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
             Is.EqualTo(CsItem.Galil));
 
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AWP);
+        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary,
+            CsItem.AWP);
         Assert.That(
-            Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
+            Queries.GetUserSettings(TestSteamId)
+                ?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
             Is.EqualTo(CsItem.AWP));
 
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.Terrorist, WeaponAllocationType.PistolRound, CsItem.Deagle);
-        Assert.That(Queries.GetUserSettings(1)?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.PistolRound),
+        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.PistolRound,
+            CsItem.Deagle);
+        Assert.That(
+            Queries.GetUserSettings(TestSteamId)
+                ?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.PistolRound),
             Is.EqualTo(CsItem.Deagle));
 
         Assert.That(
-            Queries.GetUserSettings(1)
+            Queries.GetUserSettings(TestSteamId)
                 ?.GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary),
             Is.EqualTo(null));
-        Queries.SetWeaponPreferenceForUser(1, CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary, CsItem.MP9);
+        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary,
+            CsItem.MP9);
         Assert.That(
-            Queries.GetUserSettings(1)
+            Queries.GetUserSettings(TestSteamId)
                 ?.GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary),
             Is.EqualTo(CsItem.MP9));
     }
 
     [Test]
     [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "galil", CsItem.Galil, "Galil' is now", "Galil' is no longer")]
-    [TestCase(RoundType.HalfBuy, CsTeam.Terrorist, "galil", null, "Galil' is now;;;at the next FullBuy", "Galil' is no longer")]
+    [TestCase(RoundType.HalfBuy, CsTeam.Terrorist, "galil", null, "Galil' is now;;;at the next FullBuy",
+        "Galil' is no longer")]
     [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "krieg", CsItem.Krieg, "SG553' is now", "SG553' is no longer")]
     [TestCase(RoundType.HalfBuy, CsTeam.Terrorist, "mac10", CsItem.Mac10, "Mac10' is now", "Mac10' is no longer")]
-    [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "mac10", null, "Mac10' is now;;;at the next HalfBuy", "Mac10' is no longer")]
+    [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "mac10", null, "Mac10' is now;;;at the next HalfBuy",
+        "Mac10' is no longer")]
     [TestCase(RoundType.Pistol, CsTeam.CounterTerrorist, "deag", CsItem.Deagle, "Deagle' is now",
         "Deagle' is no longer")]
     [TestCase(RoundType.FullBuy, CsTeam.CounterTerrorist, "deag", CsItem.Deagle, "Deagle' is now",
@@ -79,7 +91,7 @@ public class WeaponSelectionTests : BaseTestFixture
     {
         var args = strArgs.Split(",");
 
-        var result = OnWeaponCommandHelper.Handle(args, 1, roundType, team, false, out var selectedItem);
+        var result = OnWeaponCommandHelper.Handle(args, TestSteamId, roundType, team, false, out var selectedItem);
 
         var messages = message.Split(";;;");
         foreach (var m in messages)
@@ -95,18 +107,18 @@ public class WeaponSelectionTests : BaseTestFixture
                 : null;
 
         var setWeapon = allocationType is not null
-            ? Queries.GetUserSettings(1)?
+            ? Queries.GetUserSettings(TestSteamId)?
                 .GetWeaponPreference(team, allocationType.Value)
             : null;
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
 
         if (removeMessage is not null)
         {
-            result = OnWeaponCommandHelper.Handle(args, 1, roundType, team, true, out _);
+            result = OnWeaponCommandHelper.Handle(args, TestSteamId, roundType, team, true, out _);
             Assert.That(result, Does.Contain(removeMessage));
 
             setWeapon = allocationType is not null
-                ? Queries.GetUserSettings(1)?.GetWeaponPreference(team, allocationType.Value)
+                ? Queries.GetUserSettings(TestSteamId)?.GetWeaponPreference(team, allocationType.Value)
                 : null;
             Assert.That(setWeapon, Is.EqualTo(null));
         }
@@ -131,14 +143,16 @@ public class WeaponSelectionTests : BaseTestFixture
         {
             Configs.GetConfigData().UsableWeapons.Add(allowedItem.Value);
         }
-    
+
         var args = new List<string> {itemName};
-        var result = OnWeaponCommandHelper.Handle(args, 1, RoundType.FullBuy, team, false, out var selectedItem);
-    
+        var result =
+            OnWeaponCommandHelper.Handle(args, TestSteamId, RoundType.FullBuy, team, false, out var selectedItem);
+
         Assert.That(result, Does.Contain(message));
         Assert.That(selectedItem, Is.EqualTo(expectedItem));
-    
-        var setWeapon = Queries.GetUserSettings(1)?.GetWeaponPreference(team, WeaponAllocationType.FullBuyPrimary);
+
+        var setWeapon = Queries.GetUserSettings(TestSteamId)
+            ?.GetWeaponPreference(team, WeaponAllocationType.FullBuyPrimary);
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
     }
 
@@ -147,14 +161,14 @@ public class WeaponSelectionTests : BaseTestFixture
     public void RandomWeaponSelection()
     {
         Configs.OverrideConfigDataForTests(new ConfigData
+        {
+            RoundTypePercentages = new()
             {
-                RoundTypePercentages = new()
-                {
-                    {RoundType.Pistol, 5},
-                    {RoundType.HalfBuy, 5},
-                    {RoundType.FullBuy, 90},
-                }
-            });
+                {RoundType.Pistol, 5},
+                {RoundType.HalfBuy, 5},
+                {RoundType.FullBuy, 90},
+            }
+        });
         var numPistol = 0;
         var numHalfBuy = 0;
         var numFullBuy = 0;
