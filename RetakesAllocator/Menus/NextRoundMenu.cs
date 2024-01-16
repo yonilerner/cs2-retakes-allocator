@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
+using RetakesAllocator.Managers;
 using RetakesAllocator.Menus.Interfaces;
 using RetakesAllocatorCore;
 using static RetakesAllocatorCore.PluginInfo;
@@ -12,6 +13,7 @@ public class NextRoundMenu : BaseMenu
     private const float DefaultMenuTimeout = 30.0f;
     
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
+    private readonly VoteManager _voteManager = new();
     
     private void OnMenuTimeout(CCSPlayerController player)
     {
