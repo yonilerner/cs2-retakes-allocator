@@ -144,7 +144,7 @@ public class RetakesAllocator : BasePlugin
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
-            _currentRoundType,
+            RoundTypeManager.GetInstance().GetCurrentRoundType(),
             currentTeam,
             false,
             out var selectedWeapon
@@ -153,13 +153,15 @@ public class RetakesAllocator : BasePlugin
 
         if (Helpers.IsWeaponAllocationAllowed() && selectedWeapon is not null)
         {
-            var selectedWeaponRoundType = WeaponHelpers.GetRoundTypeForWeapon(selectedWeapon.Value);
-            if (selectedWeaponRoundType == RoundType.Pistol || selectedWeaponRoundType == RoundTypeManager.GetInstance().GetCurrentRoundType())
+            var selectedWeaponAllocationType =
+                WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(RoundTypeManager.GetInstance().GetCurrentRoundType(), currentTeam,
+                    selectedWeapon.Value);
+            if (selectedWeaponAllocationType is not null)
             {
                 Helpers.RemoveWeapons(
                     player,
                     item =>
-                        WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType, currentTeam, item) ==
+                        WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(RoundTypeManager.GetInstance().GetCurrentRoundType(), currentTeam, item) ==
                         selectedWeaponAllocationType
                 );
                 var slot = selectedWeaponAllocationType.Value switch
@@ -194,7 +196,7 @@ public class RetakesAllocator : BasePlugin
         var result = OnWeaponCommandHelper.Handle(
             new List<string> {CsItem.AWP.ToString()},
             playerId,
-            _currentRoundType,
+            RoundTypeManager.GetInstance().GetCurrentRoundType(),
             currentTeam,
             currentPreferredSetting is not null,
             out _
@@ -217,7 +219,7 @@ public class RetakesAllocator : BasePlugin
         var result = OnWeaponCommandHelper.Handle(
             Helpers.CommandInfoToArgList(commandInfo),
             playerId,
-            _currentRoundType,
+            RoundTypeManager.GetInstance().GetCurrentRoundType(),
             currentTeam,
             true,
             out _
@@ -269,13 +271,13 @@ public class RetakesAllocator : BasePlugin
         var playerId = Helpers.GetSteamId(player);
         var isPreferred = WeaponHelpers.IsPreferred(team, item);
 
-        var purchasedAllocationType = _currentRoundType is not null
+        var purchasedAllocationType = RoundTypeManager.GetInstance().GetCurrentRoundType() is not null
             ? WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(
-                _currentRoundType.Value, team, item
+                RoundTypeManager.GetInstance().GetCurrentRoundType(), team, item
             )
             : null;
 
-        var isValidAllocation = WeaponHelpers.IsAllocationTypeValidForRound(purchasedAllocationType, _currentRoundType);
+        var isValidAllocation = WeaponHelpers.IsAllocationTypeValidForRound(purchasedAllocationType, RoundTypeManager.GetInstance().GetCurrentRoundType());
 
         // Log.Write($"item {item} team {team} player {playerId}");
         // Log.Write($"curRound {_currentRoundType} weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
@@ -288,8 +290,6 @@ public class RetakesAllocator : BasePlugin
             isValidAllocation &&
             // redundant, just for null checker
             purchasedAllocationType is not null
-            weaponRoundType is not null &&
-            (weaponRoundType == RoundTypeManager.GetInstance().GetCurrentRoundType() || weaponRoundType == RoundType.Pistol)
         )
         {
             Queries.SetWeaponPreferenceForUser(
@@ -309,12 +309,12 @@ public class RetakesAllocator : BasePlugin
                         return i == item;
                     }
 
-                    if (_currentRoundType is null)
+                    if (RoundTypeManager.GetInstance().GetCurrentRoundType() is null)
                     {
                         return true;
                     }
 
-                    var at = WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(_currentRoundType.Value, team, i);
+                    var at = WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(RoundTypeManager.GetInstance().GetCurrentRoundType(), team, i);
                     // Log.Write($"at: {at}");
                     return at is null || at == purchasedAllocationType;
                 });
@@ -325,7 +325,7 @@ public class RetakesAllocator : BasePlugin
             if (removedAnyWeapons && RoundTypeManager.GetInstance().GetCurrentRoundType() is not null && WeaponHelpers.IsWeapon(item))
             {
                 var replacementAllocationType =
-                    WeaponHelpers.GetReplacementWeaponAllocationTypeForWeapon(_currentRoundType.Value);
+                    WeaponHelpers.GetReplacementWeaponAllocationTypeForWeapon(RoundTypeManager.GetInstance().GetCurrentRoundType());
                 // Log.Write($"Replacement allocation type {replacementAllocationType}");
                 if (replacementAllocationType is not null)
                 {
@@ -341,16 +341,6 @@ public class RetakesAllocator : BasePlugin
                             replacementItem.Value
                         }, slotToSelect);
                     }
-                var replacementItem = WeaponHelpers.GetWeaponForRoundType(RoundTypeManager.GetInstance().GetCurrentRoundType()!.Value, team,
-                    Queries.GetUserSettings(playerId));
-                // Log.Write($"Replacement item: {replacementItem}");
-                if (replacementItem is not null)
-                {
-                    replacedWeapon = true;
-                    AllocateItemsForPlayer(player, new List<CsItem>
-                    {
-                        replacementItem.Value
-                    }, slotToSelect);
                 }
             }
 
@@ -405,7 +395,7 @@ public class RetakesAllocator : BasePlugin
                 var message = OnWeaponCommandHelper.Handle(
                     new List<string> {itemName},
                     Helpers.GetSteamId(player),
-                    _currentRoundType,
+                    RoundTypeManager.GetInstance().GetCurrentRoundType(),
                     team,
                     false,
                     out _

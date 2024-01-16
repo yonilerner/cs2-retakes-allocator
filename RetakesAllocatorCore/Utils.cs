@@ -64,8 +64,8 @@ public static class Utils
 
     public static void SetupMySql(string connectionString, DbContextOptionsBuilder optionsBuilder)
     {
-        var version = ServerVersion.AutoDetect(connectionString);
-        optionsBuilder.UseMySql(connectionString, version);
+        // var version = ServerVersion.AutoDetect(connectionString);
+        // optionsBuilder.UseMySql(connectionString, version);
     }
     
     public static void SetupSqlite(string connectionString, DbContextOptionsBuilder optionsBuilder)
