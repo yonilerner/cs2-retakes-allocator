@@ -4,7 +4,6 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
-using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocator;
 
