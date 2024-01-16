@@ -118,7 +118,7 @@ public class WeaponsMenu
         var weaponName = option.Text;
 
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Secondary!");
-        HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
+        HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName, RoundType.FullBuy);
 
         OpenCtPrimaryMenu(player);
     }
@@ -180,7 +180,7 @@ public class WeaponsMenu
         var weaponName = option.Text;
 
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
-        HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
+        HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName, RoundType.FullBuy);
 
         OpenTPistolMenu(player);
     }
@@ -288,7 +288,15 @@ public class WeaponsMenu
         OnMenuComplete(player);
     }
 
+    // TODO This is temporary until this menu knows about the current round
     private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon,
+        bool remove = false)
+    {
+        HandlePreferenceSelection(player, team, weapon, null, remove);
+    }
+
+    private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon,
+        RoundType? roundTypeOverride,
         bool remove = false)
     {
         var message = OnWeaponCommandHelper.Handle(
