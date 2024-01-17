@@ -15,12 +15,7 @@ public static class RoundTypeHelpers
 {
     public static List<RoundType> GetRoundTypes()
     {
-        return new List<RoundType>
-        {
-            RoundType.Pistol,
-            RoundType.HalfBuy,
-            RoundType.FullBuy,
-        };
+        return Enum.GetValues<RoundType>().ToList();
     }
     
     public static RoundType GetRandomRoundType()

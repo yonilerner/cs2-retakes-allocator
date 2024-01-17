@@ -1,41 +1,52 @@
 ﻿using CounterStrikeSharp.API.Core;
+using RetakesAllocator.Menus.Interfaces;
 using static RetakesAllocatorCore.PluginInfo;
 
 namespace RetakesAllocator.Menus;
 
+public enum MenuType
+{
+    Guns,
+    NextRoundVote,
+}
+
 public class MenuManager
 {
-    public const float DefaultMenuTimeout = 30.0f;
-    
-    private readonly GunsMenu _gunsMenu = new();
-    private readonly NextRoundMenu _nextRoundMenu = new();
+    private readonly Dictionary<MenuType, BaseMenu> _menus = new()
+    {
+        {MenuType.Guns, new GunsMenu()},
+        {MenuType.NextRoundVote, new NextRoundVoteMenu()},
+    };
 
-    public void OpenGunsMenu(CCSPlayerController player)
+    private bool MenuAlreadyOpenCheck(CCSPlayerController player)
     {
         if (IsUserInMenu(player))
         {
             player.PrintToChat($"{MessagePrefix}You are already using another menu!");
-            return;
+            return true;
         }
-        
-        _gunsMenu.OpenGunsMenu(player);
+
+        return false;
     }
-    
-    public void OpenNextRoundMenu(CCSPlayerController player)
+
+    public bool OpenMenuForPlayer(CCSPlayerController player, MenuType menuType)
     {
-        if (IsUserInMenu(player))
+        if (MenuAlreadyOpenCheck(player))
         {
-            player.PrintToChat($"{MessagePrefix}You are already using another menu!");
-            return;
+            return false;
         }
-        
-        _nextRoundMenu.OpenNextRoundMenu(player);
+
+        if (!_menus.TryGetValue(menuType, out var menu))
+        {
+            return false;
+        }
+
+        menu.OpenMenu(player);
+        return true;
     }
-    
+
     private bool IsUserInMenu(CCSPlayerController player)
     {
-        return
-            _gunsMenu.PlayersInMenu.Contains(player) 
-            || _nextRoundMenu.PlayersInMenu.Contains(player);
+        return _menus.Values.Any(menu => menu.PlayerIsInMenu(player));
     }
 }

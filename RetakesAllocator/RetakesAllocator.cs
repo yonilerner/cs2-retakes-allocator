@@ -110,7 +110,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        _menuManager.OpenGunsMenu(player!);
+        _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
     }
     
     [ConsoleCommand("css_nextround", "Opens the menu to vote for the next round type.")]
@@ -123,7 +123,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        _menuManager.OpenNextRoundMenu(player!);
+        _menuManager.OpenMenuForPlayer(player!, MenuType.NextRoundVote);
     }
 
     [ConsoleCommand("css_gun")]

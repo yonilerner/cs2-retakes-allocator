@@ -1,29 +1,39 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using static RetakesAllocatorCore.PluginInfo;
+using RetakesAllocatorCore;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Managers;
 
-public class VoteManager
+public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
 {
     protected const float VoteTimeout = 30.0f;
 
-    private string _voteFor;
-    private string _voteCommand;
+    private readonly string _voteFor;
+    private readonly string _voteCommand;
     private Timer? _voteTimer;
-    private readonly Dictionary<CCSPlayerController, string> _votes = new();
-    
-    public VoteManager(string voteFor, string voteCommand)
+    private readonly Dictionary<CCSPlayerController, TVoteValue> _votes = new();
+
+    protected AbstractVoteManager(string voteFor, string voteCommand)
     {
         _voteFor = voteFor;
         _voteCommand = voteCommand;
     }
-    
+
+    public abstract IEnumerable<TVoteValue> GetVoteValues();
+    protected abstract void HandleVoteResult(TVoteValue result);
+    protected abstract TVoteValue ParseVoteValue(string voteValueStr);
+    public abstract string SerializeVoteValue(TVoteValue voteValue);
+
     public void CastVote(CCSPlayerController player, string vote)
     {
+        CastVote(player, ParseVoteValue(vote));
+    }
+
+    public void CastVote(CCSPlayerController player, TVoteValue vote)
+    {
         var players = Utilities.GetPlayers().Where(Helpers.PlayerIsValid);
-        
+
         if (_voteTimer == null)
         {
             _voteTimer = new Timer(VoteTimeout, OnVoteComplete);
@@ -32,14 +42,14 @@ public class VoteManager
             {
                 if (innerPlayer != player)
                 {
-                    innerPlayer.PrintToChat($"{MessagePrefix}A vote has been started! Type {_voteCommand} to vote for {_voteFor}!");
+                    PrintToPlayer(innerPlayer, $"A vote has been started! Type {_voteCommand} to vote!");
                 }
             }
         }
 
         _votes[player] = vote;
-        player.PrintToChat($"{MessagePrefix}Your vote has been registered for {_voteFor}!");
-        
+        PrintToPlayer(player, "Your vote has been registered!");
+
         if (_votes.Count == 0)
         {
             OnVoteComplete();
@@ -54,15 +64,15 @@ public class VoteManager
             _voteTimer = null;
         }
 
-        var countedVotes = new Dictionary<string, int>();
-        
+        var countedVotes = new Dictionary<TVoteValue, int>();
+
         foreach (var (player, vote) in _votes)
         {
             if (!player.IsValid || player.Connected != PlayerConnectedState.PlayerConnected)
             {
                 continue;
             }
-            
+
             if (!countedVotes.TryAdd(vote, 1))
             {
                 countedVotes[vote]++;
@@ -72,7 +82,7 @@ public class VoteManager
         _votes.Clear();
 
         var highestScore = 0;
-        var highestVoted = new HashSet<string>();
+        var highestVoted = new HashSet<TVoteValue>();
         foreach (var (vote, count) in countedVotes)
         {
             if (count > highestScore)
@@ -88,19 +98,27 @@ public class VoteManager
         }
 
         var numPlayers = Helpers.GetNumPlayersOnTeam();
-        if (numPlayers == 0 || (float)highestScore / numPlayers < 0.5f)
+        if (numPlayers == 0 || (float) highestScore / numPlayers < 0.5f)
         {
-            Server.PrintToChatAll($"{MessagePrefix}Not enough players voted for {_voteFor}! Vote failed.");
+            PrintToServer($"Vote failed: Not enough players voted!");
             return;
         }
-        
+
         var random = new Random();
         var chosenVote = highestVoted.ElementAt(random.Next(highestVoted.Count));
 
-        var nextRoundType = RetakesAllocatorCore.RoundTypeHelpers.ParseRoundType(chosenVote);
-        
-        RoundTypeManager.GetInstance().SetNextRoundType(nextRoundType);
-        
-        Server.PrintToChatAll($"{MessagePrefix}Vote complete! The next round will be {nextRoundType.ToString()}!");
+        HandleVoteResult(chosenVote);
+    }
+
+    public string VoteMessagePrefix => $"{PluginInfo.MessagePrefix}[Voting for {_voteFor}] ";
+
+    public void PrintToPlayer(CCSPlayerController player, string message)
+    {
+        player.PrintToChat($"{VoteMessagePrefix}{message}");
+    }
+
+    public void PrintToServer(string message)
+    {
+        Server.PrintToChatAll($"{VoteMessagePrefix}{message}");
     }
 }
