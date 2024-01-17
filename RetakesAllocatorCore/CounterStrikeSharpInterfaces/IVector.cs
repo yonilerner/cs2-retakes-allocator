@@ -1,4 +1,4 @@
-namespace RetakesAllocatorCore.CounterStrikeSharpMock;
+namespace RetakesAllocatorCore.CounterStrikeSharpInterfaces;
 
 public interface IVector
 {

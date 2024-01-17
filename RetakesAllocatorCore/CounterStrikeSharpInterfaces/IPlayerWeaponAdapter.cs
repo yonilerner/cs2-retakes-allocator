@@ -1,8 +1,8 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 
-namespace RetakesAllocatorCore.CounterStrikeSharpMock;
+namespace RetakesAllocatorCore.CounterStrikeSharpInterfaces;
 
-public interface IPlayerWeaponMock
+public interface IPlayerWeaponAdapter
 {
     public bool IsValid { get; }
     public string DesignerName { get; }

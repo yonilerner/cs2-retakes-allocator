@@ -2,7 +2,7 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Config;
-using RetakesAllocatorCore.CounterStrikeSharpMock;
+using RetakesAllocatorCore.CounterStrikeSharpInterfaces;
 using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorCore.Helpers;
@@ -11,7 +11,7 @@ public class OnRoundPostStartHelper
 {
     public static HookResult Handle(
         RoundType? nextRoundType,
-        ICounterStrikeSharpMock counterStrikeSharp,
+        ICounterStrikeSharpAdapter counterStrikeSharp,
         out RoundType? currentRoundType
     )
     {
@@ -24,8 +24,8 @@ public class OnRoundPostStartHelper
         }
 
         var allPlayers = counterStrikeSharp.Utilities.GetPlayers();
-        var tPlayers = new List<ICCSPlayerControllerMock>();
-        var ctPlayers = new List<ICCSPlayerControllerMock>();
+        var tPlayers = new List<ICCSPlayerControllerAdapter>();
+        var ctPlayers = new List<ICCSPlayerControllerAdapter>();
         var playerIds = new List<ulong>();
         foreach (var player in allPlayers)
         {
@@ -53,14 +53,14 @@ public class OnRoundPostStartHelper
 
         var defusingPlayer = Utils.Choice(ctPlayers);
 
-        HashSet<ICCSPlayerControllerMock> FilterByPreferredWeaponPreference(IEnumerable<ICCSPlayerControllerMock> ps) =>
+        HashSet<ICCSPlayerControllerAdapter> FilterByPreferredWeaponPreference(IEnumerable<ICCSPlayerControllerAdapter> ps) =>
             ps.Where(p =>
                     userSettingsByPlayerId.TryGetValue(p.SteamId, out var userSetting) &&
                     userSetting.GetWeaponPreference(p.Team, WeaponAllocationType.Preferred) is not null)
                 .ToHashSet();
 
-        ICollection<ICCSPlayerControllerMock> tPreferredPlayers = new HashSet<ICCSPlayerControllerMock>();
-        ICollection<ICCSPlayerControllerMock> ctPreferredPlayers = new HashSet<ICCSPlayerControllerMock>();
+        ICollection<ICCSPlayerControllerAdapter> tPreferredPlayers = new HashSet<ICCSPlayerControllerAdapter>();
+        ICollection<ICCSPlayerControllerAdapter> ctPreferredPlayers = new HashSet<ICCSPlayerControllerAdapter>();
         if (roundType == RoundType.FullBuy)
         {
             tPreferredPlayers = WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers));

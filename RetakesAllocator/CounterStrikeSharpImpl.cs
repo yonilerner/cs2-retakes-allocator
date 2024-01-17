@@ -3,11 +3,11 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
-using RetakesAllocatorCore.CounterStrikeSharpMock;
+using RetakesAllocatorCore.CounterStrikeSharpInterfaces;
 
 namespace RetakesAllocator;
 
-public class NativeApiImpl : INativeAPIMock
+public class NativeApiImpl : INativeAPIAdapter
 {
     public void IssueClientCommand(int clientIndex, string command)
     {
@@ -15,7 +15,7 @@ public class NativeApiImpl : INativeAPIMock
     }
 }
 
-public class ServerImpl : IServerMock
+public class ServerImpl : IServerAdapter
 {
     public void PrintToChatAll(string message)
     {
@@ -23,7 +23,7 @@ public class ServerImpl : IServerMock
     }
 }
 
-public class PlayerWeaponImpl : IPlayerWeaponMock
+public class PlayerWeaponImpl : IPlayerWeaponAdapter
 {
     private readonly CHandle<CBasePlayerWeapon> _weapon;
 
@@ -48,7 +48,7 @@ public class PlayerWeaponImpl : IPlayerWeaponMock
     }
 }
 
-public class WeaponServicesImpl : IWeaponServicesMock
+public class WeaponServicesImpl : IWeaponServicesAdapter
 {
     private readonly CPlayer_WeaponServices _weaponServices;
 
@@ -57,15 +57,15 @@ public class WeaponServicesImpl : IWeaponServicesMock
         _weaponServices = weaponServices;
     }
 
-    public ICollection<IPlayerWeaponMock> MyWeapons =>
+    public ICollection<IPlayerWeaponAdapter> MyWeapons =>
         _weaponServices
             .MyWeapons
             .Select(w => new PlayerWeaponImpl(w))
-            .Cast<IPlayerWeaponMock>()
+            .Cast<IPlayerWeaponAdapter>()
             .ToList();
 }
 
-public class CCSPlayerPawnImpl : ICCSPlayerPawnMock
+public class CCSPlayerPawnImpl : ICCSPlayerPawnAdapter
 {
     private readonly CHandle<CCSPlayerPawn> _pawn;
 
@@ -74,12 +74,12 @@ public class CCSPlayerPawnImpl : ICCSPlayerPawnMock
         _pawn = pawn;
     }
 
-    public IWeaponServicesMock? WeaponServices =>
+    public IWeaponServicesAdapter? WeaponServices =>
         _pawn.Value?.WeaponServices is not null
             ? new WeaponServicesImpl(_pawn.Value.WeaponServices)
             : null;
 
-    public void RemovePlayerItem(IPlayerWeaponMock weapon)
+    public void RemovePlayerItem(IPlayerWeaponAdapter weapon)
     {
         if (weapon.Handle is not null)
         {
@@ -88,7 +88,7 @@ public class CCSPlayerPawnImpl : ICCSPlayerPawnMock
     }
 }
 
-public class CCSPlayer_ItemServicesImpl : ICCSPlayer_ItemServicesMock
+public class CCSPlayer_ItemServicesImpl : ICCSPlayer_ItemServicesAdapter
 {
     private readonly CCSPlayer_ItemServices? _itemServices;
 
@@ -114,7 +114,7 @@ public class CCSPlayer_ItemServicesImpl : ICCSPlayer_ItemServicesMock
     public bool IsValid => _itemServices?.Handle is not null;
 }
 
-public class CCSPlayerControllerImpl : ICCSPlayerControllerMock
+public class CCSPlayerControllerImpl : ICCSPlayerControllerAdapter
 {
     private readonly CCSPlayerController? _player;
 
@@ -132,11 +132,11 @@ public class CCSPlayerControllerImpl : ICCSPlayerControllerMock
 
     public CsTeam Team => _player?.Team ?? CsTeam.None;
 
-    public ICCSPlayerPawnMock? PlayerPawn => _player is not null
+    public ICCSPlayerPawnAdapter? PlayerPawn => _player is not null
         ? new CCSPlayerPawnImpl(_player.PlayerPawn)
         : null;
 
-    public ICCSPlayer_ItemServicesMock? ItemServices =>
+    public ICCSPlayer_ItemServicesAdapter? ItemServices =>
         new CCSPlayer_ItemServicesImpl(_player?.PlayerPawn.Value?.ItemServices);
 
     public void GiveNamedItem(CsItem item)
@@ -145,22 +145,22 @@ public class CCSPlayerControllerImpl : ICCSPlayerControllerMock
     }
 }
 
-public class UtilitiesImpl : IUtilitiesMock
+public class UtilitiesImpl : IUtilitiesAdapter
 {
-    public List<ICCSPlayerControllerMock> GetPlayers()
+    public List<ICCSPlayerControllerAdapter> GetPlayers()
     {
         return Utilities
             .GetPlayers()
             .Select(player => new CCSPlayerControllerImpl(player))
-            .Cast<ICCSPlayerControllerMock>().ToList();
+            .Cast<ICCSPlayerControllerAdapter>().ToList();
     }
 }
 
-public class CounterStrikeSharpImpl : ICounterStrikeSharpMock
+public class CounterStrikeSharpImpl : ICounterStrikeSharpAdapter
 {
-    public INativeAPIMock NativeApi => new NativeApiImpl();
-    public IServerMock Server => new ServerImpl();
-    public IUtilitiesMock Utilities => new UtilitiesImpl();
+    public INativeAPIAdapter NativeApi => new NativeApiImpl();
+    public IServerAdapter Server => new ServerImpl();
+    public IUtilitiesAdapter Utilities => new UtilitiesImpl();
     public string MessagePrefix => PluginInfo.MessagePrefix;
 
     private readonly RetakesAllocator _plugin;
@@ -170,7 +170,7 @@ public class CounterStrikeSharpImpl : ICounterStrikeSharpMock
         _plugin = plugin;
     }
 
-    public void AllocateItemsForPlayer(ICCSPlayerControllerMock player, ICollection<CsItem> items, string? slotToSelect)
+    public void AllocateItemsForPlayer(ICCSPlayerControllerAdapter player, ICollection<CsItem> items, string? slotToSelect)
     {
         // Log.Write($"Allocating items: {string.Join(",", items)}");
         AddTimer(0.1f, () =>
@@ -199,7 +199,7 @@ public class CounterStrikeSharpImpl : ICounterStrikeSharpMock
         });
     }
 
-    public void GiveDefuseKit(ICCSPlayerControllerMock player)
+    public void GiveDefuseKit(ICCSPlayerControllerAdapter player)
     {
         _plugin.AddTimer(0.1f, () =>
         {
@@ -216,12 +216,12 @@ public class CounterStrikeSharpImpl : ICounterStrikeSharpMock
         _plugin.AddTimer(interval, callback);
     }
 
-    public bool PlayerIsValid(ICCSPlayerControllerMock? player)
+    public bool PlayerIsValid(ICCSPlayerControllerAdapter? player)
     {
         return (player?.IsValid ?? false) && player.SteamId != 0;
     }
 
-    public ICollection<string> CommandInfoToArgList(ICommandInfoMock commandInfo, bool includeFirst = false)
+    public ICollection<string> CommandInfoToArgList(ICommandInfoAdapter commandInfo, bool includeFirst = false)
     {
         var result = new List<string>();
 
@@ -233,7 +233,7 @@ public class CounterStrikeSharpImpl : ICounterStrikeSharpMock
         return result;
     }
 
-    public bool RemoveWeapons(ICCSPlayerControllerMock player, Func<CsItem, bool>? where = null)
+    public bool RemoveWeapons(ICCSPlayerControllerAdapter player, Func<CsItem, bool>? where = null)
     {
         if (!PlayerIsValid(player) || player.PlayerPawn?.WeaponServices is null)
         {
