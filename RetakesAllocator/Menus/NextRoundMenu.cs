@@ -13,7 +13,7 @@ public class NextRoundMenu : BaseMenu
     private const float DefaultMenuTimeout = 30.0f;
     
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
-    private readonly VoteManager _voteManager = new();
+    private readonly VoteManager _voteManager = new("the next round", "!nextround");
     
     private void OnMenuTimeout(CCSPlayerController player)
     {
@@ -80,7 +80,7 @@ public class NextRoundMenu : BaseMenu
         var selectedRound = option.Text;
         
         player.PrintToChat($"{MessagePrefix} You selected {selectedRound} as the next round!");
-        // HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
+        _voteManager.CastVote(player, selectedRound);
         
         OnMenuComplete(player);
     }
