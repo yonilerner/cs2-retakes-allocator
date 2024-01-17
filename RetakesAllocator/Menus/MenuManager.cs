@@ -1,5 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
+using RetakesAllocator.Managers;
 using RetakesAllocator.Menus.Interfaces;
+using RetakesAllocatorCore;
 using static RetakesAllocatorCore.PluginInfo;
 
 namespace RetakesAllocator.Menus;
@@ -15,7 +17,7 @@ public class MenuManager
     private readonly Dictionary<MenuType, BaseMenu> _menus = new()
     {
         {MenuType.Guns, new GunsMenu()},
-        {MenuType.NextRoundVote, new NextRoundVoteMenu()},
+        {MenuType.NextRoundVote, new VoteMenu<RoundType>(new NextRoundVoteManager())},
     };
 
     private bool MenuAlreadyOpenCheck(CCSPlayerController player)

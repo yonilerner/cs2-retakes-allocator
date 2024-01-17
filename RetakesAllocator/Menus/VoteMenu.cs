@@ -7,13 +7,13 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Menus;
 
-public abstract class AbstractVoteMenu<TVoteValue> : BaseMenu where TVoteValue : notnull
+public class VoteMenu<TVoteValue> : BaseMenu where TVoteValue : notnull
 {
     private new const float MenuTimeout = 20.0f;
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
     private readonly AbstractVoteManager<TVoteValue> _voteManager;
 
-    protected AbstractVoteMenu(AbstractVoteManager<TVoteValue> voteManager)
+    public VoteMenu(AbstractVoteManager<TVoteValue> voteManager)
     {
         _voteManager = voteManager;
     }
