@@ -443,8 +443,12 @@ public static class WeaponHelpers
             .ToList();
     }
 
-    private static CsItem GetDefaultWeaponForAllocationType(WeaponAllocationType allocationType, CsTeam team)
+    private static CsItem? GetDefaultWeaponForAllocationType(WeaponAllocationType allocationType, CsTeam team)
     {
+        if (team is CsTeam.None or CsTeam.Spectator)
+        {
+            return null;
+        }
         return _defaultWeaponsByTeamAndAllocationType[team][allocationType];
     }
 
