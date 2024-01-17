@@ -100,5 +100,7 @@ public class VoteManager
         var nextRoundType = RetakesAllocatorCore.RoundTypeHelpers.ParseRoundType(chosenVote);
         
         RoundTypeManager.GetInstance().SetNextRoundType(nextRoundType);
+        
+        Server.PrintToChatAll($"{MessagePrefix}Vote complete! The next round will be {nextRoundType.ToString()}!");
     }
 }

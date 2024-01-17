@@ -10,14 +10,13 @@ namespace RetakesAllocator.Menus;
 
 public class NextRoundMenu : BaseMenu
 {
-    private const float DefaultMenuTimeout = 30.0f;
-    
+    private new const float MenuTimeout = 20.0f;
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
     private readonly VoteManager _voteManager = new("the next round", "!nextround");
     
     private void OnMenuTimeout(CCSPlayerController player)
     {
-        player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {DefaultMenuTimeout} seconds!");
+        player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {MenuTimeout} seconds!");
 
         PlayersInMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
@@ -31,7 +30,7 @@ public class NextRoundMenu : BaseMenu
             existingTimer.Kill();
             _menuTimeoutTimers.Remove(player);
         }
-        _menuTimeoutTimers[player] = new Timer(DefaultMenuTimeout, () => OnMenuTimeout(player));
+        _menuTimeoutTimers[player] = new Timer(MenuTimeout, () => OnMenuTimeout(player));
     }
     
     private void OnMenuComplete(CCSPlayerController player)
@@ -78,8 +77,6 @@ public class NextRoundMenu : BaseMenu
         }
 
         var selectedRound = option.Text;
-        
-        player.PrintToChat($"{MessagePrefix} You selected {selectedRound} as the next round!");
         _voteManager.CastVote(player, selectedRound);
         
         OnMenuComplete(player);
