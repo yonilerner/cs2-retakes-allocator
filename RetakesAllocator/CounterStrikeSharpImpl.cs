@@ -175,7 +175,7 @@ public class CounterStrikeSharpImpl : ICounterStrikeSharpAdapter
         // Log.Write($"Allocating items: {string.Join(",", items)}");
         AddTimer(0.1f, () =>
         {
-            if (player.IsValid)
+            if (!player.IsValid)
             {
                 // Log.Write($"Player is not valid when allocating item");
                 return;

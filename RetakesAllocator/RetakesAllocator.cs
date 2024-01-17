@@ -1,4 +1,6 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections;
+using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -6,7 +8,6 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
-using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
@@ -171,7 +172,7 @@ public class RetakesAllocator : BasePlugin
                     WeaponAllocationType.Preferred => "slot1",
                     _ => throw new ArgumentOutOfRangeException()
                 };
-                AllocateItemsForPlayer(player, new List<CsItem> {selectedWeapon.Value}, slot);
+                new CounterStrikeSharpImpl(this).AllocateItemsForPlayer(new CCSPlayerControllerImpl(player), new List<CsItem> {selectedWeapon.Value}, slot);
             }
         }
     }
@@ -334,7 +335,7 @@ public class RetakesAllocator : BasePlugin
                     if (replacementItem is not null)
                     {
                         replacedWeapon = true;
-                        AllocateItemsForPlayer(player, new List<CsItem>
+                        new CounterStrikeSharpImpl(this).AllocateItemsForPlayer(new CCSPlayerControllerImpl(player), new List<CsItem>
                         {
                             replacementItem.Value
                         }, slotToSelect);
