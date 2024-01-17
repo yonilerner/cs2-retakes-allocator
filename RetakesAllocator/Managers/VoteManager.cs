@@ -40,11 +40,6 @@ public class VoteManager
         _votes[player] = vote;
         player.PrintToChat($"{MessagePrefix}Your vote has been registered for {_voteFor}!");
         
-        // TODO: Check if all players have voted, and end the vote early.
-        Utilities.GetPlayers()
-            .Where(Helpers.PlayerIsValid)
-            .ToList();
-        
         if (_votes.Count == 0)
         {
             OnVoteComplete();
