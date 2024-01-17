@@ -4,7 +4,6 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
-using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocator;
 
@@ -47,7 +46,7 @@ public static class Helpers
 
     public static CsTeam GetTeam(CCSPlayerController player)
     {
-        return (CsTeam) player.TeamNum;
+        return player.Team;
     }
 
     public static void RemoveArmor(CCSPlayerController player)

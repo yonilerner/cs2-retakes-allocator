@@ -95,13 +95,12 @@ The config file is located in the plugin folder under `config/config.json`.
 - `DatabaseProvider`: Which database provider you want to use. The default is `Sqlite`, which requires no setup. The
   available options are:
     - `Sqlite`
-    - [Coming Soon] `MySql`
+    - `MySql`
 - `DatabaseConnectionString`: How you connect to the database
     - The connection string for `Sqlite` probably doesnt need to be changed from the default, but you can change it if
       you want the db file to be in a different location.
         - More info on formatting the string here: https://www.connectionstrings.com/sqlite/
-
-[//]: # (    - The connection string for `MySql` should be configured per instructions here: https://www.connectionstrings.com/mysql/)
+    - The connection string for `MySql` should be configured per instructions here: https://www.connectionstrings.com/mysql/
 
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
@@ -124,11 +123,8 @@ You can use the following commands to select specific weapon preferences per-use
 
 # Building
 
-- Download a release (I used 142) from https://github.com/roflmuffin/CounterStrikeSharp/releases/ and copy the
-  extracted `addon` folder to this project's `CounterStrikeSharp` folder
-- [Optional] To automatically copy the built DLL to your running server location, set the build variable `CopyPath` to
-  the folder where the mod should be copied to
-    - *This only works on Windows*
+To automatically copy the built DLL to your running server location, set the build variable `CopyPath` to the folder
+where the mod should be copied to. *This only works on Windows.*
 
 Notes:
 

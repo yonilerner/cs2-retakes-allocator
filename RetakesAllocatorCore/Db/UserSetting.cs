@@ -19,9 +19,10 @@ public class UserSetting
     [Key]
     [Required]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    [Column(TypeName = "bigint")]
     public ulong UserId { get; set; }
 
-    [Column(TypeName = "TEXT"), MaxLength(10000)]
+    [Column(TypeName = "text"), MaxLength(10000)]
     public WeaponPreferencesType WeaponPreferences { get; set; } = new();
 
     public static void Configure(ModelConfigurationBuilder configurationBuilder)
