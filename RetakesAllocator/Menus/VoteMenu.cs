@@ -37,7 +37,7 @@ public class VoteMenu<TVoteValue> : BaseMenu where TVoteValue : notnull
     
     public void GatherAndHandleVotes()
     {
-        _voteManager.ExecuteVoteEnd();
+        _voteManager.OnVoteComplete();
     }
 
     public override bool PlayerIsInMenu(CCSPlayerController player)

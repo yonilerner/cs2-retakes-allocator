@@ -49,12 +49,7 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
         }
     }
 
-    public void ExecuteVoteEnd()
-    {
-        OnVoteComplete();
-    }
-
-    private void OnVoteComplete()
+    public void OnVoteComplete()
     {
         if (_voteTimer is null)
         {
