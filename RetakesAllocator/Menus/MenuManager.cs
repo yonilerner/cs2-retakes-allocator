@@ -17,7 +17,7 @@ public class MenuManager
     private readonly Dictionary<MenuType, BaseMenu> _menus = new()
     {
         {MenuType.Guns, new GunsMenu()},
-        {MenuType.NextRoundVote, new VoteMenu<RoundType>(new NextRoundVoteManager())},
+        {MenuType.NextRoundVote, new VoteMenu(new NextRoundVoteManager())},
     };
 
     private bool MenuAlreadyOpenCheck(CCSPlayerController player)

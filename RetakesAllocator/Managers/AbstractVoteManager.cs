@@ -5,7 +5,7 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Managers;
 
-public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
+public abstract class AbstractVoteManager
 {
     protected const float VoteTimeout = 30.0f;
     protected const float EnoughPlayersVotedThreshold = 0.5f;
@@ -13,7 +13,7 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
     private readonly string _voteFor;
     private readonly string _voteCommand;
     private Timer? _voteTimer;
-    private readonly Dictionary<CCSPlayerController, TVoteValue> _votes = new();
+    private readonly Dictionary<CCSPlayerController, string> _votes = new();
 
     protected AbstractVoteManager(string voteFor, string voteCommand)
     {
@@ -21,35 +21,24 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
         _voteCommand = voteCommand;
     }
 
-    public abstract IEnumerable<TVoteValue> GetVoteValues();
-    protected abstract void HandleVoteResult(TVoteValue result);
-    protected abstract TVoteValue ParseVoteValue(string voteValueStr);
-    public abstract string SerializeVoteValue(TVoteValue voteValue);
+    public abstract IEnumerable<string> GetVoteOptions();
+
+    protected abstract void HandleVoteResult(string result);
 
     public void CastVote(CCSPlayerController player, string vote)
     {
-        CastVote(player, ParseVoteValue(vote));
-    }
-
-    public void CastVote(CCSPlayerController player, TVoteValue vote)
-    {
         if (_voteTimer == null)
         {
-            _voteTimer = new Timer(VoteTimeout, OnVoteComplete);
+            _voteTimer = new Timer(VoteTimeout, CompleteVote);
 
             PrintToServer($"A vote has been started! Type {_voteCommand} to vote!");
         }
 
         _votes[player] = vote;
         PrintToPlayer(player, "Your vote has been registered!");
-
-        if (_votes.Count == 0)
-        {
-            OnVoteComplete();
-        }
     }
 
-    public void OnVoteComplete()
+    public void CompleteVote()
     {
         if (_voteTimer is null)
         {
@@ -58,7 +47,7 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
         _voteTimer.Kill();
         _voteTimer = null;
 
-        var countedVotes = new Dictionary<TVoteValue, int>();
+        var countedVotes = new Dictionary<string, int>();
 
         foreach (var (player, vote) in _votes)
         {
@@ -76,7 +65,7 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
         _votes.Clear();
 
         var highestScore = 0;
-        var highestVoted = new HashSet<TVoteValue>();
+        var highestVoted = new HashSet<string>();
         foreach (var (vote, count) in countedVotes)
         {
             if (count > highestScore)

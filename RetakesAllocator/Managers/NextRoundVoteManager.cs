@@ -2,35 +2,25 @@ using RetakesAllocatorCore;
 
 namespace RetakesAllocator.Managers;
 
-public class NextRoundVoteManager : AbstractVoteManager<RoundType>
+public class NextRoundVoteManager : AbstractVoteManager
 {
+    private readonly IEnumerable<string> _options = RoundTypeHelpers
+        .GetRoundTypes()
+        .Select(r => r.ToString());
+
     public NextRoundVoteManager() : base("the next round", "!nextround")
     {
     }
 
-    protected override void HandleVoteResult(RoundType nextRoundType)
+
+    public override IEnumerable<string> GetVoteOptions()
     {
-        RoundTypeManager.GetInstance().SetNextRoundType(nextRoundType);
-        PrintToServer($"Vote complete! The next round will be {nextRoundType.ToString()}!");
+        return _options;
     }
 
-    protected override RoundType ParseVoteValue(string voteValueStr)
+    protected override void HandleVoteResult(string option)
     {
-        var parsedRound = RoundTypeHelpers.ParseRoundType(voteValueStr);
-        if (parsedRound is null)
-        {
-            throw new Exception($"Unable to parse {voteValueStr} as RoundType");
-        }
-        return parsedRound.Value;
-    }
-
-    public override string SerializeVoteValue(RoundType voteValue)
-    {
-        return voteValue.ToString();
-    }
-
-    public override IEnumerable<RoundType> GetVoteValues()
-    {
-        return RoundTypeHelpers.GetRoundTypes();
+        RoundTypeManager.GetInstance().SetNextRoundType(RoundTypeHelpers.ParseRoundType(option));
+        PrintToServer($"Vote complete! The next round will be {option}!");
     }
 }
