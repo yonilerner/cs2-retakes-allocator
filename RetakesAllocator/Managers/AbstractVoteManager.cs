@@ -106,7 +106,7 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
 
     public string VoteMessagePrefix => $"{PluginInfo.MessagePrefix}[Voting for {_voteFor}] ";
 
-    private void PrintToPlayer(CCSPlayerController player, string message)
+    protected void PrintToPlayer(CCSPlayerController player, string message)
     {
         player.PrintToChat($"{VoteMessagePrefix}{message}");
     }

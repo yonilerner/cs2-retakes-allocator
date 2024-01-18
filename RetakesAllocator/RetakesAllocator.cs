@@ -123,6 +123,12 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
+        if (!Configs.GetConfigData().EnableNextRoundTypeVoting)
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}Next round voting is disabled.");
+            return;
+        }
+
         _menuManager.OpenMenuForPlayer(player!, MenuType.NextRoundVote);
     }
 
