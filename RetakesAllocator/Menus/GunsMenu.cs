@@ -2,9 +2,9 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
-using RetakesAllocator.Menus.Interfaces;
 using RetakesAllocatorCore;
 using static RetakesAllocatorCore.PluginInfo;
+using BaseMenu = RetakesAllocator.Menus.Interfaces.BaseMenu;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Menus;
@@ -49,9 +49,6 @@ public class GunsMenu: BaseMenu
     {
         player.PrintToChat($"{MessagePrefix}You have finished setting up your weapons!");
         player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
-        
-        player.PrintToChat(
-            $"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
 
         PlayersInMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
