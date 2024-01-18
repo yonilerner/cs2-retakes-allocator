@@ -67,8 +67,6 @@ public class VoteMenu<TVoteValue> : BaseMenu where TVoteValue : notnull
 
     private void OnMenuComplete(CCSPlayerController player)
     {
-        player.PrintToChat($"{MessagePrefix}Your vote has been submitted!");
-
         PlayersInMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
         _menuTimeoutTimers.Remove(player);
