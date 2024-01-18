@@ -77,6 +77,7 @@ The config file is located in the plugin folder under `config/config.json`.
 
 - `RoundTypePercentages`: The frequency of each type of round. The values must add up to `100`.
 - `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
+- `EnableNextRoundTypeVoting`: Whether to allow voting for the next round type via `!nextround`. `false` by default.
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
     - Choices:
         - `PlayerChoice` - Allow players to choose their preferences for the round type
@@ -118,7 +119,8 @@ You can use the following commands to select specific weapon preferences per-use
   provided
     - For example, if you previously did `!gun galil` while a terrorist, and you do `!removegun galil` while a
       terrorist, you will no longer prefer the galil, and will instead get a random weapon
-- `!nextround <P|H|F>` - For admins only. Force the next round to be the selected type.
+- `!nextround` - Vote for the next round type. Can be enabled with the `EnableNextRoundTypeVoting` config, which is `false` by default.
+- `!setnextround <P|H|F>` - For admins only. Force the next round to be the selected type.
 - `!reload_allocator_config` - For admins only. Reload the JSON config in-place.
 
 # Building
