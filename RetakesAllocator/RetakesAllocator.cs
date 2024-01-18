@@ -408,7 +408,7 @@ public class RetakesAllocator : BasePlugin
 
         return HookResult.Continue;
     }
-
+    
     [GameEventHandler]
     public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
     {
@@ -416,6 +416,9 @@ public class RetakesAllocator : BasePlugin
         {
             return HookResult.Continue;
         }
+        
+        var menu = _menuManager.GetMenu<VoteMenu<RoundType>>(MenuType.NextRoundVote);
+        menu.GatherAndHandleVotes();
 
         var allPlayers = Utilities.GetPlayers()
             .Where(Helpers.PlayerIsValid)
@@ -440,14 +443,6 @@ public class RetakesAllocator : BasePlugin
             );
         }
 
-        return HookResult.Continue;
-    }
-    
-    [GameEventHandler]
-    public HookResult OnRoundPostEnd(EventRoundEnd @event, GameEventInfo info)
-    {
-        var menu = _menuManager.GetMenu<VoteMenu<RoundType>>(MenuType.NextRoundVote);
-        menu.GatherAndHandleVotes();
         return HookResult.Continue;
     }
 
