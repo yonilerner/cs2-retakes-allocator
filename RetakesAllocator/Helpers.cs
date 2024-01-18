@@ -181,4 +181,12 @@ public static class Helpers
 
         return Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
     }
+
+    public static int GetNumPlayersOnTeam()
+    {
+        return Utilities.GetPlayers()
+            .Where(player => player.IsValid)
+            .Where(player => player.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist).ToList()
+            .Count;
+    }
 }

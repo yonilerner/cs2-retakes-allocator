@@ -118,6 +118,7 @@ public record ConfigData
     public bool MigrateOnStartup { get; set; } = true;
     public bool AllowAllocationAfterFreezeTime { get; set; } = false;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
+    public bool EnableNextRoundTypeVoting { get; set; } = false;
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";

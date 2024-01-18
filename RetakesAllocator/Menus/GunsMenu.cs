@@ -2,24 +2,34 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using RetakesAllocator.Menus.Interfaces;
 using RetakesAllocatorCore;
 using static RetakesAllocatorCore.PluginInfo;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Menus;
 
-public class WeaponsMenu
+public class GunsMenu: BaseMenu
 {
-    private const float DefaultMenuTimeout = 30.0f;
-
-    public readonly HashSet<CCSPlayerController> PlayersInGunsMenu = new();
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
+    
+    public override void OpenMenu(CCSPlayerController player)
+    {
+        PlayersInMenu.Add(player);
+        
+        OpenTPrimaryMenu(player);
+    }
+
+    public override bool PlayerIsInMenu(CCSPlayerController player)
+    {
+        return PlayersInMenu.Contains(player);
+    }
 
     private void OnMenuTimeout(CCSPlayerController player)
     {
-        player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {DefaultMenuTimeout} seconds!");
+        player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {MenuTimeout} seconds!");
 
-        PlayersInGunsMenu.Remove(player);
+        PlayersInMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
         _menuTimeoutTimers.Remove(player);
     }
@@ -32,33 +42,30 @@ public class WeaponsMenu
             _menuTimeoutTimers.Remove(player);
         }
 
-        _menuTimeoutTimers[player] = new Timer(DefaultMenuTimeout, () => OnMenuTimeout(player));
+        _menuTimeoutTimers[player] = new Timer(MenuTimeout, () => OnMenuTimeout(player));
     }
 
     private void OnMenuComplete(CCSPlayerController player)
     {
         player.PrintToChat($"{MessagePrefix}You have finished setting up your weapons!");
+        player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
+        
         player.PrintToChat(
             $"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
 
-        PlayersInGunsMenu.Remove(player);
+        PlayersInMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
         _menuTimeoutTimers.Remove(player);
     }
 
     private void OnSelectExit(CCSPlayerController player, ChatMenuOption option)
     {
-        if (!PlayersInGunsMenu.Contains(player))
+        if (!PlayersInMenu.Contains(player))
         {
             return;
         }
 
         OnMenuComplete(player);
-    }
-
-    public void OpenGunsMenu(CCSPlayerController player)
-    {
-        OpenTPrimaryMenu(player);
     }
 
     private void OpenTPrimaryMenu(CCSPlayerController player)
@@ -79,7 +86,7 @@ public class WeaponsMenu
 
     private void OnTPrimarySelect(CCSPlayerController player, ChatMenuOption option)
     {
-        if (!PlayersInGunsMenu.Contains(player))
+        if (!PlayersInMenu.Contains(player))
         {
             return;
         }
@@ -110,7 +117,7 @@ public class WeaponsMenu
 
     private void OnTSecondarySelect(CCSPlayerController player, ChatMenuOption option)
     {
-        if (!PlayersInGunsMenu.Contains(player))
+        if (!PlayersInMenu.Contains(player))
         {
             return;
         }
@@ -141,7 +148,7 @@ public class WeaponsMenu
 
     private void OnCtPrimarySelect(CCSPlayerController player, ChatMenuOption option)
     {
-        if (!PlayersInGunsMenu.Contains(player))
+        if (!PlayersInMenu.Contains(player))
         {
             return;
         }
@@ -172,7 +179,7 @@ public class WeaponsMenu
 
     private void OnCtSecondarySelect(CCSPlayerController player, ChatMenuOption option)
     {
-        if (!PlayersInGunsMenu.Contains(player))
+        if (!PlayersInMenu.Contains(player))
         {
             return;
         }
@@ -203,7 +210,7 @@ public class WeaponsMenu
 
     private void OnTPistolSelect(CCSPlayerController player, ChatMenuOption option)
     {
-        if (!PlayersInGunsMenu.Contains(player))
+        if (!PlayersInMenu.Contains(player))
         {
             return;
         }
@@ -234,7 +241,7 @@ public class WeaponsMenu
 
     private void OnCtPistolSelect(CCSPlayerController player, ChatMenuOption option)
     {
-        if (!PlayersInGunsMenu.Contains(player))
+        if (!PlayersInMenu.Contains(player))
         {
             return;
         }
@@ -267,7 +274,7 @@ public class WeaponsMenu
 
     private void OnGiveAwpSelect(CCSPlayerController player, ChatMenuOption option)
     {
-        if (!PlayersInGunsMenu.Contains(player))
+        if (!PlayersInMenu.Contains(player))
         {
             return;
         }
