@@ -32,19 +32,11 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
 
     public void CastVote(CCSPlayerController player, TVoteValue vote)
     {
-        var players = Utilities.GetPlayers().Where(Helpers.PlayerIsValid);
-
         if (_voteTimer == null)
         {
             _voteTimer = new Timer(VoteTimeout, OnVoteComplete);
 
-            foreach (var innerPlayer in players)
-            {
-                if (innerPlayer != player)
-                {
-                    PrintToPlayer(innerPlayer, $"A vote has been started! Type {_voteCommand} to vote!");
-                }
-            }
+            PrintToServer($"A vote has been started! Type {_voteCommand} to vote!");
         }
 
         _votes[player] = vote;
@@ -63,11 +55,12 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
 
     private void OnVoteComplete()
     {
-        if (_voteTimer != null)
+        if (_voteTimer is null)
         {
-            _voteTimer.Kill();
-            _voteTimer = null;
+            return;
         }
+        _voteTimer.Kill();
+        _voteTimer = null;
 
         var countedVotes = new Dictionary<TVoteValue, int>();
 
@@ -105,7 +98,7 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
         var numPlayers = Helpers.GetNumPlayersOnTeam();
         if (numPlayers == 0 || (float) highestScore / numPlayers < 0.5f)
         {
-            PrintToServer($"Vote failed: Not enough players voted!");
+            PrintToServer("Vote failed: Not enough players voted!");
             return;
         }
 
