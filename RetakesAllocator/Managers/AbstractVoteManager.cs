@@ -8,6 +8,7 @@ namespace RetakesAllocator.Managers;
 public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
 {
     protected const float VoteTimeout = 30.0f;
+    protected const float EnoughPlayersVotedThreshold = 0.5f;
 
     private readonly string _voteFor;
     private readonly string _voteCommand;
@@ -96,7 +97,7 @@ public abstract class AbstractVoteManager<TVoteValue> where TVoteValue : notnull
         }
 
         var numPlayers = Helpers.GetNumPlayersOnTeam();
-        if (numPlayers == 0 || (float) highestScore / numPlayers < 0.5f)
+        if (numPlayers == 0 || (float) highestScore / numPlayers < EnoughPlayersVotedThreshold)
         {
             PrintToServer("Vote failed: Not enough players voted!");
             return;
