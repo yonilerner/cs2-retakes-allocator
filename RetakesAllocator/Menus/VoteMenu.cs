@@ -34,6 +34,11 @@ public class VoteMenu<TVoteValue> : BaseMenu where TVoteValue : notnull
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
+    
+    public void GatherAndHandleVotes()
+    {
+        _voteManager.ExecuteVoteEnd();
+    }
 
     public override bool PlayerIsInMenu(CCSPlayerController player)
     {

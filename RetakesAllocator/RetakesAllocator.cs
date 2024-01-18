@@ -442,6 +442,14 @@ public class RetakesAllocator : BasePlugin
 
         return HookResult.Continue;
     }
+    
+    [GameEventHandler]
+    public HookResult OnRoundPostEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        var menu = _menuManager.GetMenu<VoteMenu<RoundType>>(MenuType.NextRoundVote);
+        menu.GatherAndHandleVotes();
+        return HookResult.Continue;
+    }
 
     #endregion
 

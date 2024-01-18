@@ -31,6 +31,12 @@ public class MenuManager
         return false;
     }
 
+    public T GetMenu<T>(MenuType menuType)
+    where T : BaseMenu
+    {
+        return (T) _menus[menuType];
+    }
+
     public bool OpenMenuForPlayer(CCSPlayerController player, MenuType menuType)
     {
         if (MenuAlreadyOpenCheck(player))
