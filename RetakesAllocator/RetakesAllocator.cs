@@ -57,6 +57,7 @@ public class RetakesAllocator : BasePlugin
 
         RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
         RoundTypeManager.Instance.SetCurrentRoundType(null);
+        RoundTypeManager.Instance.Initialize();
     }
 
     private void HandleHotReload()

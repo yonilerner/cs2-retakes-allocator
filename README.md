@@ -45,6 +45,8 @@ This plugin implements 3 different round types:
     - Armor: Kevlar and helmet
     - Util: One nade + 50% chance of a 2nd nade. Every CT has a defuse kit
 
+How these round types are chosen can be configured. See more in the "Configuration" section below.
+
 ### Weapon Preferences
 
 There are a few different ways to set weapon preferences:
@@ -75,16 +77,38 @@ menu the entire round, you can tweak the `mp_buytime` variable as you see fit.
 
 The config file is located in the plugin folder under `config/config.json`.
 
+#### Round Type Configuration
+
+- `RoundTypeSelection`: Which round type selection system to use. The options are:
+    - `Random`: Randomly select a round based on the percentages set in `RoundTypePercentages`
+    - `RandomFixedCounts`: Every round will be a random selection based on a fixed set of rounds per type, configured
+      by `RoundTypeRandomFixedCounts`.
+    - `ManualOrdering`: The round will follow the exact order you specify.
 - `RoundTypePercentages`: The frequency of each type of round. The values must add up to `100`.
+    - Only used when `RoundTypeSelection` is `Random`
+- `RoundTypeRandomFixedCounts`: The fixed counts for each type of round. For example, if your config
+  is `{"Pistol": 5, "HalfBuy": 10, "FullBuy": 15}`, then over the next 30 rounds, exactly 5 of them will be pistols, 10
+  will be half buys, and 15 will be full buys, but the exact ordering of the rounds will be random.
+    - Only used when `RoundTypeSelection` is `RandomFixedCounts`
+    - The random ordering will restart back at the beginning if the map is not over.
+    - A new random ordering will be selected at the start of each map.
+- `RoundTypeManualOrdering`: The exact order of rounds. For example, if your config
+  is `["Pistol", "HalfBuy", "FullBuy", "FullBuy"]`, then you will get a pistol round, then a half buy round, then 2 full
+  buy rounds, and then it will start from the beginning again. A new map always starts from the beinning.
+
+#### Other Configuration
+
 - `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
 - `EnableNextRoundTypeVoting`: Whether to allow voting for the next round type via `!nextround`. `false` by default.
 - `NumberOfExtraVipChancesForPreferredWeapon`: When randomly selecting preferred weapons per team (ie. "AWP queue"), how
   many extra chances should VIPs get.
-  - The default is 1, meaning VIPs will get 1 extra chance. For example, lets say
-    there are 3 players on the team and this config is set to 1. Normally each person would have a 33% chance of getting
-    the AWP, but in this case, since one of the players is a VIP, the VIP will get a 50% chance of getting the AWP, and
-    the other two players will each have 25% chance of getting the AWP.
-  - If you set this to 0, there will be no preference for VIPs.
+    - The default is 1, meaning VIPs will get 1 extra chance. For example, lets say
+      there are 3 players on the team and this config is set to 1. Normally each person would have a 33% chance of
+      getting
+      the AWP, but in this case, since one of the players is a VIP, the VIP will get a 50% chance of getting the AWP,
+      and
+      the other two players will each have 25% chance of getting the AWP.
+    - If you set this to 0, there will be no preference for VIPs.
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
     - Choices:
         - `PlayerChoice` - Allow players to choose their preferences for the round type
