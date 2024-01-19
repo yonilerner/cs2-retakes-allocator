@@ -1,13 +1,13 @@
 ﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Db;
+using RetakesAllocatorCore.Managers;
 
 namespace RetakesAllocatorCore;
 
 public class OnRoundPostStartHelper
 {
     public static void Handle<T>(
-        RoundType? nextRoundType,
         ICollection<T> allPlayers,
         Func<T?, ulong> getSteamId,
         Func<T, CsTeam> getTeam,
@@ -17,7 +17,7 @@ public class OnRoundPostStartHelper
         out RoundType currentRoundType
     )
     {
-        var roundType = nextRoundType ?? RoundTypeHelpers.GetRandomRoundType();
+        var roundType = RoundTypeManager.Instance.GetNextRoundType();
         currentRoundType = roundType;
 
         var tPlayers = new List<T>();

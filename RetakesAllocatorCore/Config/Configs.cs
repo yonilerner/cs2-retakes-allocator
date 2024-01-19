@@ -101,6 +101,13 @@ public enum DatabaseProvider
     MySql,
 }
 
+public enum RoundTypeSelectionOption
+{
+    Random,
+    RandomFixedCounts,
+    ManualOrdering,
+}
+
 public record ConfigData
 {
     public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.GetAllWeapons();
@@ -108,11 +115,25 @@ public record ConfigData
     public List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; } =
         Enum.GetValues<WeaponSelectionType>().ToList();
 
+    public RoundTypeSelectionOption RoundTypeSelection { get; set; } = RoundTypeSelectionOption.Random;
+
     public Dictionary<RoundType, int> RoundTypePercentages { get; set; } = new()
     {
         {RoundType.Pistol, 15},
         {RoundType.HalfBuy, 25},
         {RoundType.FullBuy, 60},
+    };
+
+    public Dictionary<RoundType, int> RoundTypeRandomFixedCounts { get; set; } = new()
+    {
+        {RoundType.Pistol, 5},
+        {RoundType.HalfBuy, 10},
+        {RoundType.FullBuy, 15},
+    };
+
+    public List<RoundType> RoundTypeManualOrdering { get; set; } = new()
+    {
+        RoundType.Pistol, RoundType.HalfBuy, RoundType.FullBuy, RoundType.FullBuy, RoundType.Pistol, RoundType.FullBuy
     };
 
     public bool MigrateOnStartup { get; set; } = true;
