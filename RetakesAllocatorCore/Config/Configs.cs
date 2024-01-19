@@ -119,6 +119,7 @@ public record ConfigData
     public bool AllowAllocationAfterFreezeTime { get; set; } = false;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
+    public int NumberOfExtraVipChancesForPreferredWeapon = 1;
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";

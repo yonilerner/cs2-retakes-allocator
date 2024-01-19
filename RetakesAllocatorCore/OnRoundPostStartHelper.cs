@@ -1,7 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities.Constants;
+﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
-using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorCore;
@@ -15,6 +13,7 @@ public class OnRoundPostStartHelper
         Func<T, CsTeam> getTeam,
         Action<T> giveDefuseKit,
         Action<T, ICollection<CsItem>, string?> allocateItemsForPlayer,
+        Func<T, bool> isVip,
         out RoundType currentRoundType
     )
     {
@@ -56,12 +55,14 @@ public class OnRoundPostStartHelper
                     userSetting.GetWeaponPreference(getTeam(p), WeaponAllocationType.Preferred) is not null)
                 .ToHashSet();
 
-        ICollection<T> tPreferredPlayers = new HashSet<T>();
-        ICollection<T> ctPreferredPlayers = new HashSet<T>();
+        ICollection<T> tPreferredPlayers = new List<T>();
+        ICollection<T> ctPreferredPlayers = new List<T>();
         if (roundType == RoundType.FullBuy)
         {
-            tPreferredPlayers = WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers));
-            ctPreferredPlayers = WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers));
+            tPreferredPlayers =
+                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers), isVip);
+            ctPreferredPlayers =
+                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers), isVip);
         }
 
         foreach (var player in allPlayers)

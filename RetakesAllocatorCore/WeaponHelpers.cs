@@ -1,4 +1,5 @@
 using System.Collections;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Config;
@@ -12,6 +13,7 @@ public enum WeaponAllocationType
     HalfBuyPrimary,
     Secondary,
     PistolRound,
+
     // eg. AWP is a preferred gun - you cant always get it even if its your preference
     // Right now its only snipers, but if we make this configurable, we need to change:
     // - CoercePreferredTeam
@@ -62,7 +64,7 @@ public static class WeaponHelpers
         // Shotgun
         CsItem.XM1014,
         CsItem.Nova,
-        
+
         // Sniper
         CsItem.Scout,
     };
@@ -163,7 +165,9 @@ public static class WeaponHelpers
             {
                 RoundType.FullBuy,
                 new HashSet<WeaponAllocationType>
-                    {WeaponAllocationType.Secondary, WeaponAllocationType.FullBuyPrimary, WeaponAllocationType.Preferred}
+                {
+                    WeaponAllocationType.Secondary, WeaponAllocationType.FullBuyPrimary, WeaponAllocationType.Preferred
+                }
             },
         };
 
@@ -249,6 +253,7 @@ public static class WeaponHelpers
         {
             return false;
         }
+
         return _validAllocationTypesForRound[roundType.Value].Contains(allocationType.Value);
     }
 
@@ -262,16 +267,29 @@ public static class WeaponHelpers
         };
     }
 
-    // TODO In the future this will be more complex based on sniper/preferred config and VIP status
-    public static ICollection<T> SelectPreferredPlayers<T>(ICollection<T> players)
+    public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip)
     {
-        var player = Utils.Choice(players);
-        if (player is null)
+        var choicePlayers = new List<T>();
+        foreach (var p in players)
         {
-            return new HashSet<T>();
+            choicePlayers.Add(p);
+            // VIPs get extra chances to be selected
+            if (isVip(p))
+            {
+                for (var i = 0; i < Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon; i++)
+                {
+                    choicePlayers.Add(p);
+                }
+            }
         }
 
-        return new HashSet<T> {player};
+        var player = Utils.Choice(choicePlayers);
+        if (player is null)
+        {
+            return new List<T>();
+        }
+
+        return new List<T> {player};
     }
 
     public static bool IsUsableWeapon(CsItem weapon)
@@ -327,7 +345,7 @@ public static class WeaponHelpers
             .Where(item => _allWeapons.Contains(item))
             .ToList();
     }
-    
+
     public static WeaponAllocationType? GetWeaponAllocationTypeForWeaponAndRound(RoundType? roundType, CsTeam team,
         CsItem weapon)
     {
@@ -352,6 +370,7 @@ public static class WeaponHelpers
         {
             return potentialAllocationTypes.First();
         }
+
         if (potentialAllocationTypes.Count == 0)
         {
             return null;
@@ -449,6 +468,7 @@ public static class WeaponHelpers
         {
             return null;
         }
+
         return _defaultWeaponsByTeamAndAllocationType[team][allocationType];
     }
 

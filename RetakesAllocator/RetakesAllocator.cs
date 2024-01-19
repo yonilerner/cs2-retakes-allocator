@@ -6,7 +6,6 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
-using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocator.Managers;
 using RetakesAllocator.Menus;
 using RetakesAllocatorCore;
@@ -437,6 +436,7 @@ public class RetakesAllocator : BasePlugin
             Helpers.GetTeam,
             GiveDefuseKit,
             AllocateItemsForPlayer,
+            Helpers.IsVip,
             out var currentRoundType
         );
         RoundTypeManager.GetInstance().SetCurrentRoundType(currentRoundType);
