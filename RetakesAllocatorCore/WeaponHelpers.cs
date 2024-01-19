@@ -267,7 +267,6 @@ public static class WeaponHelpers
         };
     }
 
-    // TODO In the future this will be more complex based on sniper/preferred config and VIP status
     public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip)
     {
         var choicePlayers = new List<T>();
