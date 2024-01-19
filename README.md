@@ -79,10 +79,12 @@ The config file is located in the plugin folder under `config/config.json`.
 - `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
 - `EnableNextRoundTypeVoting`: Whether to allow voting for the next round type via `!nextround`. `false` by default.
 - `NumberOfExtraVipChancesForPreferredWeapon`: When randomly selecting preferred weapons per team (ie. "AWP queue"), how
-  many extra chances should VIPs get. The default is 1, meaning VIPs will get 1 extra chance. For example, lets say
-  there are 3 players on the team and this config is set to 1. Normally each person would have a 33% chance of getting
-  the AWP, but in this case, since one of the players is a VIP, the VIP will get a 50% chance of getting the AWP, and
-  the other two players will each have 25% chance of getting the AWP.
+  many extra chances should VIPs get.
+  - The default is 1, meaning VIPs will get 1 extra chance. For example, lets say
+    there are 3 players on the team and this config is set to 1. Normally each person would have a 33% chance of getting
+    the AWP, but in this case, since one of the players is a VIP, the VIP will get a 50% chance of getting the AWP, and
+    the other two players will each have 25% chance of getting the AWP.
+  - If you set this to 0, there will be no preference for VIPs.
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
     - Choices:
         - `PlayerChoice` - Allow players to choose their preferences for the round type
