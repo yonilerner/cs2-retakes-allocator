@@ -92,9 +92,11 @@ The config file is located in the plugin folder under `config/config.json`.
     - Only used when `RoundTypeSelection` is `RandomFixedCounts`
     - The random ordering will restart back at the beginning if the map is not over.
     - A new random ordering will be selected at the start of each map.
-- `RoundTypeManualOrdering`: The exact order of rounds. For example, if your config
-  is `["Pistol", "HalfBuy", "FullBuy", "FullBuy"]`, then you will get a pistol round, then a half buy round, then 2 full
-  buy rounds, and then it will start from the beginning again. A new map always starts from the beinning.
+- `RoundTypeManualOrdering`: The exact order of rounds and how many of each round in that order. For example, if your
+  config
+  is `[{"Type": "Pistol", "Count": 5}, {"Type": "FullBuy", "Count": 25}, {"Type": "Pistol", "Count": 1}]`, then you will
+  get 5 pistol rounds, 25 full buy rounds, a single pistol round, and then it will start from the beginning again. A new
+  map always starts from the beginning.
 
 #### Other Configuration
 

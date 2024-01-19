@@ -108,6 +108,8 @@ public enum RoundTypeSelectionOption
     ManualOrdering,
 }
 
+public record RoundTypeManualOrderingItem(RoundType Type, int Count);
+
 public record ConfigData
 {
     public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.GetAllWeapons();
@@ -131,9 +133,11 @@ public record ConfigData
         {RoundType.FullBuy, 15},
     };
 
-    public List<RoundType> RoundTypeManualOrdering { get; set; } = new()
+    public List<RoundTypeManualOrderingItem> RoundTypeManualOrdering { get; set; } = new()
     {
-        RoundType.Pistol, RoundType.HalfBuy, RoundType.FullBuy, RoundType.FullBuy, RoundType.Pistol, RoundType.FullBuy
+        new RoundTypeManualOrderingItem(RoundType.Pistol, 5),
+        new RoundTypeManualOrderingItem(RoundType.HalfBuy, 10),
+        new RoundTypeManualOrderingItem(RoundType.FullBuy, 15),
     };
 
     public bool MigrateOnStartup { get; set; } = true;

@@ -30,10 +30,10 @@ public class RoundTypeManager
         _currentRoundType = null;
         _roundTypeSelection = Configs.GetConfigData().RoundTypeSelection;
 
+        _roundsOrder = new List<RoundType>();
         switch (_roundTypeSelection)
         {
             case RoundTypeSelectionOption.RandomFixedCounts:
-                _roundsOrder = new List<RoundType>();
                 foreach (var (roundType, fixedCount) in Configs.GetConfigData().RoundTypeRandomFixedCounts)
                 {
                     for (var i = 0; i < fixedCount; i++)
@@ -44,7 +44,13 @@ public class RoundTypeManager
                 Utils.Shuffle(_roundsOrder);
                 break;
             case RoundTypeSelectionOption.ManualOrdering:
-                _roundsOrder = new List<RoundType>(Configs.GetConfigData().RoundTypeManualOrdering);
+                foreach (var item in Configs.GetConfigData().RoundTypeManualOrdering)
+                {
+                    for (var i = 0; i < item.Count; i++)
+                    {
+                        _roundsOrder.Add(item.Type);
+                    }
+                }
                 break;
         }
         _roundTypeManualOrderingPosition = 0;
