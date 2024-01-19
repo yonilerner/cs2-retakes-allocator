@@ -190,6 +190,6 @@ public static class Helpers
             .Where(player => player.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist).ToList()
             .Count;
     }
-    
-    public static bool IsVip(CCSPlayerController p) => AdminManager.PlayerHasPermissions(p, "@css/vip");
+
+    public static bool IsVip(CCSPlayerController player) => AdminManager.PlayerHasPermissions(player, "@css/vip");
 }
