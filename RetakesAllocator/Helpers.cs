@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -189,4 +190,6 @@ public static class Helpers
             .Where(player => player.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist).ToList()
             .Count;
     }
+    
+    public static bool IsVip(CCSPlayerController p) => AdminManager.PlayerHasPermissions(p, "@css/vip");
 }

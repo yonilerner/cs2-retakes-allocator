@@ -1,4 +1,5 @@
 using System.Collections;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Config;
@@ -263,15 +264,25 @@ public static class WeaponHelpers
     }
 
     // TODO In the future this will be more complex based on sniper/preferred config and VIP status
-    public static ICollection<T> SelectPreferredPlayers<T>(ICollection<T> players)
+    public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip)
     {
-        var player = Utils.Choice(players);
+        var choicePlayers = new List<T>();
+        foreach (var p in players)
+        {
+            choicePlayers.Add(p);
+            // VIPs get an extra chance to be selected
+            if (isVip(p))
+            {
+                choicePlayers.Add(p);
+            }
+        }
+        var player = Utils.Choice(choicePlayers);
         if (player is null)
         {
-            return new HashSet<T>();
+            return new List<T>();
         }
 
-        return new HashSet<T> {player};
+        return new List<T> {player};
     }
 
     public static bool IsUsableWeapon(CsItem weapon)
