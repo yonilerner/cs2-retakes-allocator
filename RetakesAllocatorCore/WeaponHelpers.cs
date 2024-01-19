@@ -274,7 +274,7 @@ public static class WeaponHelpers
         foreach (var p in players)
         {
             choicePlayers.Add(p);
-            // VIPs get an extra chance to be selected
+            // VIPs get extra chances to be selected
             if (isVip(p))
             {
                 for (var i = 0; i < Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon; i++)
