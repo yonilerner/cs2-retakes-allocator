@@ -78,6 +78,11 @@ The config file is located in the plugin folder under `config/config.json`.
 - `RoundTypePercentages`: The frequency of each type of round. The values must add up to `100`.
 - `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
 - `EnableNextRoundTypeVoting`: Whether to allow voting for the next round type via `!nextround`. `false` by default.
+- `NumberOfExtraVipChancesForPreferredWeapon`: When randomly selecting preferred weapons per team (ie. "AWP queue"), how
+  many extra chances should VIPs get. The default is 1, meaning VIPs will get 1 extra chance. For example, lets say
+  there are 3 players on the team and this config is set to 1. Normally each person would have a 33% chance of getting
+  the AWP, but in this case, since one of the players is a VIP, the VIP will get a 50% chance of getting the AWP, and
+  the other two players will each have 25% chance of getting the AWP.
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
     - Choices:
         - `PlayerChoice` - Allow players to choose their preferences for the round type
@@ -101,7 +106,8 @@ The config file is located in the plugin folder under `config/config.json`.
     - The connection string for `Sqlite` probably doesnt need to be changed from the default, but you can change it if
       you want the db file to be in a different location.
         - More info on formatting the string here: https://www.connectionstrings.com/sqlite/
-    - The connection string for `MySql` should be configured per instructions here: https://www.connectionstrings.com/mysql/
+    - The connection string for `MySql` should be configured per instructions
+      here: https://www.connectionstrings.com/mysql/
 
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
@@ -119,7 +125,8 @@ You can use the following commands to select specific weapon preferences per-use
   provided
     - For example, if you previously did `!gun galil` while a terrorist, and you do `!removegun galil` while a
       terrorist, you will no longer prefer the galil, and will instead get a random weapon
-- `!nextround` - Vote for the next round type. Can be enabled with the `EnableNextRoundTypeVoting` config, which is `false` by default.
+- `!nextround` - Vote for the next round type. Can be enabled with the `EnableNextRoundTypeVoting` config, which
+  is `false` by default.
 - `!setnextround <P|H|F>` - For admins only. Force the next round to be the selected type.
 - `!reload_allocator_config` - For admins only. Reload the JSON config in-place.
 
