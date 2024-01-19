@@ -423,7 +423,7 @@ public class RetakesAllocator : BasePlugin
             return HookResult.Continue;
         }
         
-        var menu = _menuManager.GetMenu<VoteMenu<RoundType>>(MenuType.NextRoundVote);
+        var menu = _menuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);
         menu.GatherAndHandleVotes();
 
         var allPlayers = Utilities.GetPlayers()

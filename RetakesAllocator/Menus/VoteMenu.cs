@@ -7,13 +7,13 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Menus;
 
-public class VoteMenu<TVoteValue> : BaseMenu where TVoteValue : notnull
+public class VoteMenu : BaseMenu
 {
     private new const float MenuTimeout = 20.0f;
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
-    private readonly AbstractVoteManager<TVoteValue> _voteManager;
+    private readonly AbstractVoteManager _voteManager;
 
-    public VoteMenu(AbstractVoteManager<TVoteValue> voteManager)
+    public VoteMenu(AbstractVoteManager voteManager)
     {
         _voteManager = voteManager;
     }
@@ -24,9 +24,9 @@ public class VoteMenu<TVoteValue> : BaseMenu where TVoteValue : notnull
 
         var menu = new ChatMenu($"{_voteManager.VoteMessagePrefix} Select your vote!");
 
-        foreach (var voteValue in _voteManager.GetVoteValues())
+        foreach (var option in _voteManager.GetVoteOptions())
         {
-            menu.AddMenuOption(_voteManager.SerializeVoteValue(voteValue), OnVoteSelect);
+            menu.AddMenuOption(option, OnVoteSelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);
@@ -37,7 +37,7 @@ public class VoteMenu<TVoteValue> : BaseMenu where TVoteValue : notnull
     
     public void GatherAndHandleVotes()
     {
-        _voteManager.OnVoteComplete();
+        _voteManager.CompleteVote();
     }
 
     public override bool PlayerIsInMenu(CCSPlayerController player)
