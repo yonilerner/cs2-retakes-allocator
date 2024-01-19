@@ -13,6 +13,7 @@ public enum WeaponAllocationType
     HalfBuyPrimary,
     Secondary,
     PistolRound,
+
     // eg. AWP is a preferred gun - you cant always get it even if its your preference
     // Right now its only snipers, but if we make this configurable, we need to change:
     // - CoercePreferredTeam
@@ -63,7 +64,7 @@ public static class WeaponHelpers
         // Shotgun
         CsItem.XM1014,
         CsItem.Nova,
-        
+
         // Sniper
         CsItem.Scout,
     };
@@ -164,7 +165,9 @@ public static class WeaponHelpers
             {
                 RoundType.FullBuy,
                 new HashSet<WeaponAllocationType>
-                    {WeaponAllocationType.Secondary, WeaponAllocationType.FullBuyPrimary, WeaponAllocationType.Preferred}
+                {
+                    WeaponAllocationType.Secondary, WeaponAllocationType.FullBuyPrimary, WeaponAllocationType.Preferred
+                }
             },
         };
 
@@ -250,6 +253,7 @@ public static class WeaponHelpers
         {
             return false;
         }
+
         return _validAllocationTypesForRound[roundType.Value].Contains(allocationType.Value);
     }
 
@@ -273,9 +277,13 @@ public static class WeaponHelpers
             // VIPs get an extra chance to be selected
             if (isVip(p))
             {
-                choicePlayers.Add(p);
+                for (var i = 0; i < Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon; i++)
+                {
+                    choicePlayers.Add(p);
+                }
             }
         }
+
         var player = Utils.Choice(choicePlayers);
         if (player is null)
         {
@@ -338,7 +346,7 @@ public static class WeaponHelpers
             .Where(item => _allWeapons.Contains(item))
             .ToList();
     }
-    
+
     public static WeaponAllocationType? GetWeaponAllocationTypeForWeaponAndRound(RoundType? roundType, CsTeam team,
         CsItem weapon)
     {
@@ -363,6 +371,7 @@ public static class WeaponHelpers
         {
             return potentialAllocationTypes.First();
         }
+
         if (potentialAllocationTypes.Count == 0)
         {
             return null;
@@ -460,6 +469,7 @@ public static class WeaponHelpers
         {
             return null;
         }
+
         return _defaultWeaponsByTeamAndAllocationType[team][allocationType];
     }
 
