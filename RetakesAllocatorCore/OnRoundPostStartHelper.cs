@@ -14,11 +14,14 @@ public class OnRoundPostStartHelper
         Action<T> giveDefuseKit,
         Action<T, ICollection<CsItem>, string?> allocateItemsForPlayer,
         Func<T, bool> isVip,
-        out RoundType currentRoundType
+        out RoundType currentRoundType,
+        out ICollection<string> buyMenuVars
     )
     {
         var roundType = RoundTypeManager.Instance.GetNextRoundType();
         currentRoundType = roundType;
+
+        buyMenuVars = WeaponHelpers.GetBuyMenuVarsForRoundType(roundType);
 
         var tPlayers = new List<T>();
         var ctPlayers = new List<T>();

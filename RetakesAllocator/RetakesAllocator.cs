@@ -438,10 +438,16 @@ public class RetakesAllocator : BasePlugin
             GiveDefuseKit,
             AllocateItemsForPlayer,
             Helpers.IsVip,
-            out var currentRoundType
+            out var currentRoundType,
+            out var buyMenuVars
         );
         RoundTypeManager.Instance.SetCurrentRoundType(currentRoundType);
         RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
+
+        foreach (var varToSet in buyMenuVars)
+        {
+            Server.ExecuteCommand(varToSet);
+        }
 
         if (Configs.GetConfigData().EnableRoundTypeAnnouncement)
         {

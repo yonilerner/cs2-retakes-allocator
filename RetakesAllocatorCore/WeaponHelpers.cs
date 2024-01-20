@@ -230,6 +230,54 @@ public static class WeaponHelpers
         {"m4a1", CsItem.M4A1S},
         {"m4a1-s", CsItem.M4A1S},
     };
+    
+    private static readonly string ServerWeaponsAllowPrefix = "mp_weapons_allow_";
+    private static readonly string ServerRiflesAllowed = ServerWeaponsAllowPrefix + "rifles";
+    private static readonly string ServerSmgsAllowed = ServerWeaponsAllowPrefix + "smgs";
+    private static readonly string ServerPistolsAllowed = ServerWeaponsAllowPrefix + "pistols";
+    private static readonly string ServerHeavyAllowed = ServerWeaponsAllowPrefix + "heavy";
+    private static readonly string ServerZeusAllowed = ServerWeaponsAllowPrefix + "zeus";
+    private static readonly string ServerFullArmorAllowed = ServerWeaponsAllowPrefix + "heavyassaultsuit";
+    private static readonly int WeaponTypeAllowedValue = -1;
+    private static readonly int WeaponTypeDisallowedValue = 0;
+
+    private static string BuildWeaponAllowedCommand(string command, int value)
+    {
+        return $"{command} {value}";
+    }
+        
+    public static ICollection<string> GetBuyMenuVarsForRoundType(RoundType roundType)
+    {
+        var result = new List<string>
+        {
+            BuildWeaponAllowedCommand(ServerFullArmorAllowed, WeaponTypeDisallowedValue),
+            BuildWeaponAllowedCommand(ServerZeusAllowed, WeaponTypeDisallowedValue),
+            BuildWeaponAllowedCommand(ServerPistolsAllowed, WeaponTypeAllowedValue),
+        };
+
+        switch (roundType)
+        {
+            case RoundType.Pistol:
+                result.Add(BuildWeaponAllowedCommand(ServerSmgsAllowed, WeaponTypeDisallowedValue));
+                result.Add(BuildWeaponAllowedCommand(ServerRiflesAllowed, WeaponTypeDisallowedValue));
+                result.Add(BuildWeaponAllowedCommand(ServerHeavyAllowed, WeaponTypeDisallowedValue));
+                break;
+            case RoundType.HalfBuy:
+                result.Add(BuildWeaponAllowedCommand(ServerSmgsAllowed, WeaponTypeAllowedValue));
+                // Need to allow for Scout
+                result.Add(BuildWeaponAllowedCommand(ServerRiflesAllowed, WeaponTypeAllowedValue));
+                // Need to allow for shotguns
+                result.Add(BuildWeaponAllowedCommand(ServerHeavyAllowed, WeaponTypeAllowedValue));
+                break;
+            case RoundType.FullBuy:
+                result.Add(BuildWeaponAllowedCommand(ServerSmgsAllowed, WeaponTypeDisallowedValue));
+                result.Add(BuildWeaponAllowedCommand(ServerRiflesAllowed, WeaponTypeAllowedValue));
+                result.Add(BuildWeaponAllowedCommand(ServerHeavyAllowed, WeaponTypeAllowedValue));
+                break;
+        }
+
+        return result;
+    }
 
     public static List<CsItem> GetAllWeapons()
     {
