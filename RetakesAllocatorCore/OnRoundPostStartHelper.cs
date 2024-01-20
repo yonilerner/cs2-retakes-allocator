@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Db;
 
@@ -91,6 +92,21 @@ public class OnRoundPostStartHelper
                     givePreferred
                 )
             );
+
+            if (roundType == RoundType.Pistol)
+            {
+                Server.ExecuteCommand("mp_weapons_allow_heavy 0;mp_weapons_allow_pistols -1;mp_weapons_allow_rifles 0;mp_weapons_allow_smgs 0");
+            }
+
+            if (roundType == RoundType.HalfBuy)
+            {
+                Server.ExecuteCommand("mp_weapons_allow_heavy -1;mp_weapons_allow_pistols -1;mp_weapons_allow_rifles 0;mp_weapons_allow_smgs -1");
+            }
+
+            if (roundType == RoundType.FullBuy)
+            {
+                Server.ExecuteCommand("mp_weapons_allow_heavy -1;mp_weapons_allow_pistols -1;mp_weapons_allow_rifles -1;mp_weapons_allow_smgs -1");
+            }
 
             if (team == CsTeam.CounterTerrorist)
             {
