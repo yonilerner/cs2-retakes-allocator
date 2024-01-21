@@ -462,7 +462,7 @@ public class RetakesAllocator : BasePlugin
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
         // Log.Write($"Allocating items: {string.Join(",", items)}");
-        Server.NextFrame(() =>
+        AddTimer(0.1f, () =>
         {
             if (!Helpers.PlayerIsValid(player))
             {
@@ -490,7 +490,7 @@ public class RetakesAllocator : BasePlugin
 
     private void GiveDefuseKit(CCSPlayerController player)
     {
-        Server.NextFrame(() =>
+        AddTimer(0.1f, () =>
         {
             if (!Helpers.PlayerIsValid(player) || player.PlayerPawn.Value?.ItemServices?.Handle is null)
             {
