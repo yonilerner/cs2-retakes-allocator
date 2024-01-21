@@ -488,7 +488,7 @@ public class RetakesAllocator : BasePlugin
 
     private void GiveDefuseKit(CCSPlayerController player)
     {
-        AddTimer(0.1f, () =>
+        Server.NextFrame(() =>
         {
             if (!Helpers.PlayerIsValid(player) || player.PlayerPawn.Value?.ItemServices?.Handle is null)
             {
