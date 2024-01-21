@@ -424,6 +424,8 @@ public class RetakesAllocator : BasePlugin
             return HookResult.Continue;
         }
         
+        Server.ExecuteCommand("mp_max_armor 0");
+        
         var menu = _menuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);
         menu.GatherAndHandleVotes();
 
