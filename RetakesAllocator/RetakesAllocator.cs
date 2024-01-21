@@ -490,7 +490,7 @@ public class RetakesAllocator : BasePlugin
     {
         AddTimer(0.1f, () =>
         {
-            if (player.PlayerPawn.Value?.ItemServices?.Handle is null || !Helpers.PlayerIsValid(player))
+            if (!Helpers.PlayerIsValid(player) || player.PlayerPawn.Value?.ItemServices?.Handle is null)
             {
                 // Log.Write($"Player is not valid when giving defuse kit");
                 return;
