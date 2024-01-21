@@ -460,7 +460,7 @@ public class RetakesAllocator : BasePlugin
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
         // Log.Write($"Allocating items: {string.Join(",", items)}");
-        AddTimer(0.1f, () =>
+        Server.NextFrame(() =>
         {
             if (!Helpers.PlayerIsValid(player))
             {
