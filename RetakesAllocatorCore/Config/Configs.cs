@@ -14,13 +14,11 @@ public static class Configs
 
     private static readonly JsonSerializerOptions SerializationOptions = new()
     {
-        Converters =
-        {
-            new JsonStringEnumConverter()
-        },
+        Converters = { new JsonStringEnumConverter() },
         WriteIndented = true,
         AllowTrailingCommas = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never
     };
 
     public static bool IsLoaded()
