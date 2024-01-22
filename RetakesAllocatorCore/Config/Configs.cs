@@ -145,6 +145,7 @@ public record ConfigData
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
+    public bool AllowPreferredWeaponForEveryone { get; set; } = false;
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
