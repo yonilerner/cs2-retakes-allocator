@@ -49,9 +49,6 @@ public class GunsMenu: BaseMenu
     {
         player.PrintToChat($"{MessagePrefix}You have finished setting up your weapons!");
         player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
-        
-        player.PrintToChat(
-            $"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
 
         PlayersInMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();
