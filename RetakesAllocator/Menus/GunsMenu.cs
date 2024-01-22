@@ -30,7 +30,10 @@ public class GunsMenu: BaseMenu
         player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {MenuTimeout} seconds!");
 
         PlayersInMenu.Remove(player);
-        _menuTimeoutTimers[player].Kill();
+        if (_menuTimeoutTimers.TryGetValue(player, out var playerTimer))
+        {
+            playerTimer.Kill();
+        }
         _menuTimeoutTimers.Remove(player);
     }
 
@@ -51,7 +54,10 @@ public class GunsMenu: BaseMenu
         player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
 
         PlayersInMenu.Remove(player);
-        _menuTimeoutTimers[player].Kill();
+        if (_menuTimeoutTimers.TryGetValue(player, out var playerTimer))
+        {
+            playerTimer.Kill();
+        }
         _menuTimeoutTimers.Remove(player);
     }
 
