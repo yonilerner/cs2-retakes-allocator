@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
+using RetakesAllocatorCore.Managers;
 using static RetakesAllocatorTest.TestConstants;
 
 namespace RetakesAllocatorTest;
@@ -167,14 +168,15 @@ public class WeaponSelectionTests : BaseTestFixture
                 {RoundType.Pistol, 5},
                 {RoundType.HalfBuy, 5},
                 {RoundType.FullBuy, 90},
-            }
+            },
+            RoundTypeSelection = RoundTypeSelectionOption.Random,
         });
         var numPistol = 0;
         var numHalfBuy = 0;
         var numFullBuy = 0;
         for (var i = 0; i < 1000; i++)
         {
-            var randomRoundType = RoundTypeHelpers.GetRandomRoundType();
+            var randomRoundType = RoundTypeManager.Instance.GetNextRoundType();
             switch (randomRoundType)
             {
                 case RoundType.Pistol:

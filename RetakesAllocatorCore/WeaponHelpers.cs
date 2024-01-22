@@ -269,6 +269,10 @@ public static class WeaponHelpers
 
     public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip)
     {
+        if (Configs.GetConfigData().AllowPreferredWeaponForEveryone)
+        {
+            return new List<T>(players);
+        }
         var choicePlayers = new List<T>();
         foreach (var p in players)
         {

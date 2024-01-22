@@ -1,4 +1,5 @@
 using RetakesAllocatorCore;
+using RetakesAllocatorCore.Managers;
 
 namespace RetakesAllocator.Managers;
 
@@ -20,7 +21,7 @@ public class NextRoundVoteManager : AbstractVoteManager
 
     protected override void HandleVoteResult(string option)
     {
-        RoundTypeManager.GetInstance().SetNextRoundType(RoundTypeHelpers.ParseRoundType(option));
+        RoundTypeManager.Instance.SetNextRoundTypeOverride(RoundTypeHelpers.ParseRoundType(option));
         PrintToServer($"Vote complete! The next round will be {option}!");
     }
 }

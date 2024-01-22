@@ -23,6 +23,17 @@ public static class Utils
         // Log.Write($"Item: {item}");
         return item;
     }
+    
+    public static void Shuffle<T>(IList<T> list)  
+    {  
+        var random = new Random();  
+        var n = list.Count;  
+        while (n > 1) {  
+            n--;  
+            var k = random.Next(n + 1);  
+            (list[k], list[n]) = (list[n], list[k]);
+        }  
+    }
 
     public static CsTeam ParseTeam(string teamInput)
     {
