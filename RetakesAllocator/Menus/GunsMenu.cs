@@ -30,19 +30,17 @@ public class GunsMenu: BaseMenu
         player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {MenuTimeout} seconds!");
 
         PlayersInMenu.Remove(player);
-        if (_menuTimeoutTimers.TryGetValue(player, out var playerTimer))
+        if (_menuTimeoutTimers.Remove(player, out var playerTimer))
         {
             playerTimer.Kill();
         }
-        _menuTimeoutTimers.Remove(player);
     }
 
     private void CreateMenuTimeoutTimer(CCSPlayerController player)
     {
-        if (_menuTimeoutTimers.TryGetValue(player, out var existingTimer))
+        if (_menuTimeoutTimers.Remove(player, out var existingTimer))
         {
             existingTimer.Kill();
-            _menuTimeoutTimers.Remove(player);
         }
 
         _menuTimeoutTimers[player] = new Timer(MenuTimeout, () => OnMenuTimeout(player));
@@ -54,11 +52,10 @@ public class GunsMenu: BaseMenu
         player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
 
         PlayersInMenu.Remove(player);
-        if (_menuTimeoutTimers.TryGetValue(player, out var playerTimer))
+        if (_menuTimeoutTimers.Remove(player, out var playerTimer))
         {
             playerTimer.Kill();
         }
-        _menuTimeoutTimers.Remove(player);
     }
 
     private void OnSelectExit(CCSPlayerController player, ChatMenuOption option)
