@@ -16,7 +16,9 @@ public class RoundTypeTests : BaseTestFixture
             {
                 RoundTypePercentages = new()
                 {
-                    {RoundType.Pistol, configPercentage}
+                    {RoundType.Pistol, configPercentage},
+                    {RoundType.HalfBuy, 0},
+                    {RoundType.FullBuy, 100 - configPercentage}
                 }
             }
         );

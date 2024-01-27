@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
+using CounterStrikeSharp.API.Modules.Utils;
 
 namespace RetakesAllocatorCore.Config;
 
@@ -73,6 +74,7 @@ public static class Configs
         ConfigData configData
     )
     {
+        configData.Validate();
         _configData = configData;
         return _configData;
     }
@@ -112,10 +114,13 @@ public record RoundTypeManualOrderingItem(RoundType Type, int Count);
 
 public record ConfigData
 {
-    public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.GetAllWeapons();
+    public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.AllWeapons;
 
     public List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; } =
         Enum.GetValues<WeaponSelectionType>().ToList();
+
+    public Dictionary<CsTeam, Dictionary<WeaponAllocationType, CsItem>> DefaultWeapons { get; set; } =
+        WeaponHelpers.DefaultWeaponsByTeamAndAllocationType;
 
     public RoundTypeSelectionOption RoundTypeSelection { get; set; } = RoundTypeSelectionOption.Random;
 
@@ -150,12 +155,66 @@ public record ConfigData
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
 
-    public void Validate()
+    public IList<string> Validate()
     {
         if (RoundTypePercentages.Values.Sum() != 100)
         {
             throw new Exception("'RoundTypePercentages' values must add up to 100");
         }
+
+        var warnings = new List<string>();
+        warnings.AddRange(ValidateDefaultWeapons(CsTeam.Terrorist));
+        warnings.AddRange(ValidateDefaultWeapons(CsTeam.CounterTerrorist));
+
+        foreach (var warning in warnings)
+        {
+            Log.Write($"[CONFIG WARNING] {warning}");
+        }
+
+        return warnings;
+    }
+
+    private ICollection<string> ValidateDefaultWeapons(CsTeam team)
+    {
+        var warnings = new List<string>();
+        if (!DefaultWeapons.TryGetValue(team, out var defaultWeapons))
+        {
+            warnings.Add($"Missing {team} in DefaultWeapons config.");
+            return warnings;
+        }
+
+        if (defaultWeapons.ContainsKey(WeaponAllocationType.Preferred))
+        {
+            throw new Exception(
+                $"Preferred is not a valid default weapon allocation type " +
+                $"for config DefaultWeapons.{team}.");
+        }
+
+        var allocationTypes = WeaponHelpers.WeaponAllocationTypes;
+        allocationTypes.Remove(WeaponAllocationType.Preferred);
+
+        foreach (var allocationType in allocationTypes)
+        {
+            if (!defaultWeapons.TryGetValue(allocationType, out var w))
+            {
+                warnings.Add($"Missing {allocationType} in DefaultWeapons.{team} config.");
+                continue;
+            }
+
+            if (!WeaponHelpers.IsWeapon(w))
+            {
+                throw new Exception($"{w} is not a valid weapon in config DefaultWeapons.{team}.{allocationType}.");
+            }
+
+            if (!UsableWeapons.Contains(w))
+            {
+                warnings.Add(
+                    $"{w} in the DefaultWeapons.{team}.{allocationType} config " +
+                    $"is not in the UsableWeapons list.");
+            }
+        }
+
+        return warnings;
     }
 
     public double GetRoundTypePercentage(RoundType roundType)

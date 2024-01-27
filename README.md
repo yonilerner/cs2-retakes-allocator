@@ -98,9 +98,58 @@ The config file is located in the plugin folder under `config/config.json`.
   get 5 pistol rounds, 25 full buy rounds, a single pistol round, and then it will start from the beginning again. A new
   map always starts from the beginning.
 
+#### Weapon Configuration
+
+For any of the weapon configs, the valid weapon names come
+from [here](https://github.com/roflmuffin/CounterStrikeSharp/blob/main/managed/CounterStrikeSharp.API/Modules/Entities/Constants/CsItem.cs).
+For example in
+```cs
+        [EnumMember(Value = "item_kevlar")]
+        Kevlar = 000,
+```
+`Kevlar` is the name of the weapon, not `item_kevlar`.
+In
+```cs
+[EnumMember(Value = "weapon_m4a1_silencer")]
+M4A1S = 401,
+SilencedM4 = M4A1S,
+```
+both `M4A1S` and `SilencedM4` are valid weapon names, but `weapon_m4a1_silencer` is not.
+
+Here are the weapon configs:
+- `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
+- `DefaultWeapons`: This lets you configure the default weapon for each weapon allocation type. The type of this config
+  is map of `Team => WeaponAllocationType => Item`.
+    - The valid keys for `DefaultWeapons` are: `Terrorist` and `CounterTerrorist`
+    - Under each of those, the valid keys are:
+        - `PistolRound`: The pistol round pistol
+        - `Secondary`: The pistol for non-pistol rounds
+        - `HalfBuyPrimary`: The primary weapon for half buy rounds
+        - `FullBuyPrimary`: The primary weapon for full buy rounds
+    - The valid values for each subkey this are any `CsItem` that is a weapon.
+      To better understand how `DefaultWeapons` works, here is the default config for `DefaultWeapons` as an example:
+
+```json
+{
+  "DefaultWeapons": {
+    "Terrorist": {
+      "PistolRound": "Glock",
+      "Secondary": "Deagle",
+      "HalfBuyPrimary": "Mac10",
+      "FullBuyPrimary": "AK47"
+    },
+    "CounterTerrorist": {
+      "PistolRound": "USPS",
+      "Secondary": "Deagle",
+      "HalfBuyPrimary": "MP9",
+      "FullBuyPrimary": "M4A1"
+    }
+  }
+}
+```
+
 #### Other Configuration
 
-- `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
 - `EnableNextRoundTypeVoting`: Whether to allow voting for the next round type via `!nextround`. `false` by default.
 - `NumberOfExtraVipChancesForPreferredWeapon`: When randomly selecting preferred weapons per team (ie. "AWP queue"), how
   many extra chances should VIPs get.

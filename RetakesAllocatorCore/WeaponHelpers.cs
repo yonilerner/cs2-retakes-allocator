@@ -210,7 +210,6 @@ public static class WeaponHelpers
                 {WeaponAllocationType.HalfBuyPrimary, CsItem.Mac10},
                 {WeaponAllocationType.Secondary, CsItem.Deagle},
                 {WeaponAllocationType.PistolRound, CsItem.Glock},
-                {WeaponAllocationType.Preferred, CsItem.AWP},
             }
         },
         {
@@ -220,7 +219,6 @@ public static class WeaponHelpers
                 {WeaponAllocationType.HalfBuyPrimary, CsItem.MP9},
                 {WeaponAllocationType.Secondary, CsItem.Deagle},
                 {WeaponAllocationType.PistolRound, CsItem.USPS},
-                {WeaponAllocationType.Preferred, CsItem.AWP},
             }
         }
     };
@@ -231,15 +229,17 @@ public static class WeaponHelpers
         {"m4a1-s", CsItem.M4A1S},
     };
 
-    public static List<CsItem> GetAllWeapons()
-    {
-        return _allWeapons.ToList();
-    }
+    public static List<WeaponAllocationType> WeaponAllocationTypes =>
+        Enum.GetValues<WeaponAllocationType>().ToList();
 
-    public static bool IsWeapon(CsItem item)
-    {
-        return _allWeapons.Contains(item);
-    }
+    public static Dictionary<
+        CsTeam,
+        Dictionary<WeaponAllocationType, CsItem>
+    > DefaultWeaponsByTeamAndAllocationType => new(_defaultWeaponsByTeamAndAllocationType);
+
+    public static List<CsItem> AllWeapons => _allWeapons.ToList();
+
+    public static bool IsWeapon(CsItem item) => _allWeapons.Contains(item);
 
     public static ICollection<CsItem> GetPossibleWeaponsForAllocationType(WeaponAllocationType allocationType,
         CsTeam team)
@@ -273,6 +273,7 @@ public static class WeaponHelpers
         {
             return new List<T>(players);
         }
+
         var choicePlayers = new List<T>();
         foreach (var p in players)
         {
@@ -473,7 +474,25 @@ public static class WeaponHelpers
             return null;
         }
 
-        return _defaultWeaponsByTeamAndAllocationType[team][allocationType];
+        if (allocationType == WeaponAllocationType.Preferred)
+        {
+            return null;
+        }
+
+        CsItem? defaultWeapon = null;
+
+        var configDefaultWeapons = Configs.GetConfigData().DefaultWeapons;
+        if (configDefaultWeapons.TryGetValue(team, out var teamDefaults))
+        {
+            if (teamDefaults.TryGetValue(allocationType, out var configuredDefaultWeapon))
+            {
+                defaultWeapon = configuredDefaultWeapon;
+            }
+        }
+
+        defaultWeapon ??= _defaultWeaponsByTeamAndAllocationType[team][allocationType];
+
+        return IsUsableWeapon(defaultWeapon.Value) ? defaultWeapon : null;
     }
 
     private static CsItem GetRandomWeaponForAllocationType(WeaponAllocationType allocationType, CsTeam team)
