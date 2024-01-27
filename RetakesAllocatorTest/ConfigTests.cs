@@ -26,14 +26,14 @@ public class ConfigTests : BaseTestFixture
         var defaults =
             new Dictionary<CsTeam, Dictionary<WeaponAllocationType, CsItem>>(Configs.GetConfigData().DefaultWeapons);
         defaults[CsTeam.Terrorist] = new Dictionary<WeaponAllocationType, CsItem>(defaults[CsTeam.Terrorist]);
-        defaults[CsTeam.Terrorist].Remove(WeaponAllocationType.Preferred);
+        defaults[CsTeam.Terrorist].Remove(WeaponAllocationType.FullBuyPrimary);
         warnings = Configs.OverrideConfigDataForTests(
             new ConfigData()
             {
                 DefaultWeapons = defaults
             }
         ).Validate();
-        Assert.That(warnings[0], Is.EqualTo("Missing Preferred in DefaultWeapons.Terrorist config."));
+        Assert.That(warnings[0], Is.EqualTo("Missing FullBuyPrimary in DefaultWeapons.Terrorist config."));
 
         defaults.Remove(CsTeam.CounterTerrorist);
         warnings = Configs.OverrideConfigDataForTests(
@@ -42,10 +42,10 @@ public class ConfigTests : BaseTestFixture
                 DefaultWeapons = defaults
             }
         ).Validate();
-        Assert.That(warnings[0], Is.EqualTo("Missing Preferred in DefaultWeapons.Terrorist config."));
+        Assert.That(warnings[0], Is.EqualTo("Missing FullBuyPrimary in DefaultWeapons.Terrorist config."));
         Assert.That(warnings[1], Is.EqualTo("Missing CounterTerrorist in DefaultWeapons config."));
 
-        defaults[CsTeam.Terrorist][WeaponAllocationType.Preferred] = CsItem.Kevlar;
+        defaults[CsTeam.Terrorist][WeaponAllocationType.FullBuyPrimary] = CsItem.Kevlar;
         var error = Assert.Catch(() =>
         {
             Configs.OverrideConfigDataForTests(
@@ -55,6 +55,23 @@ public class ConfigTests : BaseTestFixture
                 }
             );
         });
-        Assert.That(error?.Message, Is.EqualTo("Kevlar is not a valid weapon."));
+        Assert.That(error?.Message,
+            Is.EqualTo("Kevlar is not a valid weapon in config DefaultWeapons.Terrorist.FullBuyPrimary."));
+
+        defaults =
+            new Dictionary<CsTeam, Dictionary<WeaponAllocationType, CsItem>>(Configs.GetConfigData().DefaultWeapons);
+        defaults[CsTeam.Terrorist][WeaponAllocationType.Preferred] = CsItem.AWP;
+        error = Assert.Catch(() =>
+        {
+            Configs.OverrideConfigDataForTests(
+                new ConfigData()
+                {
+                    DefaultWeapons = defaults
+                }
+            );
+        });
+        Assert.That(error?.Message, Is.EqualTo(
+            "Preferred is not a valid default weapon allocation type for config DefaultWeapons.Terrorist."
+        ));
     }
 }

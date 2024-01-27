@@ -119,29 +119,8 @@ public record ConfigData
     public List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; } =
         Enum.GetValues<WeaponSelectionType>().ToList();
 
-    public Dictionary<CsTeam, Dictionary<WeaponAllocationType, CsItem>> DefaultWeapons { get; set; } = new()
-    {
-        {
-            CsTeam.Terrorist, new()
-            {
-                {WeaponAllocationType.PistolRound, CsItem.Glock},
-                {WeaponAllocationType.Secondary, CsItem.Deagle},
-                {WeaponAllocationType.HalfBuyPrimary, CsItem.Mac10},
-                {WeaponAllocationType.FullBuyPrimary, CsItem.AK47},
-                {WeaponAllocationType.Preferred, CsItem.AWP},
-            }
-        },
-        {
-            CsTeam.CounterTerrorist, new()
-            {
-                {WeaponAllocationType.PistolRound, CsItem.USPS},
-                {WeaponAllocationType.Secondary, CsItem.Deagle},
-                {WeaponAllocationType.HalfBuyPrimary, CsItem.MP9},
-                {WeaponAllocationType.FullBuyPrimary, CsItem.M4A4},
-                {WeaponAllocationType.Preferred, CsItem.AWP},
-            }
-        }
-    };
+    public Dictionary<CsTeam, Dictionary<WeaponAllocationType, CsItem>> DefaultWeapons { get; set; } =
+        WeaponHelpers.DefaultWeaponsByTeamAndAllocationType;
 
     public RoundTypeSelectionOption RoundTypeSelection { get; set; } = RoundTypeSelectionOption.Random;
 
@@ -204,7 +183,17 @@ public record ConfigData
             return warnings;
         }
 
-        foreach (var allocationType in WeaponHelpers.WeaponAllocationTypes)
+        if (defaultWeapons.ContainsKey(WeaponAllocationType.Preferred))
+        {
+            throw new Exception(
+                $"Preferred is not a valid default weapon allocation type " +
+                $"for config DefaultWeapons.{team}.");
+        }
+
+        var allocationTypes = WeaponHelpers.WeaponAllocationTypes;
+        allocationTypes.Remove(WeaponAllocationType.Preferred);
+
+        foreach (var allocationType in allocationTypes)
         {
             if (!defaultWeapons.TryGetValue(allocationType, out var w))
             {
@@ -214,7 +203,7 @@ public record ConfigData
 
             if (!WeaponHelpers.IsWeapon(w))
             {
-                throw new Exception($"{w} is not a valid weapon.");
+                throw new Exception($"{w} is not a valid weapon in config DefaultWeapons.{team}.{allocationType}.");
             }
 
             if (!UsableWeapons.Contains(w))

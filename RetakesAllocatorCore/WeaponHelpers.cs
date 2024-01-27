@@ -210,7 +210,6 @@ public static class WeaponHelpers
                 {WeaponAllocationType.HalfBuyPrimary, CsItem.Mac10},
                 {WeaponAllocationType.Secondary, CsItem.Deagle},
                 {WeaponAllocationType.PistolRound, CsItem.Glock},
-                {WeaponAllocationType.Preferred, CsItem.AWP},
             }
         },
         {
@@ -220,7 +219,6 @@ public static class WeaponHelpers
                 {WeaponAllocationType.HalfBuyPrimary, CsItem.MP9},
                 {WeaponAllocationType.Secondary, CsItem.Deagle},
                 {WeaponAllocationType.PistolRound, CsItem.USPS},
-                {WeaponAllocationType.Preferred, CsItem.AWP},
             }
         }
     };
@@ -233,6 +231,11 @@ public static class WeaponHelpers
 
     public static List<WeaponAllocationType> WeaponAllocationTypes =>
         Enum.GetValues<WeaponAllocationType>().ToList();
+
+    public static Dictionary<
+        CsTeam,
+        Dictionary<WeaponAllocationType, CsItem>
+    > DefaultWeaponsByTeamAndAllocationType => new(_defaultWeaponsByTeamAndAllocationType);
 
     public static List<CsItem> AllWeapons => _allWeapons.ToList();
 
@@ -467,6 +470,11 @@ public static class WeaponHelpers
     private static CsItem? GetDefaultWeaponForAllocationType(WeaponAllocationType allocationType, CsTeam team)
     {
         if (team is CsTeam.None or CsTeam.Spectator)
+        {
+            return null;
+        }
+
+        if (allocationType == WeaponAllocationType.Preferred)
         {
             return null;
         }
