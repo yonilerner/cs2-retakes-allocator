@@ -74,6 +74,7 @@ public static class Configs
         ConfigData configData
     )
     {
+        configData.Validate();
         _configData = configData;
         return _configData;
     }
@@ -113,7 +114,7 @@ public record RoundTypeManualOrderingItem(RoundType Type, int Count);
 
 public record ConfigData
 {
-    public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.AllWeapons();
+    public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.AllWeapons;
 
     public List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; } =
         Enum.GetValues<WeaponSelectionType>().ToList();
@@ -175,38 +176,51 @@ public record ConfigData
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
 
-    public void Validate()
+    public IList<string> Validate()
     {
         if (RoundTypePercentages.Values.Sum() != 100)
         {
             throw new Exception("'RoundTypePercentages' values must add up to 100");
         }
 
-        if (!DefaultWeapons.TryGetValue(CsTeam.Terrorist, out var tDefaultWeapons))
+        var warnings = new List<string>();
+        warnings.AddRange(ValidateDefaultWeapons(CsTeam.Terrorist));
+        warnings.AddRange(ValidateDefaultWeapons(CsTeam.CounterTerrorist));
+
+        foreach (var warning in warnings)
         {
-            throw new Exception($"Missing {CsTeam.Terrorist} in DefaultWeapons config.");
+            Log.Write($"[CONFIG WARNING] {warning}");
+        }
+
+        return warnings;
+    }
+
+    private ICollection<string> ValidateDefaultWeapons(CsTeam team)
+    {
+        var warnings = new List<string>();
+        if (!DefaultWeapons.TryGetValue(team, out var defaultWeapons))
+        {
+            warnings.Add($"Missing {team} in DefaultWeapons config.");
+            return warnings;
         }
 
         foreach (var allocationType in WeaponHelpers.WeaponAllocationTypes)
         {
-            if (!tDefaultWeapons.ContainsKey(allocationType))
+            if (!defaultWeapons.TryGetValue(allocationType, out var w))
             {
-                throw new Exception($"Missing {allocationType} in DefaultWeapons.{CsTeam.Terrorist} config.");
+                warnings.Add($"Missing {allocationType} in DefaultWeapons.{team} config.");
+                continue;
+            }
+
+            if (!UsableWeapons.Contains(w))
+            {
+                warnings.Add(
+                    $"{w} in the DefaultWeapons.{team}.{allocationType} config " +
+                    $"is not in the UsableWeapons list.");
             }
         }
 
-        if (!DefaultWeapons.TryGetValue(CsTeam.CounterTerrorist, out var ctDefaultWeapons))
-        {
-            throw new Exception($"Missing {CsTeam.CounterTerrorist} in DefaultWeapons config.");
-        }
-
-        foreach (var allocationType in WeaponHelpers.WeaponAllocationTypes)
-        {
-            if (!ctDefaultWeapons.ContainsKey(allocationType))
-            {
-                throw new Exception($"Missing {allocationType} in DefaultWeapons.{CsTeam.CounterTerrorist} config.");
-            }
-        }
+        return warnings;
     }
 
     public double GetRoundTypePercentage(RoundType roundType)

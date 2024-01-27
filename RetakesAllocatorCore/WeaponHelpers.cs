@@ -234,7 +234,7 @@ public static class WeaponHelpers
     public static List<WeaponAllocationType> WeaponAllocationTypes =>
         Enum.GetValues<WeaponAllocationType>().ToList();
 
-    public static List<CsItem> AllWeapons() => _allWeapons.ToList();
+    public static List<CsItem> AllWeapons => _allWeapons.ToList();
 
     public static bool IsWeapon(CsItem item) => _allWeapons.Contains(item);
 
