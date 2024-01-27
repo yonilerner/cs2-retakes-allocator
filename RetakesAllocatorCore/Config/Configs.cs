@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
+using CounterStrikeSharp.API.Modules.Utils;
 
 namespace RetakesAllocatorCore.Config;
 
@@ -112,10 +113,34 @@ public record RoundTypeManualOrderingItem(RoundType Type, int Count);
 
 public record ConfigData
 {
-    public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.GetAllWeapons();
+    public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.AllWeapons();
 
     public List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; } =
         Enum.GetValues<WeaponSelectionType>().ToList();
+
+    public Dictionary<CsTeam, Dictionary<WeaponAllocationType, CsItem>> DefaultWeapons { get; set; } = new()
+    {
+        {
+            CsTeam.Terrorist, new()
+            {
+                {WeaponAllocationType.PistolRound, CsItem.Glock},
+                {WeaponAllocationType.Secondary, CsItem.Deagle},
+                {WeaponAllocationType.HalfBuyPrimary, CsItem.Mac10},
+                {WeaponAllocationType.FullBuyPrimary, CsItem.AK47},
+                {WeaponAllocationType.Preferred, CsItem.AWP},
+            }
+        },
+        {
+            CsTeam.CounterTerrorist, new()
+            {
+                {WeaponAllocationType.PistolRound, CsItem.USPS},
+                {WeaponAllocationType.Secondary, CsItem.Deagle},
+                {WeaponAllocationType.HalfBuyPrimary, CsItem.MP9},
+                {WeaponAllocationType.FullBuyPrimary, CsItem.M4A4},
+                {WeaponAllocationType.Preferred, CsItem.AWP},
+            }
+        }
+    };
 
     public RoundTypeSelectionOption RoundTypeSelection { get; set; } = RoundTypeSelectionOption.Random;
 
@@ -155,6 +180,32 @@ public record ConfigData
         if (RoundTypePercentages.Values.Sum() != 100)
         {
             throw new Exception("'RoundTypePercentages' values must add up to 100");
+        }
+
+        if (!DefaultWeapons.TryGetValue(CsTeam.Terrorist, out var tDefaultWeapons))
+        {
+            throw new Exception($"Missing {CsTeam.Terrorist} in DefaultWeapons config.");
+        }
+
+        foreach (var allocationType in WeaponHelpers.WeaponAllocationTypes)
+        {
+            if (!tDefaultWeapons.ContainsKey(allocationType))
+            {
+                throw new Exception($"Missing {allocationType} in DefaultWeapons.{CsTeam.Terrorist} config.");
+            }
+        }
+
+        if (!DefaultWeapons.TryGetValue(CsTeam.CounterTerrorist, out var ctDefaultWeapons))
+        {
+            throw new Exception($"Missing {CsTeam.CounterTerrorist} in DefaultWeapons config.");
+        }
+
+        foreach (var allocationType in WeaponHelpers.WeaponAllocationTypes)
+        {
+            if (!ctDefaultWeapons.ContainsKey(allocationType))
+            {
+                throw new Exception($"Missing {allocationType} in DefaultWeapons.{CsTeam.CounterTerrorist} config.");
+            }
         }
     }
 
