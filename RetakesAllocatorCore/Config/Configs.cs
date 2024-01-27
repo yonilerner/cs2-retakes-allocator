@@ -212,6 +212,11 @@ public record ConfigData
                 continue;
             }
 
+            if (!WeaponHelpers.IsWeapon(w))
+            {
+                throw new Exception($"{w} is not a valid weapon.");
+            }
+
             if (!UsableWeapons.Contains(w))
             {
                 warnings.Add(

@@ -44,5 +44,17 @@ public class ConfigTests : BaseTestFixture
         ).Validate();
         Assert.That(warnings[0], Is.EqualTo("Missing Preferred in DefaultWeapons.Terrorist config."));
         Assert.That(warnings[1], Is.EqualTo("Missing CounterTerrorist in DefaultWeapons config."));
+
+        defaults[CsTeam.Terrorist][WeaponAllocationType.Preferred] = CsItem.Kevlar;
+        var error = Assert.Catch(() =>
+        {
+            Configs.OverrideConfigDataForTests(
+                new ConfigData()
+                {
+                    DefaultWeapons = defaults
+                }
+            );
+        });
+        Assert.That(error?.Message, Is.EqualTo("Kevlar is not a valid weapon."));
     }
 }
