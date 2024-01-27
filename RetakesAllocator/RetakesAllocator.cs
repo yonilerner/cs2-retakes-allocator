@@ -76,6 +76,11 @@ public class RetakesAllocator : BasePlugin
 
     #region Commands
 
+    private void RegisterCommands()
+    {
+        
+    }
+
     private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo info)
     {
         if (!Helpers.PlayerIsValid(player))

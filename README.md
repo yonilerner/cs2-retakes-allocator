@@ -126,7 +126,6 @@ Here are the weapon configs:
         - `Secondary`: The pistol for non-pistol rounds
         - `HalfBuyPrimary`: The primary weapon for half buy rounds
         - `FullBuyPrimary`: The primary weapon for full buy rounds
-        - `Preferred`: The preferred weapon. Will usually be an `AWP`
     - The valid values for each subkey this are any `CsItem` that is a weapon.
       To better understand how `DefaultWeapons` works, here is the default config for `DefaultWeapons` as an example:
 
@@ -137,15 +136,13 @@ Here are the weapon configs:
       "PistolRound": "Glock",
       "Secondary": "Deagle",
       "HalfBuyPrimary": "Mac10",
-      "FullBuyPrimary": "AK47",
-      "Preferred": "AWP"
+      "FullBuyPrimary": "AK47"
     },
     "CounterTerrorist": {
       "PistolRound": "USPS",
       "Secondary": "Deagle",
       "HalfBuyPrimary": "MP9",
-      "FullBuyPrimary": "M4A1",
-      "Preferred": "AWP"
+      "FullBuyPrimary": "M4A1"
     }
   }
 }
