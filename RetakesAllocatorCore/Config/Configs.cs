@@ -146,7 +146,7 @@ public record ConfigData
     };
 
     public bool MigrateOnStartup { get; set; } = true;
-    public bool AllowAllocationAfterFreezeTime { get; set; } = false;
+    public bool AllowAllocationAfterFreezeTime { get; set; } = true;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
