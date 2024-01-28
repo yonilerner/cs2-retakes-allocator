@@ -59,7 +59,7 @@ public class RetakesAllocator : BasePlugin
         RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
         RoundTypeManager.Instance.SetCurrentRoundType(null);
         RoundTypeManager.Instance.Initialize();
-        
+
         _allocatedPlayerItems.Clear();
     }
 
@@ -293,7 +293,7 @@ public class RetakesAllocator : BasePlugin
             RoundTypeManager.Instance.GetCurrentRoundType());
 
         // Log.Write($"item {item} team {team} player {playerId}");
-        // Log.Write($"curRound {_currentRoundType} weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
+        // Log.Write($"weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
         // Log.Write($"Preferred? {isPreferred}");
 
         if (
@@ -349,8 +349,10 @@ public class RetakesAllocator : BasePlugin
             {
                 replacementSlot = ItemSlotType.Primary;
             }
+
             var slotToSelect = WeaponHelpers.GetSlotNameForSlotType(replacementSlot);
-            if (removedAnyWeapons && RoundTypeManager.Instance.GetCurrentRoundType() is not null && WeaponHelpers.IsWeapon(item))
+            if (removedAnyWeapons && RoundTypeManager.Instance.GetCurrentRoundType() is not null &&
+                WeaponHelpers.IsWeapon(item))
             {
                 var replacementAllocationType =
                     WeaponHelpers.GetReplacementWeaponAllocationTypeForWeapon(RoundTypeManager.Instance
@@ -358,14 +360,7 @@ public class RetakesAllocator : BasePlugin
                 // Log.Write($"Replacement allocation type {replacementAllocationType}");
                 if (replacementAllocationType is not null)
                 {
-                    CsItem? replacementItem = null;
-                    if (replacementSlot is not null && _allocatedPlayerItems.TryGetValue(player, out var playerItems))
-                    {
-                        if (playerItems.TryGetValue(replacementSlot.Value, out var localReplacementItem))
-                        {
-                            replacementItem = localReplacementItem;
-                        }
-                    }
+                    var replacementItem = GetPlayerRoundAllocation(player, replacementSlot);
                     if (replacementItem is not null)
                     {
                         replacedWeapon = true;
@@ -492,6 +487,21 @@ public class RetakesAllocator : BasePlugin
 
         _allocatedPlayerItems[player][slotType] = item;
         Log.Write($"Player {player.Slot} {slotType} {item}");
+    }
+
+    private CsItem? GetPlayerRoundAllocation(CCSPlayerController player, ItemSlotType? slotType)
+    {
+        if (slotType is null || !_allocatedPlayerItems.TryGetValue(player, out var playerItems))
+        {
+            return null;
+        }
+
+        if (playerItems.TryGetValue(slotType.Value, out var localReplacementItem))
+        {
+            return localReplacementItem;
+        }
+
+        return null;
     }
 
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
