@@ -21,6 +21,13 @@ public enum WeaponAllocationType
     Preferred,
 }
 
+public enum ItemSlotType
+{
+    Primary,
+    Secondary,
+    Util
+}
+
 public static class WeaponHelpers
 {
     private static readonly ICollection<CsItem> _sharedPistols = new HashSet<CsItem>
@@ -154,6 +161,23 @@ public static class WeaponHelpers
     private static readonly ICollection<CsItem> _allPistols =
         _pistolsForT.Concat(_pistolsForCt).ToHashSet();
 
+    private static readonly ICollection<CsItem> _allPrimary = _allPreferred
+        .Concat(_allFullBuy)
+        .Concat(_allHalfBuy)
+        .ToHashSet();
+
+    private static readonly ICollection<CsItem> _allSecondary = _allPistols.ToHashSet();
+
+    private static readonly ICollection<CsItem> _allUtil = new HashSet<CsItem>
+    {
+        CsItem.Flashbang,
+        CsItem.HE,
+        CsItem.Molotov,
+        CsItem.Incendiary,
+        CsItem.Smoke,
+        CsItem.Decoy,
+    };
+
     private static readonly Dictionary<RoundType, ICollection<WeaponAllocationType>>
         _validAllocationTypesForRound = new()
         {
@@ -240,6 +264,41 @@ public static class WeaponHelpers
     public static List<CsItem> AllWeapons => _allWeapons.ToList();
 
     public static bool IsWeapon(CsItem item) => _allWeapons.Contains(item);
+
+    public static ItemSlotType? GetSlotTypeForItem(CsItem? item)
+    {
+        if (item is null)
+        {
+            return null;
+        }
+        if (_allSecondary.Contains(item.Value))
+        {
+            return ItemSlotType.Secondary;
+        }
+
+        if (_allPrimary.Contains(item.Value))
+        {
+            return ItemSlotType.Primary;
+        }
+
+        if (_allUtil.Contains(item.Value))
+        {
+            return ItemSlotType.Util;
+        }
+
+        return null;
+    }
+
+    public static string GetSlotNameForSlotType(ItemSlotType? slotType)
+    {
+        return slotType switch
+        {
+            ItemSlotType.Primary => "slot1",
+            ItemSlotType.Secondary => "slot2",
+            ItemSlotType.Util => "slot4",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
 
     public static ICollection<CsItem> GetPossibleWeaponsForAllocationType(WeaponAllocationType allocationType,
         CsTeam team)
@@ -514,7 +573,7 @@ public static class WeaponHelpers
         return Utils.Choice(collectionToCheck.Where(IsUsableWeapon).ToList());
     }
 
-    public static CsItem? GetWeaponForAllocationType(WeaponAllocationType allocationType, CsTeam team,
+    private static CsItem? GetWeaponForAllocationType(WeaponAllocationType allocationType, CsTeam team,
         UserSetting? userSetting)
     {
         CsItem? weapon = null;
