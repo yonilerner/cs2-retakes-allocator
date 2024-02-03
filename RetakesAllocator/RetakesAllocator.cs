@@ -25,6 +25,7 @@ public class RetakesAllocator : BasePlugin
     public override string ModuleDescription => "https://github.com/yonilerner/cs2-retakes-allocator";
 
     private readonly MenuManager _menuManager = new();
+    private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
 
     #region Setup
 
@@ -58,6 +59,8 @@ public class RetakesAllocator : BasePlugin
         RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
         RoundTypeManager.Instance.SetCurrentRoundType(null);
         RoundTypeManager.Instance.Initialize();
+
+        _allocatedPlayerItems.Clear();
     }
 
     private void HandleHotReload()
@@ -178,15 +181,9 @@ public class RetakesAllocator : BasePlugin
                             RoundTypeManager.Instance.GetCurrentRoundType(), currentTeam, item) ==
                         selectedWeaponAllocationType
                 );
-                var slot = selectedWeaponAllocationType.Value switch
-                {
-                    WeaponAllocationType.FullBuyPrimary => "slot1",
-                    WeaponAllocationType.HalfBuyPrimary => "slot1",
-                    WeaponAllocationType.Secondary => "slot2",
-                    WeaponAllocationType.PistolRound => "slot2",
-                    WeaponAllocationType.Preferred => "slot1",
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+
+                var slotType = WeaponHelpers.GetSlotTypeForItem(selectedWeapon.Value);
+                var slot = WeaponHelpers.GetSlotNameForSlotType(slotType);
                 AllocateItemsForPlayer(player, new List<CsItem> {selectedWeapon.Value}, slot);
             }
         }
@@ -296,7 +293,7 @@ public class RetakesAllocator : BasePlugin
             RoundTypeManager.Instance.GetCurrentRoundType());
 
         // Log.Write($"item {item} team {team} player {playerId}");
-        // Log.Write($"curRound {_currentRoundType} weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
+        // Log.Write($"weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
         // Log.Write($"Preferred? {isPreferred}");
 
         if (
@@ -314,6 +311,15 @@ public class RetakesAllocator : BasePlugin
                 purchasedAllocationType.Value,
                 item
             );
+            var slotType = WeaponHelpers.GetSlotTypeForItem(item);
+            if (slotType is not null)
+            {
+                SetPlayerRoundAllocation(player, slotType.Value, item);
+            }
+            else
+            {
+                Log.Write($"WARN: No slot for {item}");
+            }
         }
         else
         {
@@ -338,7 +344,17 @@ public class RetakesAllocator : BasePlugin
             Log.Write($"Removed {item}? {removedAnyWeapons}");
 
             var replacedWeapon = false;
-            var slotToSelect = RoundTypeManager.Instance.GetCurrentRoundType() == RoundType.Pistol ? "slot2" : "slot1";
+            var replacementSlot = WeaponHelpers.GetSlotTypeForItem(item);
+            if (replacementSlot == ItemSlotType.Util)
+            {
+                replacementSlot = ItemSlotType.Primary;
+            }
+
+            var slotToSelect = WeaponHelpers.GetSlotNameForSlotType(
+                RoundTypeManager.Instance.GetCurrentRoundType() == RoundType.Pistol
+                    ? ItemSlotType.Secondary
+                    : ItemSlotType.Primary
+            );
             if (removedAnyWeapons && RoundTypeManager.Instance.GetCurrentRoundType() is not null &&
                 WeaponHelpers.IsWeapon(item))
             {
@@ -348,10 +364,8 @@ public class RetakesAllocator : BasePlugin
                 // Log.Write($"Replacement allocation type {replacementAllocationType}");
                 if (replacementAllocationType is not null)
                 {
-                    var replacementItem = WeaponHelpers.GetWeaponForAllocationType(replacementAllocationType.Value,
-                        team,
-                        Queries.GetUserSettings(playerId));
-                    // Log.Write($"Replacement item: {replacementItem}");
+                    var replacementItem = GetPlayerRoundAllocation(player, replacementSlot);
+                    // Log.Write($"Replacement item {replacementItem} for slot {replacementSlot}");
                     if (replacementItem is not null)
                     {
                         replacedWeapon = true;
@@ -469,6 +483,32 @@ public class RetakesAllocator : BasePlugin
 
     #region Helpers
 
+    private void SetPlayerRoundAllocation(CCSPlayerController player, ItemSlotType slotType, CsItem item)
+    {
+        if (!_allocatedPlayerItems.TryGetValue(player, out var playerAllocatedItems))
+        {
+            _allocatedPlayerItems[player] = new();
+        }
+
+        _allocatedPlayerItems[player][slotType] = item;
+        Log.Write($"Player {player.Slot} {slotType} {item}");
+    }
+
+    private CsItem? GetPlayerRoundAllocation(CCSPlayerController player, ItemSlotType? slotType)
+    {
+        if (slotType is null || !_allocatedPlayerItems.TryGetValue(player, out var playerItems))
+        {
+            return null;
+        }
+
+        if (playerItems.TryGetValue(slotType.Value, out var localReplacementItem))
+        {
+            return localReplacementItem;
+        }
+
+        return null;
+    }
+
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
         // Log.Write($"Allocating items: {string.Join(",", items)}");
@@ -483,6 +523,11 @@ public class RetakesAllocator : BasePlugin
             foreach (var item in items)
             {
                 player.GiveNamedItem(item);
+                var slotType = WeaponHelpers.GetSlotTypeForItem(item);
+                if (slotType is not null)
+                {
+                    SetPlayerRoundAllocation(player, slotType.Value, item);
+                }
             }
 
             if (slotToSelect is not null)
