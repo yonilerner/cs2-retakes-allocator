@@ -343,18 +343,12 @@ public class RetakesAllocator : BasePlugin
                 });
             Log.Write($"Removed {item}? {removedAnyWeapons}");
 
-            var replacedWeapon = false;
-            var replacementSlot = WeaponHelpers.GetSlotTypeForItem(item);
-            if (replacementSlot == ItemSlotType.Util)
-            {
-                replacementSlot = ItemSlotType.Primary;
-            }
+            var replacementSlot = RoundTypeManager.Instance.GetCurrentRoundType() == RoundType.Pistol
+                ? ItemSlotType.Secondary
+                : ItemSlotType.Primary;
 
-            var slotToSelect = WeaponHelpers.GetSlotNameForSlotType(
-                RoundTypeManager.Instance.GetCurrentRoundType() == RoundType.Pistol
-                    ? ItemSlotType.Secondary
-                    : ItemSlotType.Primary
-            );
+            var replacedWeapon = false;
+            var slotToSelect = WeaponHelpers.GetSlotNameForSlotType(replacementSlot);
             if (removedAnyWeapons && RoundTypeManager.Instance.GetCurrentRoundType() is not null &&
                 WeaponHelpers.IsWeapon(item))
             {
