@@ -158,7 +158,7 @@ public static class Helpers
         if (gameRules is null)
         {
             const string message = "Game rules were null.";
-            Log.Write(message);
+            Log.Error(message);
             throw new Exception(message);
         }
 

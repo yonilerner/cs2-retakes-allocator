@@ -116,7 +116,7 @@ public class WeaponPreferencesConverter : ValueConverter<WeaponPreferencesType, 
             parseResult = JsonSerializer.Deserialize<WeaponPreferencesType>(value);
         } catch (Exception e)
         {
-            Log.Write($"Failed to deserialize weapon preferences: {e.Message}");
+            Log.Error($"Failed to deserialize weapon preferences: {e.Message}");
         }
         
         return parseResult ?? new WeaponPreferencesType();

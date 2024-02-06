@@ -67,7 +67,7 @@ public static class Utils
         }
         catch (Exception e)
         {
-            Log.Write($"Exception parsing enum {e.Message}");
+            Log.Error($"Exception parsing enum {e.Message}");
         }
 
         return default;

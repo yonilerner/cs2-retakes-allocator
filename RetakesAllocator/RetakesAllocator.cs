@@ -31,7 +31,7 @@ public class RetakesAllocator : BasePlugin
 
     public override void Load(bool hotReload)
     {
-        Log.Write($"Loaded. Hot reload: {hotReload}");
+        Log.Debug($"Loaded. Hot reload: {hotReload}");
         ResetState();
         Batteries.Init();
 
@@ -70,7 +70,7 @@ public class RetakesAllocator : BasePlugin
 
     public override void Unload(bool hotReload)
     {
-        Log.Write("Unloaded");
+        Log.Debug("Unloaded");
         ResetState(loadConfig: false);
         Queries.Disconnect();
     }
@@ -292,9 +292,9 @@ public class RetakesAllocator : BasePlugin
         var isValidAllocation = WeaponHelpers.IsAllocationTypeValidForRound(purchasedAllocationType,
             RoundTypeManager.Instance.GetCurrentRoundType());
 
-        // Log.Write($"item {item} team {team} player {playerId}");
-        // Log.Write($"weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
-        // Log.Write($"Preferred? {isPreferred}");
+        Log.Debug($"item {item} team {team} player {playerId}");
+        Log.Debug($"weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
+        Log.Debug($"Preferred? {isPreferred}");
 
         if (
             Helpers.IsWeaponAllocationAllowed() &&
@@ -318,7 +318,7 @@ public class RetakesAllocator : BasePlugin
             }
             else
             {
-                Log.Write($"WARN: No slot for {item}");
+                Log.Debug($"WARN: No slot for {item}");
             }
         }
         else
@@ -338,10 +338,10 @@ public class RetakesAllocator : BasePlugin
 
                     var at = WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(
                         RoundTypeManager.Instance.GetCurrentRoundType(), team, i);
-                    // Log.Write($"at: {at}");
+                    Log.Trace($"at: {at}");
                     return at is null || at == purchasedAllocationType;
                 });
-            Log.Write($"Removed {item}? {removedAnyWeapons}");
+            Log.Debug($"Removed {item}? {removedAnyWeapons}");
 
             var replacementSlot = RoundTypeManager.Instance.GetCurrentRoundType() == RoundType.Pistol
                 ? ItemSlotType.Secondary
@@ -355,11 +355,11 @@ public class RetakesAllocator : BasePlugin
                 var replacementAllocationType =
                     WeaponHelpers.GetReplacementWeaponAllocationTypeForWeapon(RoundTypeManager.Instance
                         .GetCurrentRoundType());
-                // Log.Write($"Replacement allocation type {replacementAllocationType}");
+                Log.Debug($"Replacement allocation type {replacementAllocationType}");
                 if (replacementAllocationType is not null)
                 {
                     var replacementItem = GetPlayerRoundAllocation(player, replacementSlot);
-                    // Log.Write($"Replacement item {replacementItem} for slot {replacementSlot}");
+                    Log.Debug($"Replacement item {replacementItem} for slot {replacementSlot}");
                     if (replacementItem is not null)
                     {
                         replacedWeapon = true;
@@ -407,7 +407,7 @@ public class RetakesAllocator : BasePlugin
                 {
                     if (p.IsValid && !p.OwnerEntity.IsValid)
                     {
-                        // Log.Write($"Removing {p.DesignerName}");
+                        Log.Trace($"Removing {p.DesignerName}");
                         p.Remove();
                     }
                 });
@@ -485,7 +485,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         _allocatedPlayerItems[player][slotType] = item;
-        Log.Write($"Player {player.Slot} {slotType} {item}");
+        Log.Debug($"Player {player.Slot} {slotType} {item}");
     }
 
     private CsItem? GetPlayerRoundAllocation(CCSPlayerController player, ItemSlotType? slotType)
@@ -505,12 +505,13 @@ public class RetakesAllocator : BasePlugin
 
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
-        // Log.Write($"Allocating items: {string.Join(",", items)}");
+        Log.Trace($"Allocating items: {string.Join(",", items)}");
+
         AddTimer(0.1f, () =>
         {
             if (!Helpers.PlayerIsValid(player))
             {
-                // Log.Write($"Player is not valid when allocating item");
+                Log.Trace("Player is not valid when allocating item");
                 return;
             }
 
@@ -544,7 +545,7 @@ public class RetakesAllocator : BasePlugin
             if (!Helpers.PlayerIsValid(player) || !player.PlayerPawn.IsValid || player.PlayerPawn.Value is null ||
                 !player.PlayerPawn.Value.IsValid || player.PlayerPawn.Value?.ItemServices?.Handle is null)
             {
-                // Log.Write($"Player is not valid when giving defuse kit");
+                Log.Trace($"Player is not valid when giving defuse kit");
                 return;
             }
 

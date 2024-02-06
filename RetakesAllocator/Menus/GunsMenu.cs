@@ -314,6 +314,6 @@ public class GunsMenu: BaseMenu
             remove,
             out _
         );
-        // Log.Write(message);
+        Log.Debug(message);
     }
 }
