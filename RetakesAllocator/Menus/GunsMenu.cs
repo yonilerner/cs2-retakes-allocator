@@ -75,7 +75,7 @@ public class GunsMenu: BaseMenu
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary,
                      CsTeam.Terrorist))
         {
-            menu.AddMenuOption(weapon.ToString(), OnTPrimarySelect);
+            menu.AddMenuOption(weapon.GetName(), OnTPrimarySelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);
@@ -106,7 +106,7 @@ public class GunsMenu: BaseMenu
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary,
                      CsTeam.Terrorist))
         {
-            menu.AddMenuOption(weapon.ToString(), OnTSecondarySelect);
+            menu.AddMenuOption(weapon.GetName(), OnTSecondarySelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);
@@ -137,7 +137,7 @@ public class GunsMenu: BaseMenu
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary,
                      CsTeam.CounterTerrorist))
         {
-            menu.AddMenuOption(weapon.ToString(), OnCtPrimarySelect);
+            menu.AddMenuOption(weapon.GetName(), OnCtPrimarySelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);
@@ -168,7 +168,7 @@ public class GunsMenu: BaseMenu
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary,
                      CsTeam.CounterTerrorist))
         {
-            menu.AddMenuOption(weapon.ToString(), OnCtSecondarySelect);
+            menu.AddMenuOption(weapon.GetName(), OnCtSecondarySelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);
@@ -199,7 +199,7 @@ public class GunsMenu: BaseMenu
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound,
                      CsTeam.Terrorist))
         {
-            menu.AddMenuOption(weapon.ToString(), OnTPistolSelect);
+            menu.AddMenuOption(weapon.GetName(), OnTPistolSelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);
@@ -230,7 +230,7 @@ public class GunsMenu: BaseMenu
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound,
                      CsTeam.CounterTerrorist))
         {
-            menu.AddMenuOption(weapon.ToString(), OnCtPistolSelect);
+            menu.AddMenuOption(weapon.GetName(), OnCtPistolSelect);
         }
 
         menu.AddMenuOption("Exit", OnSelectExit);

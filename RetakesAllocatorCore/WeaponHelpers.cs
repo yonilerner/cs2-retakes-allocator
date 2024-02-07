@@ -92,13 +92,13 @@ public static class WeaponHelpers
     private static readonly ICollection<CsItem> _midRangeForCt = _sharedMidRange.Concat(_ctMidRange).ToHashSet();
     private static readonly ICollection<CsItem> _midRangeForT = _sharedMidRange.Concat(_tMidRange).ToHashSet();
 
-    private static readonly int _maxSmgItemValue = (int) CsItem.UMP;
+    private static readonly int _maxSmgItemValue = (int)CsItem.UMP;
 
     private static readonly ICollection<CsItem> _smgsForT =
-        _sharedMidRange.Concat(_tMidRange).Where(i => (int) i <= _maxSmgItemValue).ToHashSet();
+        _sharedMidRange.Concat(_tMidRange).Where(i => (int)i <= _maxSmgItemValue).ToHashSet();
 
     private static readonly ICollection<CsItem> _smgsForCt =
-        _sharedMidRange.Concat(_ctMidRange).Where(i => (int) i <= _maxSmgItemValue).ToHashSet();
+        _sharedMidRange.Concat(_ctMidRange).Where(i => (int)i <= _maxSmgItemValue).ToHashSet();
 
     private static readonly ICollection<CsItem> _tRifles = new HashSet<CsItem>
     {
@@ -149,7 +149,7 @@ public static class WeaponHelpers
         _ctRifles.Concat(_heavys).ToHashSet();
 
     private static readonly ICollection<CsItem> _allWeapons = Enum.GetValues<CsItem>()
-        .Where(item => (int) item >= 200 && (int) item < 500)
+        .Where(item => (int)item >= 200 && (int)item < 500)
         .ToHashSet();
 
     private static readonly ICollection<CsItem> _allFullBuy =
@@ -253,6 +253,11 @@ public static class WeaponHelpers
         {"m4a1-s", CsItem.M4A1S},
     };
 
+    private static readonly Dictionary<CsItem, string> _weaponNameOverrides = new()
+    {
+        {CsItem.M4A4, "M4A4"},
+    };
+
     public static List<WeaponAllocationType> WeaponAllocationTypes =>
         Enum.GetValues<WeaponAllocationType>().ToList();
 
@@ -265,12 +270,18 @@ public static class WeaponHelpers
 
     public static bool IsWeapon(CsItem item) => _allWeapons.Contains(item);
 
+    public static string GetName(this CsItem item) =>
+        _weaponNameOverrides.TryGetValue(item, out var overrideName)
+            ? overrideName
+            : item.ToString();
+
     public static ItemSlotType? GetSlotTypeForItem(CsItem? item)
     {
         if (item is null)
         {
             return null;
         }
+
         if (_allSecondary.Contains(item.Value))
         {
             return ItemSlotType.Secondary;
