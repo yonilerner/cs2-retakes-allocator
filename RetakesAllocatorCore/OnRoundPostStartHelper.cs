@@ -42,8 +42,8 @@ public class OnRoundPostStartHelper
             }
         }
 
-        Log.Write($"#T Players: {string.Join(",", tPlayers.Select(getSteamId))}");
-        Log.Write($"#CT Players: {string.Join(",", ctPlayers.Select(getSteamId))}");
+        Log.Debug($"#T Players: {string.Join(",", tPlayers.Select(getSteamId))}");
+        Log.Debug($"#CT Players: {string.Join(",", ctPlayers.Select(getSteamId))}");
 
         var userSettingsByPlayerId = Queries.GetUsersSettings(playerIds);
 

@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace RetakesAllocatorCore.Config;
 
@@ -151,6 +152,7 @@ public record ConfigData
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
+    public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
@@ -168,7 +170,7 @@ public record ConfigData
 
         foreach (var warning in warnings)
         {
-            Log.Write($"[CONFIG WARNING] {warning}");
+            Log.Warn($"[CONFIG WARNING] {warning}");
         }
 
         return warnings;

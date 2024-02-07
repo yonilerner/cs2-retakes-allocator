@@ -103,20 +103,25 @@ The config file is located in the plugin folder under `config/config.json`.
 For any of the weapon configs, the valid weapon names come
 from [here](https://github.com/roflmuffin/CounterStrikeSharp/blob/main/managed/CounterStrikeSharp.API/Modules/Entities/Constants/CsItem.cs).
 For example in
+
 ```cs
         [EnumMember(Value = "item_kevlar")]
         Kevlar = 000,
 ```
+
 `Kevlar` is the name of the weapon, not `item_kevlar`.
 In
+
 ```cs
 [EnumMember(Value = "weapon_m4a1_silencer")]
 M4A1S = 401,
 SilencedM4 = M4A1S,
 ```
+
 both `M4A1S` and `SilencedM4` are valid weapon names, but `weapon_m4a1_silencer` is not.
 
 Here are the weapon configs:
+
 - `UsableWeapons`: The weapons that can be allocated. Any weapon removed from this list cannot be used.
 - `DefaultWeapons`: This lets you configure the default weapon for each weapon allocation type. The type of this config
   is map of `Team => WeaponAllocationType => Item`.
@@ -185,6 +190,16 @@ Here are the weapon configs:
         - More info on formatting the string here: https://www.connectionstrings.com/sqlite/
     - The connection string for `MySql` should be configured per instructions
       here: https://www.connectionstrings.com/mysql/
+- `LogLevel`: Desired level of logging. Can be set to `Debug` or `Trace` when collecting information for a bug report.
+  You probably want the default, which is `Information`. I strongly recommend against setting any higher than `Warning`.
+  The options are:
+  - `Trace` (spam of information)
+  - `Debug` (some useful information for debugging)
+  - `Information`
+  - `Warning` (warnings & errors only)
+  - `Error` (errors only)
+  - `Critical`
+  - `None` (no logs at all; use with caution)
 
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
