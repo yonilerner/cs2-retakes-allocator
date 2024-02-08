@@ -153,6 +153,7 @@ public record ConfigData
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
+    public string ChatMessagePluginName { get; set; } = "Retakes";
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";

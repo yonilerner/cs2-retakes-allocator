@@ -193,14 +193,16 @@ Here are the weapon configs:
 - `LogLevel`: Desired level of logging. Can be set to `Debug` or `Trace` when collecting information for a bug report.
   You probably want the default, which is `Information`. I strongly recommend against setting any higher than `Warning`.
   The options are:
-  - `Trace` (spam of information)
-  - `Debug` (some useful information for debugging)
-  - `Information`
-  - `Warning` (warnings & errors only)
-  - `Error` (errors only)
-  - `Critical`
-  - `None` (no logs at all; use with caution)
-
+    - `Trace` (spam of information)
+    - `Debug` (some useful information for debugging)
+    - `Information`
+    - `Warning` (warnings & errors only)
+    - `Error` (errors only)
+    - `Critical`
+    - `None` (no logs at all; use with caution)
+- `ChatMessagePluginName`: The name that you want to appear between [] in chat messages from the plugin. Defaults
+  to `Retakes`.
+    - For example, `[Retakes] Next round will be a Terrorist round.`
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
 
