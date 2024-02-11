@@ -485,7 +485,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         _allocatedPlayerItems[player][slotType] = item;
-        Log.Debug($"Player {player.Slot} {slotType} {item}");
+        Log.Debug($"Round allocation for player {player.Slot} {slotType} {item}");
     }
 
     private CsItem? GetPlayerRoundAllocation(CCSPlayerController player, ItemSlotType? slotType)
@@ -505,7 +505,7 @@ public class RetakesAllocator : BasePlugin
 
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
-        Log.Trace($"Allocating items: {string.Join(",", items)}");
+        Log.Trace($"Allocating items: {string.Join(",", items)}; selecting slot {slotToSelect}");
 
         AddTimer(0.1f, () =>
         {

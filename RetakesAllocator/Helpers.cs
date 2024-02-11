@@ -150,29 +150,27 @@ public static class Helpers
         return removed;
     }
 
-    private static CCSGameRules GetGameRules()
+    private static CCSGameRules? GetGameRules()
     {
-        var gameRulesEntities = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules");
-        var gameRules = gameRulesEntities.First().GameRules;
-
-        if (gameRules is null)
+        try
         {
-            const string message = "Game rules were null.";
-            Log.Error(message);
-            throw new Exception(message);
+            var gameRulesEntities = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules");
+            return gameRulesEntities.First().GameRules;
         }
-
-        return gameRules;
+        catch
+        {
+            return null;
+        }
     }
 
     public static bool IsWarmup()
     {
-        return GetGameRules().WarmupPeriod;
+        return GetGameRules()?.WarmupPeriod ?? false;
     }
 
     public static bool IsWeaponAllocationAllowed()
     {
-        return WeaponHelpers.IsWeaponAllocationAllowed(GetGameRules().FreezePeriod);
+        return WeaponHelpers.IsWeaponAllocationAllowed(GetGameRules()?.FreezePeriod ?? false);
     }
 
     public static double GetVectorDistance(Vector v1, Vector v2)
