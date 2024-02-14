@@ -314,6 +314,10 @@ public static class WeaponHelpers
     public static ICollection<CsItem> GetPossibleWeaponsForAllocationType(WeaponAllocationType allocationType,
         CsTeam team)
     {
+        if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
+        {
+            return new List<CsItem>();
+        }
         return _validWeaponsByTeamAndAllocationType[team][allocationType].Where(IsUsableWeapon).ToList();
     }
 
