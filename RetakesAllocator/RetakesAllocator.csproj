@@ -28,5 +28,8 @@
         <Exec Command="powershell cp -Force -Recurse &quot;$(TargetDir)runtimes\win-x64 $(TargetDir)..\$(TargetName)\runtimes&quot;" />
         <Exec Command="powershell Compress-Archive -Force -Path &quot;$(TargetDir)..\$(TargetName)\*&quot; -DestinationPath &quot;$(TargetDir)..\$(TargetName).zip&quot; " />
     </Target>
+    <ItemGroup>
+        <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
 
 </Project>

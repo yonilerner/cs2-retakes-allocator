@@ -84,4 +84,9 @@ public static class RoundTypeHelpers
             _ => null,
         };
     }
+
+    public static string TranslateRoundTypeName(RoundType roundType)
+    {
+        return Translator.GetInstance()[$"roundtype.{roundType}"];
+    }
 }

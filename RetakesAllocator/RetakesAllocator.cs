@@ -56,6 +56,8 @@ public class RetakesAllocator : BasePlugin
             Configs.Load(ModuleDirectory, true);
         }
 
+        Translator.Initialize(Localizer);
+
         RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
         RoundTypeManager.Instance.SetCurrentRoundType(null);
         RoundTypeManager.Instance.Initialize();
@@ -470,8 +472,11 @@ public class RetakesAllocator : BasePlugin
 
         if (Configs.GetConfigData().EnableRoundTypeAnnouncement)
         {
+            var roundType = RoundTypeManager.Instance.GetCurrentRoundType()!.Value;
+            var roundTypeName = RoundTypeHelpers.TranslateRoundTypeName(roundType);
+            var message = Translator.GetInstance()["announcement.roundtype", roundTypeName];
             Server.PrintToChatAll(
-                $"{MessagePrefix}{Enum.GetName(RoundTypeManager.Instance.GetCurrentRoundType()!.Value)} Round"
+                $"{MessagePrefix}{message}"
             );
         }
 
