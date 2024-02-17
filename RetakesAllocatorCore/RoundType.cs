@@ -1,4 +1,6 @@
-﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
+﻿// Stolen from https://github.com/B3none/cs2-retakes/blob/014663222fa95bb9f506284814ae62205630416c/Modules/Translator.cs
+
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 
 namespace RetakesAllocatorCore;
