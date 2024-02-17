@@ -254,12 +254,15 @@ public class RetakesAllocator : BasePlugin
         var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
         if (roundType is null)
         {
-            commandInfo.ReplyToCommand($"{MessagePrefix}Invalid round type: {roundTypeInput}.");
+            var message = Translator.GetInstance()["announcement.next_roundtype_set_invalid", roundTypeInput];
+            commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
         }
         else
         {
             RoundTypeManager.Instance.SetNextRoundTypeOverride(roundType);
-            commandInfo.ReplyToCommand($"{MessagePrefix}Next round will be a {roundType} round.");
+            var roundTypeName = RoundTypeHelpers.TranslateRoundTypeName(roundType.Value);
+            var message = Translator.GetInstance()["announcement.next_roundtype_set", roundTypeName];
+            commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
         }
     }
 
