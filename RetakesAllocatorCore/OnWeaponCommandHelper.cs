@@ -130,6 +130,11 @@ public class OnWeaponCommandHelper
             message += $" You will get it at the next {weaponRoundTypes.First()} round.";
         }
 
+        if (userId == 0)
+        {
+            message = "Without a valid Steam ID, your preferences will not be saved.";
+        }
+
         return message;
     }
 }

@@ -15,6 +15,12 @@ public class GunsMenu: BaseMenu
     
     public override void OpenMenu(CCSPlayerController player)
     {
+        if (Helpers.GetSteamId(player) == 0)
+        {
+            player.PrintToChat($"{MessagePrefix}You cannot set weapon preferences with invalid Steam ID.");
+            return;
+        }
+
         PlayersInMenu.Add(player);
         
         OpenTPrimaryMenu(player);
@@ -308,7 +314,7 @@ public class GunsMenu: BaseMenu
     {
         var message = OnWeaponCommandHelper.Handle(
             new List<string> {weapon},
-            player.AuthorizedSteamID?.SteamId64 ?? 0,
+            Helpers.GetSteamId(player),
             roundTypeOverride,
             team,
             remove,

@@ -199,6 +199,11 @@ public class RetakesAllocator : BasePlugin
         }
 
         var playerId = Helpers.GetSteamId(player);
+        if (playerId == 0)
+        {
+            commandInfo.ReplyToCommand("Cannot save preferences with invalid Steam ID.");
+            return;
+        }
         var currentTeam = player!.Team;
 
         var currentPreferredSetting = Queries.GetUserSettings(playerId)

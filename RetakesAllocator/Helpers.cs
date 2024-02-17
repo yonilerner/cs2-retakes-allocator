@@ -12,7 +12,7 @@ public static class Helpers
 {
     public static bool PlayerIsValid(CCSPlayerController? player)
     {
-        return player is not null && player.IsValid && player.AuthorizedSteamID is not null;
+        return player is not null && player.IsValid;
     }
 
     public static void WriteNewlineDelimited(string message, Action<string> writer)

@@ -13,6 +13,11 @@ public class Queries
 
     private static UserSetting? UpsertUserSettings(ulong userId, Action<UserSetting> mutation)
     {
+        if (userId == 0)
+        {
+            Log.Debug("Encountered userid 0, not upserting user settings");
+            return null;
+        }
         var instance = Db.GetInstance();
         var isNew = false;
         var userSettings = instance.UserSettings.FirstOrDefault(u => u.UserId == userId);
