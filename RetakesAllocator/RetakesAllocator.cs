@@ -254,14 +254,14 @@ public class RetakesAllocator : BasePlugin
         var roundType = RoundTypeHelpers.ParseRoundType(roundTypeInput);
         if (roundType is null)
         {
-            var message = Translator.GetInstance()["announcement.next_roundtype_set_invalid", roundTypeInput];
+            var message = Translator.Instance["announcement.next_roundtype_set_invalid", roundTypeInput];
             commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
         }
         else
         {
             RoundTypeManager.Instance.SetNextRoundTypeOverride(roundType);
             var roundTypeName = RoundTypeHelpers.TranslateRoundTypeName(roundType.Value);
-            var message = Translator.GetInstance()["announcement.next_roundtype_set", roundTypeName];
+            var message = Translator.Instance["announcement.next_roundtype_set", roundTypeName];
             commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
         }
     }
@@ -477,7 +477,7 @@ public class RetakesAllocator : BasePlugin
         {
             var roundType = RoundTypeManager.Instance.GetCurrentRoundType()!.Value;
             var roundTypeName = RoundTypeHelpers.TranslateRoundTypeName(roundType);
-            var message = Translator.GetInstance()["announcement.roundtype", roundTypeName];
+            var message = Translator.Instance["announcement.roundtype", roundTypeName];
             Server.PrintToChatAll(
                 $"{MessagePrefix}{message}"
             );

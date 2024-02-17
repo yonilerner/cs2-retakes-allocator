@@ -7,20 +7,17 @@ namespace RetakesAllocatorCore;
 
 public class Translator
 {
-    private static Translator? Instance;
+    private static Translator? _instance;
 
     public static Translator Initialize(IStringLocalizer localizer)
     {
-        Instance = new(localizer);
-        return Instance;
+        _instance = new(localizer);
+        return _instance;
     }
 
-    public static bool IsInitialized => Instance is not null;
+    public static bool IsInitialized => _instance is not null;
 
-    public static Translator GetInstance()
-    {
-        return Instance ?? throw new Exception("Translator is not initialized.");
-    }
+    public static Translator Instance => _instance ?? throw new Exception("Translator is not initialized.");
     
     private IStringLocalizer _stringLocalizerImplementation;
 
