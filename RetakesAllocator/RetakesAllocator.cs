@@ -35,7 +35,11 @@ public class RetakesAllocator : BasePlugin
         ResetState();
         Batteries.Init();
 
-        RegisterListener<Listeners.OnMapStart>(mapName => { ResetState(); });
+        RegisterListener<Listeners.OnMapStart>(mapName =>
+        {
+            ResetState();
+            RoundTypeManager.Instance.SetMap(mapName);
+        });
         AddCommandListener("say", OnPlayerChat, HookMode.Post);
 
         if (Configs.GetConfigData().MigrateOnStartup)

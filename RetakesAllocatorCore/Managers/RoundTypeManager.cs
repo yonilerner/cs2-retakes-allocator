@@ -12,11 +12,13 @@ public class RoundTypeManager
 
     #endregion
 
+    private string? _map;
+    
     private RoundType? _nextRoundTypeOverride;
     private RoundType? _currentRoundType;
 
     private RoundTypeSelectionOption _roundTypeSelection;
-    private List<RoundType> _roundsOrder;
+    private readonly List<RoundType> _roundsOrder = new();
     private int _roundTypeManualOrderingPosition;
 
     private RoundTypeManager()
@@ -26,11 +28,12 @@ public class RoundTypeManager
 
     public void Initialize()
     {
+        _map = null;
         _nextRoundTypeOverride = null;
         _currentRoundType = null;
         _roundTypeSelection = Configs.GetConfigData().RoundTypeSelection;
 
-        _roundsOrder = new List<RoundType>();
+        _roundsOrder.Clear();
         switch (_roundTypeSelection)
         {
             case RoundTypeSelectionOption.RandomFixedCounts:
@@ -55,6 +58,13 @@ public class RoundTypeManager
         }
         _roundTypeManualOrderingPosition = 0;
     }
+
+    public void SetMap(string map)
+    {
+        _map = map;
+    }
+
+    public string? Map => _map;
 
     public RoundType GetNextRoundType()
     {
