@@ -1,6 +1,6 @@
 {
   "roundtype.Pistol": "Pistol",
   "roundtype.HalfBuy": "Half Buy",
-  "roundtype.FullBuy": "Full Buyz",
+  "roundtype.FullBuy": "Full Buy",
   "announcement.roundtype": "{0} Round"
 }
