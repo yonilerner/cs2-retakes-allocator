@@ -15,7 +15,7 @@ public class OnRoundPostStartHelper
         Action<T, ICollection<CsItem>, string?> allocateItemsForPlayer,
         Func<T, bool> isVip,
         out RoundType currentRoundType
-    )
+    ) where T : notnull
     {
         var roundType = RoundTypeManager.Instance.GetNextRoundType();
         currentRoundType = roundType;
@@ -65,6 +65,28 @@ public class OnRoundPostStartHelper
                 WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers), isVip);
         }
 
+        var nadesByPlayer = new Dictionary<T, ICollection<CsItem>>();
+        NadeHelpers.AllocateNadesToPlayers(
+            NadeHelpers.GetUtilForTeam(
+                RoundTypeManager.Instance.Map,
+                roundType,
+                CsTeam.Terrorist,
+                tPlayers.Count
+            ),
+            tPlayers,
+            nadesByPlayer
+        );
+        NadeHelpers.AllocateNadesToPlayers(
+            NadeHelpers.GetUtilForTeam(
+                RoundTypeManager.Instance.Map,
+                roundType,
+                CsTeam.CounterTerrorist,
+                tPlayers.Count
+            ),
+            ctPlayers,
+            nadesByPlayer
+        );
+
         foreach (var player in allPlayers)
         {
             var team = getTeam(player);
@@ -92,30 +114,23 @@ public class OnRoundPostStartHelper
                 )
             );
 
+            if (nadesByPlayer.TryGetValue(player, out var playerNades))
+            {
+                items.AddRange(playerNades);
+            }
+
             if (team == CsTeam.CounterTerrorist)
             {
                 // On non-pistol rounds, everyone gets defuse kit and util
                 if (roundType != RoundType.Pistol)
                 {
                     giveDefuseKit(player);
-                    items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
                 }
-                else
+                else if (getSteamId(defusingPlayer) == getSteamId(player))
                 {
-                    // On pistol rounds, you get util *or* a defuse kit
-                    if (getSteamId(defusingPlayer) == getSteamId(player))
-                    {
-                        giveDefuseKit(player);
-                    }
-                    else
-                    {
-                        items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
-                    }
+                    // On pistol rounds, only one person gets a defuse kit
+                    giveDefuseKit(player);
                 }
-            }
-            else
-            {
-                items.AddRange(RoundTypeHelpers.GetRandomUtilForRoundType(roundType, team));
             }
 
             allocateItemsForPlayer(player, items, team == CsTeam.Terrorist ? "slot5" : "slot1");

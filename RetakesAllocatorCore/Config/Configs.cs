@@ -123,6 +123,39 @@ public record ConfigData
     public Dictionary<CsTeam, Dictionary<WeaponAllocationType, CsItem>> DefaultWeapons { get; set; } =
         WeaponHelpers.DefaultWeaponsByTeamAndAllocationType;
 
+    public Dictionary<
+        string,
+        Dictionary<
+            CsTeam,
+            Dictionary<CsItem, int>
+        >
+    > MaxNades { get; set; } = new()
+    {
+        {
+            NadeHelpers.GlobalSettingName, new()
+            {
+                {
+                    CsTeam.Terrorist, new()
+                    {
+                        {CsItem.Flashbang, 2},
+                        {CsItem.Smoke, 1},
+                        {CsItem.Molotov, 1},
+                        {CsItem.HE, 1},
+                    }
+                },
+                {
+                    CsTeam.CounterTerrorist, new()
+                    {
+                        {CsItem.Flashbang, 2},
+                        {CsItem.Smoke, 1},
+                        {CsItem.Molotov, 2},
+                        {CsItem.HE, 1},
+                    }
+                },
+            }
+        }
+    };
+
     public RoundTypeSelectionOption RoundTypeSelection { get; set; } = RoundTypeSelectionOption.Random;
 
     public Dictionary<RoundType, int> RoundTypePercentages { get; set; } = new()
