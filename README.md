@@ -153,6 +153,72 @@ Here are the weapon configs:
 }
 ```
 
+#### Nade Configuration
+- `MaxNades`: You can set the maximum number of each type of nade for each team and on each map (or default). By default the config includes some limits that you may want to change.
+The way `MaxNades` works is that the GLOBAL option sets the max for *all* maps, and then you can also specify subsets of the config for specific maps.
+For example, if your config is:
+```json
+{
+  "MaxNades": {
+    "GLOBAL": {
+      "Terrorist": {
+        "Flashbang": 2,
+        "Smoke": 1,
+        "Molotov": 1,
+        "HighExplosive": 1
+      },
+      "CounterTerrorist": {
+        "Flashbang": 2,
+        "Smoke": 1,
+        "Molotov": 2,
+        "HighExplosive": 1
+      }
+    }
+  }
+}
+```
+but you specifically want to allow 2 smokes for CT on mirage, you can do:
+```json
+{
+  "MaxNades": {
+    "GLOBAL": {
+      "Terrorist": {
+        "Flashbang": 2,
+        "Smoke": 1,
+        "Molotov": 1,
+        "HighExplosive": 1
+      },
+      "CounterTerrorist": {
+        "Flashbang": 2,
+        "Smoke": 1,
+        "Incendiary": 2,
+        "HighExplosive": 1
+      }
+    },
+    "de_mirage": {
+      "CounterTerrorist": {
+        "Smoke": 2
+      }
+    }
+  }
+}
+```
+This will keep the defaults the same for everything but override just CT smokes on mirage.
+
+The valid keys for nades on `Terrorist` are:
+- `Flashbang`
+- `Smoke`
+- `Molotov`
+- `HighExplosive`
+
+The valid keys for nades on `CounterTerrorist` are:
+- `Flashbang`
+- `Smoke`
+- `Incendiary`
+- `HighExplosive`
+
+If you mix up `Incendiary` and `Molotov`, the plugin will fix it for you.
+
 #### Other Configuration
 
 - `EnableNextRoundTypeVoting`: Whether to allow voting for the next round type via `!nextround`. `false` by default.

@@ -148,7 +148,7 @@ public record ConfigData
                     {
                         {CsItem.Flashbang, 2},
                         {CsItem.Smoke, 1},
-                        {CsItem.Molotov, 2},
+                        {CsItem.Incendiary, 2},
                         {CsItem.HE, 1},
                     }
                 },
