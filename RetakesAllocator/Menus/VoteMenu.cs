@@ -7,7 +7,7 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Menus;
 
-public class VoteMenu : BaseMenu
+public class VoteMenu : AbstractBaseMenu
 {
     private new const float MenuTimeout = 20.0f;
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();

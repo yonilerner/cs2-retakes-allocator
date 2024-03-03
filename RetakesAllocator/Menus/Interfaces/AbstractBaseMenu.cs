@@ -2,7 +2,7 @@
 
 namespace RetakesAllocator.Menus.Interfaces;
 
-public abstract class BaseMenu
+public abstract class AbstractBaseMenu
 {
     protected const float MenuTimeout = 30.0f;
 
