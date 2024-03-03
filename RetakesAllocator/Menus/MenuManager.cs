@@ -14,7 +14,7 @@ public enum MenuType
 
 public class MenuManager
 {
-    private readonly Dictionary<MenuType, BaseMenu> _menus = new()
+    private readonly Dictionary<MenuType, AbstractBaseMenu> _menus = new()
     {
         {MenuType.Guns, new GunsMenu()},
         {MenuType.NextRoundVote, new VoteMenu(new NextRoundVoteManager())},
@@ -32,7 +32,7 @@ public class MenuManager
     }
 
     public T GetMenu<T>(MenuType menuType)
-    where T : BaseMenu
+    where T : AbstractBaseMenu
     {
         return (T) _menus[menuType];
     }

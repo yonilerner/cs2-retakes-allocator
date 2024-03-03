@@ -9,7 +9,7 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Menus;
 
-public class GunsMenu: BaseMenu
+public class GunsMenu: AbstractBaseMenu
 {
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
     
