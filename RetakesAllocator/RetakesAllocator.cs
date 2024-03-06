@@ -7,6 +7,8 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Managers;
 using RetakesAllocator.Menus;
 using RetakesAllocatorCore;
@@ -551,6 +553,17 @@ public class RetakesAllocator : BasePlugin
 
         return null;
     }
+    
+    public MemoryFunctionVoid<IntPtr, string, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr> GiveNamedItem2 = new(@"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x83\xEC\x18\x48\x89\x7D\xC8\x48\x85\xF6\x74");
+    public void PlayerGiveNamedItem(CCSPlayerController player, string item)
+    {
+        if (!player.PlayerPawn.IsValid) return;
+        if (player.PlayerPawn.Value == null) return;
+        if (!player.PlayerPawn.Value.IsValid) return;
+        if (player.PlayerPawn.Value.ItemServices == null) return;
+
+        GiveNamedItem2.Invoke(player.PlayerPawn.Value.ItemServices.Handle, item, 0, 0, 0, 0, 0, 0);
+    }
 
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
@@ -566,7 +579,12 @@ public class RetakesAllocator : BasePlugin
 
             foreach (var item in items)
             {
-                player.GiveNamedItem(item);
+                string? itemString = EnumUtils.GetEnumMemberAttributeValue(item);
+                if (string.IsNullOrWhiteSpace(itemString))
+                {
+                    continue;
+                }
+                PlayerGiveNamedItem(player, itemString);
                 var slotType = WeaponHelpers.GetSlotTypeForItem(item);
                 if (slotType is not null)
                 {
