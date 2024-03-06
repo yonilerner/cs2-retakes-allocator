@@ -13,7 +13,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RetakesAllocatorCore\RetakesAllocatorCore.csproj" />
+        <ProjectReference Include="..\RetakesAllocatorCore\RetakesAllocatorCore.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="RetakesPluginShared">
+            <HintPath>..\RetakesPluginShared.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(CopyPath)' != '' and $(Configuration) == 'Debug' and '$(OS)' == 'Windows_NT'">
