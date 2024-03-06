@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
@@ -14,9 +15,12 @@ using RetakesAllocatorCore.Db;
 using SQLitePCL;
 using static RetakesAllocatorCore.PluginInfo;
 
+using RetakesPluginShared;
+using RetakesPluginShared.Events;
+
 namespace RetakesAllocator;
 
-[MinimumApiVersion(147)]
+[MinimumApiVersion(180)]
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
@@ -26,6 +30,8 @@ public class RetakesAllocator : BasePlugin
 
     private readonly MenuManager _menuManager = new();
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
+    
+    private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
 
     #region Setup
 
@@ -41,6 +47,11 @@ public class RetakesAllocator : BasePlugin
             RoundTypeManager.Instance.SetMap(mapName);
         });
         AddCommandListener("say", OnPlayerChat, HookMode.Post);
+
+        AddTimer(0.1f, () =>
+        {
+            GetRetakesPluginEventSender().RetakesPluginEventHandlers += RetakesEventHandler;
+        });
 
         if (Configs.GetConfigData().MigrateOnStartup)
         {
@@ -79,6 +90,35 @@ public class RetakesAllocator : BasePlugin
         Log.Debug("Unloaded");
         ResetState(loadConfig: false);
         Queries.Disconnect();
+
+        GetRetakesPluginEventSender().RetakesPluginEventHandlers -= RetakesEventHandler;
+    }
+    
+    private IRetakesPluginEventSender GetRetakesPluginEventSender()
+    {
+        if (RetakesPluginEventSender is not null)
+        {
+            return RetakesPluginEventSender;
+        }
+        
+        var sender = new PluginCapability<IRetakesPluginEventSender>("retakes_plugin:event_sender").Get();
+        if (sender is null)
+        {
+            throw new Exception("Couldn't load retakes plugin event sender capability");
+        }
+        RetakesPluginEventSender = sender;
+        return sender;
+    }
+
+    private void RetakesEventHandler(object? _, IRetakesPluginEvent @event)
+    {
+        Log.Trace("Got retakes event");
+        Action? handler = @event switch
+        {
+            AllocateEvent => HandleAllocateEvent,
+            _ => null
+        };
+        handler?.Invoke();
     }
 
     #endregion
@@ -448,14 +488,8 @@ public class RetakesAllocator : BasePlugin
         return HookResult.Continue;
     }
 
-    [GameEventHandler]
-    public HookResult OnRoundPostStart(EventRoundPoststart @event, GameEventInfo info)
-    {
-        if (Helpers.IsWarmup())
-        {
-            return HookResult.Continue;
-        }
-
+    private void HandleAllocateEvent() {
+        Log.Trace("Handling allocate event");
         Server.ExecuteCommand("mp_max_armor 0");
 
         var menu = _menuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);
@@ -486,8 +520,6 @@ public class RetakesAllocator : BasePlugin
                 $"{MessagePrefix}{message}"
             );
         }
-
-        return HookResult.Continue;
     }
 
     #endregion
