@@ -489,7 +489,7 @@ public class RetakesAllocator : BasePlugin
     }
 
     private void HandleAllocateEvent() {
-        Console.WriteLine("****************************************");
+        Log.Trace("Handling allocate event");
         Server.ExecuteCommand("mp_max_armor 0");
 
         var menu = _menuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);
