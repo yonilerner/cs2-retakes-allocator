@@ -146,7 +146,7 @@ public static class Helpers
 
             // Log.Write($"Removing weapon {weapon.Value.DesignerName} {weapon.IsValid}");
 
-            player.PlayerPawn.Value.RemovePlayerItem(weapon.Value);
+            Utilities.RemoveItemByDesignerName(player, weapon.Value.ToString()!, true);
             weapon.Value.Remove();
 
             removed = true;
