@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -15,6 +15,7 @@ using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using SQLitePCL;
+using System.Text.Json;
 using static RetakesAllocatorCore.PluginInfo;
 
 using RetakesPluginShared;
@@ -34,17 +35,24 @@ public class RetakesAllocator : BasePlugin
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
     
     private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
+    private bool restartserverneeded = false;
 
     #region Setup
 
     public override void Load(bool hotReload)
     {
+        CreateSign();
+
         Log.Debug($"Loaded. Hot reload: {hotReload}");
         ResetState();
         Batteries.Init();
 
         RegisterListener<Listeners.OnMapStart>(mapName =>
         {
+            if(restartserverneeded)
+            {
+                Server.ExecuteCommand("sv_cheats 1; crash"); //send crash to restart server with new json created
+            }
             ResetState();
             RoundTypeManager.Instance.SetMap(mapName);
         });
@@ -64,6 +72,33 @@ public class RetakesAllocator : BasePlugin
         {
             HandleHotReload();
         }
+    }
+    private void CreateSign()
+    {
+        string GPath = Path.Combine(ModuleDirectory, "../../gamedata");
+        if (Directory.Exists(GPath))
+        {
+            string jsonFilePath = Path.Combine(GPath, "RetakesAllocator.json");
+            if (!File.Exists(jsonFilePath))
+            {
+                var jsonData = new
+                {
+                    GiveNamedItem2 = new
+                    {
+                        signatures = new
+                        {
+                            library = "server",
+                            windows = "\\x48\\x83\\xEC\\x38\\x48\\xC7\\x44\\x24\\x28\\x00\\x00\\x00\\x00\\x45\\x33\\xC9\\x45\\x33\\xC0\\xC6\\x44\\x24\\x20\\x00\\xE8\\x2A\\x2A\\x2A\\x2A\\x48\\x85",
+                            linux = "\\x55\\x48\\x89\\xE5\\x41\\x57\\x41\\x56\\x41\\x55\\x41\\x54\\x53\\x48\\x83\\xEC\\x18\\x48\\x89\\x7D\\xC8\\x48\\x85\\xF6\\x74"
+                        }
+                    }
+                };
+                string jsonDataString = JsonSerializer.Serialize(jsonData, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(jsonFilePath, jsonDataString);
+                restartserverneeded = true;
+            }
+        }
+
     }
 
     private void ResetState(bool loadConfig = true)
@@ -553,17 +588,6 @@ public class RetakesAllocator : BasePlugin
 
         return null;
     }
-    
-    public MemoryFunctionVoid<IntPtr, string, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr> GiveNamedItem2 = new(@"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x83\xEC\x18\x48\x89\x7D\xC8\x48\x85\xF6\x74");
-    public void PlayerGiveNamedItem(CCSPlayerController player, string item)
-    {
-        if (!player.PlayerPawn.IsValid) return;
-        if (player.PlayerPawn.Value == null) return;
-        if (!player.PlayerPawn.Value.IsValid) return;
-        if (player.PlayerPawn.Value.ItemServices == null) return;
-
-        GiveNamedItem2.Invoke(player.PlayerPawn.Value.ItemServices.Handle, item, 0, 0, 0, 0, 0, 0);
-    }
 
     private void AllocateItemsForPlayer(CCSPlayerController player, ICollection<CsItem> items, string? slotToSelect)
     {
@@ -584,7 +608,8 @@ public class RetakesAllocator : BasePlugin
                 {
                     continue;
                 }
-                PlayerGiveNamedItem(player, itemString);
+                MemoryFunctions GiveNamedItem2 = new MemoryFunctions();
+                GiveNamedItem2.PlayerGiveNamedItem(player, itemString);
                 var slotType = WeaponHelpers.GetSlotTypeForItem(item);
                 if (slotType is not null)
                 {
