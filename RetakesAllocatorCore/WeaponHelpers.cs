@@ -48,7 +48,6 @@ public static class WeaponHelpers
 
     private static readonly ICollection<CsItem> _ctPistols = new HashSet<CsItem>
     {
-        CsItem.USP,
         CsItem.USPS,
         CsItem.P2000,
         CsItem.FiveSeven,
