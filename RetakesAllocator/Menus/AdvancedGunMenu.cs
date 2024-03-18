@@ -594,7 +594,7 @@ public class AdvancedGunMenu
             }
         }
     }
-    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    public HookResult OnEventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
         if (@event == null) return HookResult.Continue;
         var player = @event.Userid;
