@@ -59,7 +59,6 @@ public class RetakesAllocator : BasePlugin
             RoundTypeManager.Instance.SetMap(mapName);
         });
 
-        AddCommandListener("say", OnPlayerChat, HookMode.Post);
         RegisterListener<Listeners.OnTick>(OnTick);
         
         AddTimer(0.1f, () =>
@@ -168,45 +167,6 @@ public class RetakesAllocator : BasePlugin
 
     private void RegisterCommands()
     {
-    }
-
-    
-
-    private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo info)
-    {
-        if (!Helpers.PlayerIsValid(player))
-        {
-            return HookResult.Continue;
-        }
-
-        var message = info.ArgByIndex(1).ToLower();
-        
-        switch (message)
-        {
-            case "guns":
-                HandleGunsCommand(player, info);
-                break;
-        }
-
-        return HookResult.Continue;
-    }
-
-    [ConsoleCommand("css_guns")]
-    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-    public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
-    {
-        HandleGunsCommand(player, commandInfo);
-    }
-
-    private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
-    {
-        if (!Helpers.PlayerIsValid(player))
-        {
-            commandInfo.ReplyToCommand($"{MessagePrefix}This command can only be executed by a valid player.");
-            return;
-        }
-
-        _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
     }
 
     [ConsoleCommand("css_nextround", "Opens the menu to vote for the next round type.")]
@@ -577,10 +537,30 @@ public class RetakesAllocator : BasePlugin
         return HookResult.Continue;
     }
     
-    [GameEventHandler]
+    [GameEventHandler(HookMode.Post)]
     public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
     {
+        if(@event == null)return HookResult.Continue;
         _advancedGunMenu.OnEventPlayerChat(@event, info);
+
+        if(string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands))return HookResult.Continue;
+        var eventplayer = @event.Userid;
+        var eventmessage = @event.Text;
+        var player = Utilities.GetPlayerFromUserid(@event.Userid);
+        
+        if (player == null || !player.IsValid)return HookResult.Continue;
+        var playerid = player.SteamID;
+
+        if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
+        string trimmedMessageStart = eventmessage.TrimStart();
+        string message = trimmedMessageStart.TrimEnd();
+        string[] ChatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
+
+        if (ChatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
+        {
+            _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
+        }
+
         return HookResult.Continue;
     }
 
