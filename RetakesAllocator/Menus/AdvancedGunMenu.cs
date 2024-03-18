@@ -22,7 +22,7 @@ public class AdvancedGunMenu
         if(string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands) || @event == null)return HookResult.Continue;
         var eventplayer = @event.Userid;
         var eventmessage = @event.Text;
-        var player = Utilities.GetPlayerFromUserid(@event.Userid);
+        var player = Utilities.GetPlayerFromUserid(eventplayer);
         
         if (player == null || !player.IsValid)return HookResult.Continue;
         var playerid = player.SteamID;
