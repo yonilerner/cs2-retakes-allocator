@@ -7,7 +7,6 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
-using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Managers;
 using RetakesAllocator.Menus;
@@ -16,7 +15,6 @@ using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using SQLitePCL;
 using System.Text.Json;
-using System.Text;
 using RetakesAllocator.AdvancedMenus;
 
 using static RetakesAllocatorCore.PluginInfo;
