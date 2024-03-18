@@ -19,7 +19,7 @@ public class AdvancedGunMenu
 
     public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
     {
-        if(string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCommands) || @event == null)return HookResult.Continue;
+        if(string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands) || @event == null)return HookResult.Continue;
         var eventplayer = @event.Userid;
         var eventmessage = @event.Text;
         var player = Utilities.GetPlayerFromUserid(@event.Userid);
@@ -30,9 +30,9 @@ public class AdvancedGunMenu
         if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
         string trimmedMessageStart = eventmessage.TrimStart();
         string message = trimmedMessageStart.TrimEnd();
-        string[] MenuCommands = Configs.GetConfigData().InGameGunMenuCommands.Split(',');
+        string[] CenterMenuCommands = Configs.GetConfigData().InGameGunMenuCenterCommands.Split(',');
 
-        if (MenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
+        if (CenterMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
         {
             if (!menuon.ContainsKey(playerid))
             {
