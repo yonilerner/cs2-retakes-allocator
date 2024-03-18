@@ -34,6 +34,7 @@ public class RetakesAllocator : BasePlugin
 
     private readonly MenuManager _menuManager = new();
     private readonly AdvancedGunMenu _advancedGunMenu = new();
+    private readonly MemoryFunctions _memoryFunctions = new();
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
     private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
     private bool restartserverneeded = false;
@@ -625,8 +626,7 @@ public class RetakesAllocator : BasePlugin
                 {
                     continue;
                 }
-                MemoryFunctions GiveNamedItem2 = new MemoryFunctions();
-                GiveNamedItem2.PlayerGiveNamedItem(player, itemString);
+                _memoryFunctions.PlayerGiveNamedItem(player, itemString);
                 var slotType = WeaponHelpers.GetSlotTypeForItem(item);
                 if (slotType is not null)
                 {
