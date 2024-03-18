@@ -59,7 +59,7 @@ public class AdvancedGunMenu
         var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
         foreach (var player in playerEntities)
         {
-            if (player == null || !player.IsValid || player.IsBot || player.IsHLTV) continue;
+            if (player == null || !player.IsValid || !player.PawnIsAlive || player.IsBot || player.IsHLTV) continue;
             
             var playerid = player.SteamID;
             if (menuon.ContainsKey(playerid))
