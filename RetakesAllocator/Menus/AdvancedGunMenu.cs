@@ -34,7 +34,6 @@ public class AdvancedGunMenu
 
         if (MenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
         {
-            var retakesAllocator = new RetakesAllocator();
             if (!menuon.ContainsKey(playerid))
             {
                 menuon.Add(playerid, true);
