@@ -72,11 +72,10 @@ public class RetakesAllocator : BasePlugin
         {
             HandleHotReload();
         }
-        RetakesAllocator retakesAllocatorInstance = new RetakesAllocator();
-        AdvancedGunMenu advancedGunMenuInstance = new AdvancedGunMenu(retakesAllocatorInstance);
-        RegisterListener<Listeners.OnTick>(advancedGunMenuInstance.OnTick);
-        RegisterEventHandler<EventPlayerDisconnect>(advancedGunMenuInstance.OnPlayerDisconnect);
-        RegisterEventHandler<EventPlayerChat>(advancedGunMenuInstance.OnEventPlayerChat);
+        AdvancedGunMenu advancedGunMenu = new AdvancedGunMenu();
+        RegisterListener<Listeners.OnTick>(advancedGunMenu.OnTick);
+        RegisterEventHandler<EventPlayerDisconnect>(advancedGunMenu.OnPlayerDisconnect);
+        RegisterEventHandler<EventPlayerChat>(advancedGunMenu.OnEventPlayerChat);
     }
     
     private void CreateSign()
