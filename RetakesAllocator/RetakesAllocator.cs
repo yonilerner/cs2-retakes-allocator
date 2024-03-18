@@ -563,6 +563,14 @@ public class RetakesAllocator : BasePlugin
 
         return HookResult.Continue;
     }
+    
+    [GameEventHandler]
+    public HookResult OnEventRoundAnnounceWarmup(EventRoundAnnounceWarmup @event, GameEventInfo info)
+    {
+        if(!Configs.GetConfigData().ResetStateOnGameRestart || @event == null)return HookResult.Continue;
+        ResetState();
+        return HookResult.Continue;
+    }
 
     #endregion
 
