@@ -33,6 +33,7 @@ public class RetakesAllocator : BasePlugin
     public override string ModuleDescription => "https://github.com/yonilerner/cs2-retakes-allocator";
 
     private readonly MenuManager _menuManager = new();
+    private readonly AdvancedGunMenu _advancedGunMenu = new();
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
     private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
     private bool restartserverneeded = false;
@@ -56,8 +57,10 @@ public class RetakesAllocator : BasePlugin
             ResetState();
             RoundTypeManager.Instance.SetMap(mapName);
         });
-        AddCommandListener("say", OnPlayerChat, HookMode.Post);
 
+        AddCommandListener("say", OnPlayerChat, HookMode.Post);
+        RegisterListener<Listeners.OnTick>(OnTick);
+        
         AddTimer(0.1f, () =>
         {
             GetRetakesPluginEventSender().RetakesPluginEventHandlers += RetakesEventHandler;
@@ -72,12 +75,8 @@ public class RetakesAllocator : BasePlugin
         {
             HandleHotReload();
         }
-        AdvancedGunMenu advancedGunMenu = new AdvancedGunMenu();
-        RegisterListener<Listeners.OnTick>(advancedGunMenu.OnTick);
-        RegisterEventHandler<EventPlayerDisconnect>(advancedGunMenu.OnPlayerDisconnect);
-        RegisterEventHandler<EventPlayerChat>(advancedGunMenu.OnEventPlayerChat);
+        
     }
-    
     private void CreateSign()
     {
         string GPath = Path.Combine(ModuleDirectory, "../../gamedata");
@@ -556,6 +555,25 @@ public class RetakesAllocator : BasePlugin
                 $"{MessagePrefix}{message}"
             );
         }
+    }
+    
+    public void OnTick()
+    {
+        _advancedGunMenu.OnTick();
+    }
+
+    [GameEventHandler]
+    public HookResult OnEventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+        _advancedGunMenu.OnEventPlayerDisconnect(@event, info);
+        return HookResult.Continue;
+    }
+    
+    [GameEventHandler]
+    public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
+    {
+        _advancedGunMenu.OnEventPlayerChat(@event, info);
+        return HookResult.Continue;
     }
 
     #endregion
