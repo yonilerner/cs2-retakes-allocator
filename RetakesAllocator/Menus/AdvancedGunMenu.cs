@@ -12,11 +12,6 @@ namespace RetakesAllocator.AdvancedMenus;
 
 public class AdvancedGunMenu
 {
-    private RetakesAllocator retakesAllocatorInstance;
-    public AdvancedGunMenu(RetakesAllocator allocatorInstance)
-    {
-        this.retakesAllocatorInstance = allocatorInstance;
-    }
     public Dictionary<ulong, bool> menuon = new Dictionary<ulong, bool>();
     public Dictionary<ulong, int> mainmenu = new Dictionary<ulong, int>();
     public Dictionary<ulong, int> currentIndexDict = new Dictionary<ulong, int>();
