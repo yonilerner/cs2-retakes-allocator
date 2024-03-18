@@ -16,6 +16,9 @@ using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using SQLitePCL;
 using System.Text.Json;
+using System.Text;
+using RetakesAllocator.AdvancedMenus;
+
 using static RetakesAllocatorCore.PluginInfo;
 
 using RetakesPluginShared;
@@ -28,12 +31,11 @@ public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
     public override string ModuleVersion => PluginInfo.Version;
-    public override string ModuleAuthor => "Yoni Lerner";
+    public override string ModuleAuthor => "Yoni Lerner, Gold KingZ";
     public override string ModuleDescription => "https://github.com/yonilerner/cs2-retakes-allocator";
 
     private readonly MenuManager _menuManager = new();
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
-    
     private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
     private bool restartserverneeded = false;
 
@@ -72,7 +74,13 @@ public class RetakesAllocator : BasePlugin
         {
             HandleHotReload();
         }
+        RetakesAllocator retakesAllocatorInstance = new RetakesAllocator();
+        AdvancedGunMenu advancedGunMenuInstance = new AdvancedGunMenu(retakesAllocatorInstance);
+        RegisterListener<Listeners.OnTick>(advancedGunMenuInstance.OnTick);
+        RegisterEventHandler<EventPlayerDisconnect>(advancedGunMenuInstance.OnPlayerDisconnect);
+        RegisterEventHandler<EventPlayerChat>(advancedGunMenuInstance.OnEventPlayerChat);
     }
+    
     private void CreateSign()
     {
         string GPath = Path.Combine(ModuleDirectory, "../../gamedata");
@@ -121,7 +129,6 @@ public class RetakesAllocator : BasePlugin
     {
         Server.ExecuteCommand($"map {Server.MapName}");
     }
-
     public override void Unload(bool hotReload)
     {
         Log.Debug("Unloaded");
@@ -166,6 +173,8 @@ public class RetakesAllocator : BasePlugin
     {
     }
 
+    
+
     private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo info)
     {
         if (!Helpers.PlayerIsValid(player))
@@ -174,7 +183,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         var message = info.ArgByIndex(1).ToLower();
-
+        
         switch (message)
         {
             case "guns":
@@ -183,13 +192,6 @@ public class RetakesAllocator : BasePlugin
         }
 
         return HookResult.Continue;
-    }
-
-    [ConsoleCommand("css_guns")]
-    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-    public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
-    {
-        HandleGunsCommand(player, commandInfo);
     }
 
     private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
