@@ -191,6 +191,13 @@ public class RetakesAllocator : BasePlugin
         return HookResult.Continue;
     }
 
+    [ConsoleCommand("css_guns")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        HandleGunsCommand(player, commandInfo);
+    }
+
     private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (!Helpers.PlayerIsValid(player))
