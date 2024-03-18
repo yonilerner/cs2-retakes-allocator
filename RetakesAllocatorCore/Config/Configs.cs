@@ -187,6 +187,7 @@ public record ConfigData
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
     public string ChatMessagePluginName { get; set; } = "Retakes";
+    public string InGameGunMenuCommands { get; set; } = "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns";
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
