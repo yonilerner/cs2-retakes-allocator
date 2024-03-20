@@ -302,13 +302,13 @@ public class GunsMenu: AbstractBaseMenu
     }
 
     // TODO This is temporary until this menu knows about the current round
-    private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon,
+    public static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon,
         bool remove = false)
     {
         HandlePreferenceSelection(player, team, weapon, null, remove);
     }
 
-    private static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon,
+    public static void HandlePreferenceSelection(CCSPlayerController player, CsTeam team, string weapon,
         RoundType? roundTypeOverride,
         bool remove = false)
     {

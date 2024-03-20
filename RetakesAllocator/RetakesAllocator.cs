@@ -7,7 +7,6 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
-using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Managers;
 using RetakesAllocator.Menus;
@@ -16,6 +15,8 @@ using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using SQLitePCL;
 using System.Text.Json;
+using RetakesAllocator.AdvancedMenus;
+
 using static RetakesAllocatorCore.PluginInfo;
 
 using RetakesPluginShared;
@@ -28,12 +29,13 @@ public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
     public override string ModuleVersion => PluginInfo.Version;
-    public override string ModuleAuthor => "Yoni Lerner";
+    public override string ModuleAuthor => "Yoni Lerner, Gold KingZ";
     public override string ModuleDescription => "https://github.com/yonilerner/cs2-retakes-allocator";
 
     private readonly MenuManager _menuManager = new();
+    private readonly AdvancedGunMenu _advancedGunMenu = new();
+    private readonly MemoryFunctions _memoryFunctions = new();
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
-    
     private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
     private bool restartserverneeded = false;
 
@@ -56,8 +58,9 @@ public class RetakesAllocator : BasePlugin
             ResetState();
             RoundTypeManager.Instance.SetMap(mapName);
         });
-        AddCommandListener("say", OnPlayerChat, HookMode.Post);
 
+        RegisterListener<Listeners.OnTick>(OnTick);
+        
         AddTimer(0.1f, () =>
         {
             GetRetakesPluginEventSender().RetakesPluginEventHandlers += RetakesEventHandler;
@@ -72,6 +75,7 @@ public class RetakesAllocator : BasePlugin
         {
             HandleHotReload();
         }
+        
     }
     private void CreateSign()
     {
@@ -121,7 +125,6 @@ public class RetakesAllocator : BasePlugin
     {
         Server.ExecuteCommand($"map {Server.MapName}");
     }
-
     public override void Unload(bool hotReload)
     {
         Log.Debug("Unloaded");
@@ -164,43 +167,6 @@ public class RetakesAllocator : BasePlugin
 
     private void RegisterCommands()
     {
-    }
-
-    private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo info)
-    {
-        if (!Helpers.PlayerIsValid(player))
-        {
-            return HookResult.Continue;
-        }
-
-        var message = info.ArgByIndex(1).ToLower();
-
-        switch (message)
-        {
-            case "guns":
-                HandleGunsCommand(player, info);
-                break;
-        }
-
-        return HookResult.Continue;
-    }
-
-    [ConsoleCommand("css_guns")]
-    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-    public void OnGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
-    {
-        HandleGunsCommand(player, commandInfo);
-    }
-
-    private void HandleGunsCommand(CCSPlayerController? player, CommandInfo commandInfo)
-    {
-        if (!Helpers.PlayerIsValid(player))
-        {
-            commandInfo.ReplyToCommand($"{MessagePrefix}This command can only be executed by a valid player.");
-            return;
-        }
-
-        _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
     }
 
     [ConsoleCommand("css_nextround", "Opens the menu to vote for the next round type.")]
@@ -558,6 +524,53 @@ public class RetakesAllocator : BasePlugin
             );
         }
     }
+    
+    public void OnTick()
+    {
+        _advancedGunMenu.OnTick();
+    }
+
+    [GameEventHandler]
+    public HookResult OnEventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+        _advancedGunMenu.OnEventPlayerDisconnect(@event, info);
+        return HookResult.Continue;
+    }
+    
+    [GameEventHandler(HookMode.Post)]
+    public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
+    {
+        if(@event == null)return HookResult.Continue;
+        _advancedGunMenu.OnEventPlayerChat(@event, info);
+
+        if(string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands))return HookResult.Continue;
+        var eventplayer = @event.Userid;
+        var eventmessage = @event.Text;
+        var player = Utilities.GetPlayerFromUserid(eventplayer);
+        
+        if (player == null || !player.IsValid)return HookResult.Continue;
+        var playerid = player.SteamID;
+
+        if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
+        string trimmedMessageStart = eventmessage.TrimStart();
+        string message = trimmedMessageStart.TrimEnd();
+        string[] ChatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
+
+        if (ChatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
+        {
+            _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
+        }
+
+        return HookResult.Continue;
+    }
+    
+    [GameEventHandler]
+    public HookResult OnEventRoundAnnounceWarmup(EventRoundAnnounceWarmup @event, GameEventInfo info)
+    {
+        if(!Configs.GetConfigData().ResetStateOnGameRestart || @event == null)return HookResult.Continue;
+        ResetState();
+        return HookResult.Continue;
+    }
 
     #endregion
 
@@ -608,8 +621,7 @@ public class RetakesAllocator : BasePlugin
                 {
                     continue;
                 }
-                MemoryFunctions GiveNamedItem2 = new MemoryFunctions();
-                GiveNamedItem2.PlayerGiveNamedItem(player, itemString);
+                _memoryFunctions.PlayerGiveNamedItem(player, itemString);
                 var slotType = WeaponHelpers.GetSlotTypeForItem(item);
                 if (slotType is not null)
                 {

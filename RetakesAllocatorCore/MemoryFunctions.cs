@@ -1,6 +1,8 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 
+namespace RetakesAllocatorCore;
+
 public class MemoryFunctions
 {
     public MemoryFunctionVoid<IntPtr, string, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr> GiveNamedItem2 = new(GameData.GetSignature("GiveNamedItem2"));
