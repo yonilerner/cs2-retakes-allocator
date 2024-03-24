@@ -67,6 +67,7 @@ public class AdvancedGunMenu
                 string Imageleft = string.IsNullOrEmpty(Translator.Instance["menu.left.image"]) ? "" : Translator.Instance["menu.left.image"];
                 string ImageRight = string.IsNullOrEmpty(Translator.Instance["menu.right.image"]) ? "" : Translator.Instance["menu.right.image"];
                 string BottomMenu = string.IsNullOrEmpty(Translator.Instance["menu.bottom.text"]) ? "" : Translator.Instance["menu.bottom.text"];
+                string BottomMenuOnpistol = string.IsNullOrEmpty(Translator.Instance["menu.bottom.text.pistol"]) ? "" : Translator.Instance["menu.bottom.text.pistol"];
 
                 string[] Main = { 
                     string.IsNullOrEmpty(Translator.Instance["menu.main.tloadout"]) ? "█░ T Loadout ░█" : Translator.Instance["menu.main.tloadout"], 
@@ -463,6 +464,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{Tloadout[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenu);
                     }
                     if(mainmenu[playerid] == 5)
                     {
@@ -478,6 +480,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{CTloadout[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenu);
                     }
                     if(mainmenu[playerid] == 9)
                     {
@@ -493,6 +496,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{AWP[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenu);
                     }
 
                     if(mainmenu[playerid] == 2)
@@ -509,6 +513,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{TFullBuy[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenu);
                     }
                     if(mainmenu[playerid] == 3)
                     {
@@ -524,6 +529,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{TSecondary[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenuOnpistol);
                     }
                     if(mainmenu[playerid] == 4)
                     {
@@ -539,6 +545,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{TPistolRound[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenuOnpistol);
                     }
 
                     if(mainmenu[playerid] == 6)
@@ -555,6 +562,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{CTFullBuy[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenu);
                     }
                     if(mainmenu[playerid] == 7)
                     {
@@ -570,6 +578,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{CTSecondary[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenuOnpistol);
                     }
                     if(mainmenu[playerid] == 8)
                     {
@@ -585,6 +594,7 @@ public class AdvancedGunMenu
                                 builder.AppendLine($"<font color='white'>{CTPistolRound[i]}</font><br>");
                             }
                         }
+                        builder.AppendLine(BottomMenuOnpistol);
                     }
                     
                 }
