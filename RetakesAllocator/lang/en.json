@@ -21,8 +21,8 @@
   "menu.awp.always": "Always",
   "menu.awp.never": "Never",
 
-  "menu.left.image": "<img src='https://github.com/yonilerner/cs2-retakes-allocator/Resources/blob/main/imgs/left.gif?raw=true' class=''>",
-  "menu.right.image": "<img src='https://github.com/yonilerner/cs2-retakes-allocator/Resources/blob/main/imgs/right.gif?raw=true' class=''>",
-  "menu.bottom.text": "<br>           <font color='cyan'>[ WASD - To Native ]</font> <br><font color='purple'>[ <img src='https://github.com/yonilerner/cs2-retakes-allocator/Resources/blob/main/imgs/tab.gif?raw=true' class=''> - To Exit ]<br>",
-  "menu.bottom.text.pistol": "<font color='purple'>[ <img src='https://github.com/yonilerner/cs2-retakes-allocator/Resources/blob/main/imgs/tab.gif?raw=true' class=''> - To Exit ]<br>"
+  "menu.left.image": "<img src='https://github.com/yonilerner/cs2-retakes-allocator/blob/Resources/main/imgs/left.gif?raw=true' class=''>",
+  "menu.right.image": "<img src='https://github.com/yonilerner/cs2-retakes-allocator/blob/Resources/main/imgs/right.gif?raw=true' class=''>",
+  "menu.bottom.text": "<br>           <font color='cyan'>[ WASD - To Native ]</font> <br><font color='purple'>[ <img src='https://github.com/yonilerner/cs2-retakes-allocator/blob/Resources/main/imgs/tab.gif?raw=true' class=''> - To Exit ]<br>",
+  "menu.bottom.text.pistol": "<font color='purple'>[ <img src='https://github.com/yonilerner/cs2-retakes-allocator/blob/Resources/main/imgs/tab.gif?raw=true' class=''> - To Exit ]<br>"
 }
