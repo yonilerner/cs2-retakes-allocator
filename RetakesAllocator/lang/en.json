@@ -21,8 +21,8 @@
   "menu.awp.always": "Always",
   "menu.awp.never": "Never",
 
-  "menu.left.image": "<img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/833de57afa504b8e596425ab2cd828456b14176a/Resources/left.gif' class=''>",
-  "menu.right.image": "<img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/833de57afa504b8e596425ab2cd828456b14176a/Resources/right.gif' class=''>",
-  "menu.bottom.text": "<br>           <font color='cyan'>[ WASD - To Native ]</font> <br><font color='purple'>[ <img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/833de57afa504b8e596425ab2cd828456b14176a/Resources/tab.gif' class=''> - To Exit ]<br>",
-  "menu.bottom.text.pistol": "<font color='purple'>[ <img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/833de57afa504b8e596425ab2cd828456b14176a/Resources/tab.gif' class=''> - To Exit ]<br>"
+  "menu.left.image": "<img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/left.gif' class=''>",
+  "menu.right.image": "<img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/right.gif' class=''>",
+  "menu.bottom.text": "<br>           <font color='cyan'>[ WASD - To Native ]</font> <br><font color='purple'>[ <img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/tab.gif' class=''> - To Exit ]<br>",
+  "menu.bottom.text.pistol": "<font color='purple'>[ <img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/tab.gif' class=''> - To Exit ]<br>"
 }
