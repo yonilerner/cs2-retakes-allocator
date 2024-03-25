@@ -1,7 +1,7 @@
 ﻿#!/usr/bin/env bash
 
 TARGET_NAME="RetakesAllocator"
-TARGET_DIR="./bin/Release/net7.0"
+TARGET_DIR="./bin/Release/net8.0"
 NEW_DIR="./bin/Release/RetakesAllocator"
 
 echo $TARGET_NAME
