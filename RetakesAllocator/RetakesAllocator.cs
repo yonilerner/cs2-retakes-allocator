@@ -22,7 +22,7 @@ using RetakesPluginShared.Events;
 
 namespace RetakesAllocator;
 
-[MinimumApiVersion(180)]
+[MinimumApiVersion(201)]
 public class RetakesAllocator : BasePlugin
 {
     public override string ModuleName => "Retakes Allocator Plugin";
