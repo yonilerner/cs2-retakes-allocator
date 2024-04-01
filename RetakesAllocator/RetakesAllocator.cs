@@ -182,7 +182,7 @@ public class RetakesAllocator : BasePlugin
             false,
             out var selectedWeapon
         );
-        Helpers.WriteNewlineDelimited(result, l => commandInfo.ReplyToCommand(l));
+        Helpers.WriteNewlineDelimited(result, commandInfo.ReplyToCommand);
 
         if (Helpers.IsWeaponAllocationAllowed() && selectedWeapon is not null)
         {
@@ -225,24 +225,20 @@ public class RetakesAllocator : BasePlugin
 
         var currentTeam = player!.Team;
 
-        Task.Run(async () =>
+        var result = Task.Run(async () =>
         {
             var currentPreferredSetting = (await Queries.GetUserSettings(playerId))
                 ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
 
-            var result = OnWeaponCommandHelper.Handle(
+            return await OnWeaponCommandHelper.HandleAsync(
                 new List<string> {CsItem.AWP.ToString()},
                 playerId,
                 RoundTypeManager.Instance.GetCurrentRoundType(),
                 currentTeam,
-                currentPreferredSetting is not null,
-                out _
+                currentPreferredSetting is not null
             );
-            await Server.NextFrameAsync(() =>
-            {
-                Helpers.WriteNewlineDelimited(result, commandInfo.ReplyToCommand);
-            });
-        });
+        }).Result;
+        Helpers.WriteNewlineDelimited(result.Item1, commandInfo.ReplyToCommand);
     }
 
     [ConsoleCommand("css_removegun")]
