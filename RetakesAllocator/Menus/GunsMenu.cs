@@ -257,6 +257,68 @@ public class GunsMenu: AbstractBaseMenu
         player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Pistol Round Weapon!");
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
+        OpenTHalfBuyMenu(player);
+    }
+
+    private void OpenTHalfBuyMenu(CCSPlayerController player)
+    {
+        var menu = new ChatMenu($"{MessagePrefix} Select a T Half Buy Weapon");
+
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary,
+                     CsTeam.Terrorist))
+        {
+            menu.AddMenuOption(weapon.GetName(), OnTHalfBuySelect);
+        }
+
+        menu.AddMenuOption("Exit", OnSelectExit);
+        
+        ChatMenus.OpenMenu(player, menu);
+        CreateMenuTimeoutTimer(player);
+    }
+    
+    private void OnTHalfBuySelect(CCSPlayerController player, ChatMenuOption option)
+    {
+        if (!PlayersInMenu.Contains(player))
+        {
+            return;
+        }
+
+        var weaponName = option.Text;
+
+        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Half Buy Weapon!");
+        HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
+
+        OpenCTHalfBuyMenu(player);
+    }
+    
+    private void OpenCTHalfBuyMenu(CCSPlayerController player)
+    {
+        var menu = new ChatMenu($"{MessagePrefix} Select a CT Half Buy Weapon");
+
+        foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary,
+                     CsTeam.CounterTerrorist))
+        {
+            menu.AddMenuOption(weapon.GetName(), OnCTHalfBuySelect);
+        }
+
+        menu.AddMenuOption("Exit", OnSelectExit);
+        
+        ChatMenus.OpenMenu(player, menu);
+        CreateMenuTimeoutTimer(player);
+    }
+    
+    private void OnCTHalfBuySelect(CCSPlayerController player, ChatMenuOption option)
+    {
+        if (!PlayersInMenu.Contains(player))
+        {
+            return;
+        }
+
+        var weaponName = option.Text;
+
+        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Half Buy Weapon!");
+        HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
+
         OpenGiveAwpMenu(player);
     }
 
