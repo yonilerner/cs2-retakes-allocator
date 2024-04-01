@@ -63,7 +63,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         CustomFunctions = new();
-        // CustomFunctions.CCSPlayer_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
+        CustomFunctions.CCSPlayer_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
 
         if (hotReload)
         {
@@ -99,7 +99,7 @@ public class RetakesAllocator : BasePlugin
         Queries.Disconnect();
 
         GetRetakesPluginEventSender().RetakesPluginEventHandlers -= RetakesEventHandler;
-        // CustomFunctions.CCSPlayer_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
+        CustomFunctions.CCSPlayer_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
     }
 
     private IRetakesPluginEventSender GetRetakesPluginEventSender()
@@ -301,7 +301,6 @@ public class RetakesAllocator : BasePlugin
     // NOT READY
     public HookResult OnWeaponCanAcquire(DynamicHook hook)
     {
-        return HookResult.Continue;
         // Log.Debug($"OnWeaponCanAcquire enter {IsAllocatingForRound}");
         if (IsAllocatingForRound)
         {
@@ -330,14 +329,14 @@ public class RetakesAllocator : BasePlugin
         var player = hook.GetParam<CCSPlayer_ItemServices>(0).Pawn.Value.Controller.Value?.As<CCSPlayerController>();
         if (player is null || !player.IsValid || !player.PawnIsAlive)
         {
-            // Log.Debug($"Invalid player controller {player} {player?.IsValid} {player?.PawnIsAlive}");
+            Log.Debug($"Invalid player controller {player} {player?.IsValid} {player?.PawnIsAlive}");
             return HookResult.Continue;
         }
 
         var playerId = Helpers.GetSteamId(player);
         if (playerId == 0)
         {
-            // Log.Debug($"Player not logged in {player}");
+            Log.Debug($"Player not logged in {player}");
             return retStop();
         }
 
@@ -345,6 +344,17 @@ public class RetakesAllocator : BasePlugin
         var item = Utils.ToEnum<CsItem>(weaponData.Name);
 
         if (item is CsItem.KnifeT or CsItem.KnifeCT)
+        {
+            return HookResult.Continue;
+        }
+
+        if (item is CsItem.Taser)
+        {
+            return Configs.GetConfigData().ZeusPreference == ZeusPreference.Always ? HookResult.Continue : retStop();
+        }
+
+        var slotType = WeaponHelpers.GetSlotTypeForItem(item);
+        if (GetPlayerRoundAllocation(player, slotType) == item)
         {
             return HookResult.Continue;
         }
@@ -375,7 +385,6 @@ public class RetakesAllocator : BasePlugin
                 purchasedAllocationType.Value,
                 item
             );
-            var slotType = WeaponHelpers.GetSlotTypeForItem(item);
             if (slotType is not null)
             {
                 SetPlayerRoundAllocation(player, slotType.Value, item);
@@ -393,15 +402,22 @@ public class RetakesAllocator : BasePlugin
             var itemName = Enum.GetName(item);
             if (itemName is not null)
             {
-                var message = OnWeaponCommandHelper.Handle(
-                    new List<string> {itemName},
-                    Helpers.GetSteamId(player),
-                    RoundTypeManager.Instance.GetCurrentRoundType(),
-                    team,
-                    false,
-                    out _
-                );
-                Helpers.WriteNewlineDelimited(message, player.PrintToChat);
+                try
+                {
+                    var message = OnWeaponCommandHelper.Handle(
+                        new List<string> {itemName},
+                        Helpers.GetSteamId(player),
+                        RoundTypeManager.Instance.GetCurrentRoundType(),
+                        team,
+                        false,
+                        out _
+                    );
+                    Helpers.WriteNewlineDelimited(message, player.PrintToChat);
+                }
+                catch
+                {
+                    Log.Warn($"Failed to set preference for {playerId} {team} {purchasedAllocationType} {item}");
+                }
             }
         }
 
@@ -411,6 +427,7 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
     {
+        return HookResult.Continue;
         var player = @event.Userid;
         if (Helpers.IsWarmup() || !Helpers.PlayerIsValid(player) || !player.PlayerPawn.IsValid)
         {
@@ -682,7 +699,7 @@ public class RetakesAllocator : BasePlugin
         }
 
         _allocatedPlayerItems[player][slotType] = item;
-        Log.Debug($"Round allocation for player {player.Slot} {slotType} {item}");
+        Log.Trace($"Round allocation for player {player.Slot} {slotType} {item}");
     }
 
     private CsItem? GetPlayerRoundAllocation(CCSPlayerController player, ItemSlotType? slotType)

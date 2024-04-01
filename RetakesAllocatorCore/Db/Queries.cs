@@ -18,10 +18,12 @@ public class Queries
             Log.Debug("Encountered userid 0, not upserting user settings");
             return null;
         }
+        
+        Log.Debug($"Upserting settings for {userId}");
 
         var instance = Db.GetInstance();
         var isNew = false;
-        var userSettings = await instance.UserSettings.FirstOrDefaultAsync(u => u.UserId == userId);
+        var userSettings = await instance.UserSettings.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId);
         if (userSettings is null)
         {
             userSettings = new UserSetting {UserId = userId};
@@ -38,8 +40,9 @@ public class Queries
 
         return userSettings;
     }
-    
-    public static async Task SetWeaponPreferenceForUserAsync(ulong userId, CsTeam team, WeaponAllocationType weaponAllocationType,
+
+    public static async Task SetWeaponPreferenceForUserAsync(ulong userId, CsTeam team,
+        WeaponAllocationType weaponAllocationType,
         CsItem? item)
     {
         await UpsertUserSettings(userId,
@@ -49,12 +52,9 @@ public class Queries
     public static void SetWeaponPreferenceForUser(ulong userId, CsTeam team, WeaponAllocationType weaponAllocationType,
         CsItem? item)
     {
-        Task.Run(async () =>
-        {
-            await SetWeaponPreferenceForUserAsync(userId, team, weaponAllocationType, item);
-        });
+        Task.Run(async () => { await SetWeaponPreferenceForUserAsync(userId, team, weaponAllocationType, item); });
     }
-    
+
     public static async Task ClearWeaponPreferencesForUserAsync(ulong userId)
     {
         await UpsertUserSettings(userId, userSetting => { userSetting.WeaponPreferences = new(); });
@@ -62,10 +62,7 @@ public class Queries
 
     public static void ClearWeaponPreferencesForUser(ulong userId)
     {
-        Task.Run(async () =>
-        {
-            await ClearWeaponPreferencesForUserAsync(userId);
-        });
+        Task.Run(async () => { await ClearWeaponPreferencesForUserAsync(userId); });
     }
 
     public static async Task SetPreferredWeaponPreferenceAsync(ulong userId, CsItem? item)
@@ -81,10 +78,7 @@ public class Queries
 
     public static void SetPreferredWeaponPreference(ulong userId, CsItem? item)
     {
-        Task.Run(async () =>
-        {
-            await SetPreferredWeaponPreferenceAsync(userId, item);
-        });
+        Task.Run(async () => { await SetPreferredWeaponPreferenceAsync(userId, item); });
     }
 
     public static IDictionary<ulong, UserSetting> GetUsersSettings(ICollection<ulong> userIds)
