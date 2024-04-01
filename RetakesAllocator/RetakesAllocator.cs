@@ -225,18 +225,24 @@ public class RetakesAllocator : BasePlugin
 
         var currentTeam = player!.Team;
 
-        var currentPreferredSetting = Queries.GetUserSettings(playerId)
-            ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
+        Task.Run(async () =>
+        {
+            var currentPreferredSetting = (await Queries.GetUserSettings(playerId))
+                ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
 
-        var result = OnWeaponCommandHelper.Handle(
-            new List<string> {CsItem.AWP.ToString()},
-            playerId,
-            RoundTypeManager.Instance.GetCurrentRoundType(),
-            currentTeam,
-            currentPreferredSetting is not null,
-            out _
-        );
-        Helpers.WriteNewlineDelimited(result, l => commandInfo.ReplyToCommand(l));
+            var result = OnWeaponCommandHelper.Handle(
+                new List<string> {CsItem.AWP.ToString()},
+                playerId,
+                RoundTypeManager.Instance.GetCurrentRoundType(),
+                currentTeam,
+                currentPreferredSetting is not null,
+                out _
+            );
+            await Server.NextFrameAsync(() =>
+            {
+                Helpers.WriteNewlineDelimited(result, commandInfo.ReplyToCommand);
+            });
+        });
     }
 
     [ConsoleCommand("css_removegun")]
