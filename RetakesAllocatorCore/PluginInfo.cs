@@ -5,7 +5,7 @@ namespace RetakesAllocatorCore;
 
 public static class PluginInfo
 {
-    public const string Version = "2.2.0";
+    public const string Version = "2.2.1";
 
     public static readonly string LogPrefix = $"[RetakesAllocator {Version}] ";
 
@@ -18,7 +18,7 @@ public static class PluginInfo
             {
                 if (Configs.GetConfigData().ChatMessagePluginPrefix is not null)
                 {
-                    return Configs.GetConfigData().ChatMessagePluginPrefix!;
+                    return Translator.Color(Configs.GetConfigData().ChatMessagePluginPrefix!);
                 }
 
                 name = Configs.GetConfigData().ChatMessagePluginName;

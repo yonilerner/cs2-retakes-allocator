@@ -47,29 +47,32 @@ public class Translator
             return key;
         }
 
-        var translation = localizedString.Value;
+        return isCenter ? localizedString.Value : Color(localizedString.Value);
+    }
 
-        return translation
-            .Replace("[GREEN]", isCenter ? "" : ChatColors.Green.ToString())
-            .Replace("[RED]", isCenter ? "" : ChatColors.Red.ToString())
-            .Replace("[YELLOW]", isCenter ? "" : ChatColors.Yellow.ToString())
-            .Replace("[BLUE]", isCenter ? "" : ChatColors.Blue.ToString())
-            .Replace("[PURPLE]", isCenter ? "" : ChatColors.Purple.ToString())
-            .Replace("[ORANGE]", isCenter ? "" : ChatColors.Orange.ToString())
-            .Replace("[WHITE]", isCenter ? "" : ChatColors.White.ToString())
-            .Replace("[NORMAL]", isCenter ? "" : ChatColors.White.ToString())
-            .Replace("[GREY]", isCenter ? "" : ChatColors.Grey.ToString())
-            .Replace("[LIGHT_RED]", isCenter ? "" : ChatColors.LightRed.ToString())
-            .Replace("[LIGHT_BLUE]", isCenter ? "" : ChatColors.LightBlue.ToString())
-            .Replace("[LIGHT_PURPLE]", isCenter ? "" : ChatColors.LightPurple.ToString())
-            .Replace("[LIGHT_YELLOW]", isCenter ? "" : ChatColors.LightYellow.ToString())
-            .Replace("[DARK_RED]", isCenter ? "" : ChatColors.DarkRed.ToString())
-            .Replace("[DARK_BLUE]", isCenter ? "" : ChatColors.DarkBlue.ToString())
-            .Replace("[BLUE_GREY]", isCenter ? "" : ChatColors.BlueGrey.ToString())
-            .Replace("[OLIVE]", isCenter ? "" : ChatColors.Olive.ToString())
-            .Replace("[LIME]", isCenter ? "" : ChatColors.Lime.ToString())
-            .Replace("[GOLD]", isCenter ? "" : ChatColors.Gold.ToString())
-            .Replace("[SILVER]", isCenter ? "" : ChatColors.Silver.ToString())
-            .Replace("[MAGENTA]", isCenter ? "" : ChatColors.Magenta.ToString());
+    public static string Color(string text)
+    {
+        return text
+            .Replace("[GREEN]", ChatColors.Green.ToString())
+            .Replace("[RED]", ChatColors.Red.ToString())
+            .Replace("[YELLOW]", ChatColors.Yellow.ToString())
+            .Replace("[BLUE]", ChatColors.Blue.ToString())
+            .Replace("[PURPLE]", ChatColors.Purple.ToString())
+            .Replace("[ORANGE]", ChatColors.Orange.ToString())
+            .Replace("[WHITE]", ChatColors.White.ToString())
+            .Replace("[NORMAL]", ChatColors.White.ToString())
+            .Replace("[GREY]", ChatColors.Grey.ToString())
+            .Replace("[LIGHT_RED]", ChatColors.LightRed.ToString())
+            .Replace("[LIGHT_BLUE]", ChatColors.LightBlue.ToString())
+            .Replace("[LIGHT_PURPLE]", ChatColors.LightPurple.ToString())
+            .Replace("[LIGHT_YELLOW]", ChatColors.LightYellow.ToString())
+            .Replace("[DARK_RED]", ChatColors.DarkRed.ToString())
+            .Replace("[DARK_BLUE]", ChatColors.DarkBlue.ToString())
+            .Replace("[BLUE_GREY]", ChatColors.BlueGrey.ToString())
+            .Replace("[OLIVE]", ChatColors.Olive.ToString())
+            .Replace("[LIME]", ChatColors.Lime.ToString())
+            .Replace("[GOLD]", ChatColors.Gold.ToString())
+            .Replace("[SILVER]", ChatColors.Silver.ToString())
+            .Replace("[MAGENTA]", ChatColors.Magenta.ToString());
     }
 }
