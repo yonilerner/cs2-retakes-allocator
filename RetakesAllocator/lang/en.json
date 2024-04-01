@@ -32,6 +32,9 @@
 
   "menu.timeout": "You did not interact with the menu in {0} seconds!",
   "menu.exit": "Exit",
+  "menu.already_in_menu": "You are already using another menu!",
+
+  "vote_menu.select_vote": "Select your vote!",
 
   "guns_menu.invalid_steam_id": "You cannot set weapon preferences with invalid Steam ID.",
   "guns_menu.complete": "You have finished setting up your weapons!\nThe weapons you have selected will be given to you at the start of the next round!",
