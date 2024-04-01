@@ -188,6 +188,7 @@ public record ConfigData
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
     public string ChatMessagePluginName { get; set; } = "Retakes";
+    public string? ChatMessagePluginPrefix { get; set; }
     public string InGameGunMenuCenterCommands { get; set; } = "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns";
     public string InGameGunMenuChatCommands { get; set; } = "guns,!guns";
 

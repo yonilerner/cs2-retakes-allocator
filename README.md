@@ -154,9 +154,13 @@ Here are the weapon configs:
 ```
 
 #### Nade Configuration
-- `MaxNades`: You can set the maximum number of each type of nade for each team and on each map (or default). By default the config includes some limits that you may want to change.
-The way `MaxNades` works is that the GLOBAL option sets the max for *all* maps, and then you can also specify subsets of the config for specific maps.
-For example, if your config is:
+
+- `MaxNades`: You can set the maximum number of each type of nade for each team and on each map (or default). By default
+  the config includes some limits that you may want to change.
+  The way `MaxNades` works is that the GLOBAL option sets the max for *all* maps, and then you can also specify subsets
+  of the config for specific maps.
+  For example, if your config is:
+
 ```json
 {
   "MaxNades": {
@@ -177,7 +181,9 @@ For example, if your config is:
   }
 }
 ```
+
 but you specifically want to allow 2 smokes for CT on mirage, you can do:
+
 ```json
 {
   "MaxNades": {
@@ -203,15 +209,18 @@ but you specifically want to allow 2 smokes for CT on mirage, you can do:
   }
 }
 ```
+
 This will keep the defaults the same for everything but override just CT smokes on mirage.
 
 The valid keys for nades on `Terrorist` are:
+
 - `Flashbang`
 - `Smoke`
 - `Molotov`
 - `HighExplosive`
 
 The valid keys for nades on `CounterTerrorist` are:
+
 - `Flashbang`
 - `Smoke`
 - `Incendiary`
@@ -269,6 +278,8 @@ If you mix up `Incendiary` and `Molotov`, the plugin will fix it for you.
 - `ChatMessagePluginName`: The name that you want to appear between [] in chat messages from the plugin. Defaults
   to `Retakes`.
     - For example, `[Retakes] Next round will be a Terrorist round.`
+- `ChatMessagePluginPrefix`: The *entire* prefix that appears in front of chat messages. If set, this
+  overrides `ChatMessagePluginName`. If you want the prefix to be colored, the config must also specify the colors.
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
 

@@ -6,13 +6,24 @@ namespace RetakesAllocatorCore;
 public static class PluginInfo
 {
     public const string Version = "2.0.0";
-    
+
     public static readonly string LogPrefix = $"[RetakesAllocator {Version}] ";
+
     public static string MessagePrefix
     {
         get
         {
-            var name = Configs.IsLoaded() ? Configs.GetConfigData().ChatMessagePluginName : "Retakes";
+            var name = "Retakes";
+            if (Configs.IsLoaded())
+            {
+                if (Configs.GetConfigData().ChatMessagePluginPrefix is not null)
+                {
+                    return Configs.GetConfigData().ChatMessagePluginPrefix!;
+                }
+
+                name = Configs.GetConfigData().ChatMessagePluginName;
+            }
+
             return $"[{ChatColors.Green}{name}{ChatColors.White}] ";
         }
     }
