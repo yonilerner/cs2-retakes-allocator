@@ -606,6 +606,14 @@ public class RetakesAllocator : BasePlugin
             Server.PrintToChatAll(
                 $"{MessagePrefix}{message}"
             );
+            if (Configs.GetConfigData().EnableRoundTypeAnnouncementCenter)
+            {
+                foreach (var player in allPlayers)
+                {
+                    player.PrintToCenter(
+                        $"{MessagePrefix}{Translator.Instance["center.announcement.roundtype", roundTypeName]}");
+                }
+            }
         }
 
         AddTimer(.5f, () =>

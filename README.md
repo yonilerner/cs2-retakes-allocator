@@ -239,7 +239,8 @@ If you mix up `Incendiary` and `Molotov`, the plugin will fix it for you.
     - `AverageTwoPerPlayer` (rounds up)
     - `None`
 
-*NOTE: There is a bug right now where the plugin will not always give the maximum number of nades, even if players have room for it*.
+*NOTE: There is a bug right now where the plugin will not always give the maximum number of nades, even if players have
+room for it*.
 
 #### Other Configuration
 
@@ -296,6 +297,9 @@ If you mix up `Incendiary` and `Molotov`, the plugin will fix it for you.
   must also specify a space after the prefix if you want one.
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
+- `EnableRoundTypeAnnouncement`: Whether or not to announce the round type.
+- `EnableRoundTypeAnnouncementCenter`: Whether or not to announce the round type in the center of the users screen. Only
+  applies if `EnableRoundTypeAnnouncement` is also set to `true`.
 
 ### Commands
 
