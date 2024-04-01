@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using RetakesAllocatorCore.Managers;
 
@@ -131,6 +132,11 @@ public class OnRoundPostStartHelper
                     // On pistol rounds, only one person gets a defuse kit
                     giveDefuseKit(player);
                 }
+            }
+
+            if (Configs.GetConfigData().ZeusPreference == ZeusPreference.Always)
+            {
+                items.Add(CsItem.Zeus);
             }
 
             allocateItemsForPlayer(player, items, team == CsTeam.Terrorist ? "slot5" : "slot1");

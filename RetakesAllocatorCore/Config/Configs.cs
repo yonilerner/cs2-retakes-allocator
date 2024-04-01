@@ -191,6 +191,7 @@ public record ConfigData
     public string? ChatMessagePluginPrefix { get; set; }
     public string InGameGunMenuCenterCommands { get; set; } = "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns";
     public string InGameGunMenuChatCommands { get; set; } = "guns,!guns";
+    public ZeusPreference ZeusPreference { get; set; } = ZeusPreference.Never;
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
