@@ -229,6 +229,18 @@ The valid keys for nades on `CounterTerrorist` are:
 
 If you mix up `Incendiary` and `Molotov`, the plugin will fix it for you.
 
+- `MaxTeamNades` - This config works similarly to `MaxNades`, except it affects the max number of nades an entire team
+  can have. The structure is the same as `MaxNades` except that after the map and team keys, it maps a round type to a
+  max nade setting. The possible max nade settings are:
+    - `One`, `Two`, ... until `Ten`
+    - `AveragePointFivePerPlayer` (rounds up)
+    - `AverageOnePerPlayer` (rounds up)
+    - `AverageOnePointFivePerPlayer` (rounds up)
+    - `AverageTwoPerPlayer` (rounds up)
+    - `None`
+
+*NOTE: There is a bug right now where the plugin will not always give the maximum number of nades, even if players have room for it*.
+
 #### Other Configuration
 
 - `EnableNextRoundTypeVoting`: Whether to allow voting for the next round type via `!nextround`. `false` by default.

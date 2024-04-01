@@ -156,6 +156,37 @@ public record ConfigData
         }
     };
 
+    public Dictionary<
+        string,
+        Dictionary<
+            CsTeam,
+            Dictionary<RoundType, MaxTeamNadesSetting>
+        >
+    > MaxTeamNades { get; set; } = new()
+    {
+        {
+            NadeHelpers.GlobalSettingName, new()
+            {
+                {
+                    CsTeam.Terrorist, new()
+                    {
+                        {RoundType.Pistol, MaxTeamNadesSetting.AverageOnePerPlayer},
+                        {RoundType.HalfBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                        {RoundType.FullBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                    }
+                },
+                {
+                    CsTeam.CounterTerrorist, new()
+                    {
+                        {RoundType.Pistol, MaxTeamNadesSetting.AverageOnePerPlayer},
+                        {RoundType.HalfBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                        {RoundType.FullBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                    }
+                },
+            }
+        }
+    };
+
     public RoundTypeSelectionOption RoundTypeSelection { get; set; } = RoundTypeSelectionOption.Random;
 
     public Dictionary<RoundType, int> RoundTypePercentages { get; set; } = new()

@@ -4,6 +4,25 @@ using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore;
 
+public enum MaxTeamNadesSetting
+{
+    None,
+    One,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+    AveragePointFivePerPlayer,
+    AverageOnePerPlayer,
+    AverageOnePointFivePerPlayer,
+    AverageTwoPerPlayer,
+}
+
 public class NadeHelpers
 {
     public static string GlobalSettingName = "GLOBAL";
@@ -12,7 +31,38 @@ public class NadeHelpers
     {
         map ??= GlobalSettingName;
 
-        var maxTotalNades = (int) Math.Ceiling(numPlayers * (roundType == RoundType.Pistol ? 1 : 1.5));
+        var maxNadesSetting = GetMaxTeamNades(map, team, roundType);
+        if (maxNadesSetting == MaxTeamNadesSetting.None)
+        {
+            return new();
+        }
+
+        var multiplier = maxNadesSetting switch
+        {
+            MaxTeamNadesSetting.AveragePointFivePerPlayer => 0.5,
+            MaxTeamNadesSetting.AverageOnePerPlayer => 1,
+            MaxTeamNadesSetting.AverageOnePointFivePerPlayer => 1.5,
+            MaxTeamNadesSetting.AverageTwoPerPlayer => 2,
+            _ => 0,
+        };
+
+        var maxTotalNades = maxNadesSetting switch
+        {
+            MaxTeamNadesSetting.One => 1,
+            MaxTeamNadesSetting.Two => 2,
+            MaxTeamNadesSetting.Three => 3,
+            MaxTeamNadesSetting.Four => 4,
+            MaxTeamNadesSetting.Five => 5,
+            MaxTeamNadesSetting.Six => 6,
+            MaxTeamNadesSetting.Seven => 7,
+            MaxTeamNadesSetting.Eight => 8,
+            MaxTeamNadesSetting.Nine => 9,
+            MaxTeamNadesSetting.Ten => 10,
+            _ => (int) Math.Ceiling(numPlayers * multiplier)
+        };
+
+        Log.Debug($"Nade setting: {maxNadesSetting}. Total: {maxTotalNades}");
+
         var molly = team == CsTeam.Terrorist ? CsItem.Molotov : CsItem.Incendiary;
         var nadeDistribution = new List<CsItem>
         {
@@ -52,6 +102,27 @@ public class NadeHelpers
         }
 
         return nades;
+    }
+
+    private static MaxTeamNadesSetting GetMaxTeamNades(string map, CsTeam team, RoundType roundType)
+    {
+        if (Configs.GetConfigData().MaxTeamNades.TryGetValue(map, out var mapMaxNades))
+        {
+            if (mapMaxNades.TryGetValue(team, out var teamMaxNades))
+            {
+                if (teamMaxNades.TryGetValue(roundType, out var maxNadesSetting))
+                {
+                    return maxNadesSetting;
+                }
+            }
+        }
+
+        if (map == GlobalSettingName)
+        {
+            return MaxTeamNadesSetting.None;
+        }
+
+        return GetMaxTeamNades(GlobalSettingName, team, roundType);
     }
 
     private static int GetMaxNades(string map, CsTeam team, CsItem nade)
@@ -101,6 +172,7 @@ public class NadeHelpers
             {
                 return true;
             }
+
             allowancePerType[nade]--;
         }
 
@@ -122,7 +194,7 @@ public class NadeHelpers
         while (teamNades.Count != 0 && teamPlayersShuffled.Count != 0)
         {
             var player = teamPlayersShuffled[playerI];
-            
+
             if (!nadesByPlayer.TryGetValue(player, out var nadesForPlayer))
             {
                 nadesForPlayer = new List<CsItem>();
@@ -141,8 +213,9 @@ public class NadeHelpers
             {
                 break;
             }
+
             nadesForPlayer.Add(nextNade);
-            
+
             playerI++;
             if (playerI >= teamPlayersShuffled.Count)
             {
