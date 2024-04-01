@@ -1,3 +1,5 @@
+using CounterStrikeSharp.API.Core.Translations;
+using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 
@@ -11,6 +13,7 @@ public class GlobalSetup
     {
         Configs.Load(".", true);
         Queries.Migrate();
+        Translator.Initialize(new JsonStringLocalizer("../../../../RetakesAllocator/lang"));
     }
 
     [OneTimeTearDown]
