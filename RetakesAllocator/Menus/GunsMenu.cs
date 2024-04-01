@@ -9,20 +9,25 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace RetakesAllocator.Menus;
 
-public class GunsMenu: AbstractBaseMenu
+public class GunsMenu : AbstractBaseMenu
 {
     private readonly Dictionary<CCSPlayerController, Timer> _menuTimeoutTimers = new();
-    
+
+    private static void Print(CCSPlayerController player, string message)
+    {
+        Helpers.WriteNewlineDelimited(message, player.PrintToChat);
+    }
+
     public override void OpenMenu(CCSPlayerController player)
     {
         if (Helpers.GetSteamId(player) == 0)
         {
-            player.PrintToChat($"{MessagePrefix}You cannot set weapon preferences with invalid Steam ID.");
+            Print(player, Translator.Instance["guns_menu.invalid_steam_id"]);
             return;
         }
 
         PlayersInMenu.Add(player);
-        
+
         OpenTPrimaryMenu(player);
     }
 
@@ -33,7 +38,7 @@ public class GunsMenu: AbstractBaseMenu
 
     private void OnMenuTimeout(CCSPlayerController player)
     {
-        player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {MenuTimeout} seconds!");
+        Print(player, Translator.Instance["menu.timeout", MenuTimeout]);
 
         PlayersInMenu.Remove(player);
         if (_menuTimeoutTimers.Remove(player, out var playerTimer))
@@ -54,8 +59,7 @@ public class GunsMenu: AbstractBaseMenu
 
     private void OnMenuComplete(CCSPlayerController player)
     {
-        player.PrintToChat($"{MessagePrefix}You have finished setting up your weapons!");
-        player.PrintToChat($"{MessagePrefix}The weapons you have selected will be given to you at the start of the next round!");
+        Print(player, Translator.Instance["guns_menu.complete"]);
 
         PlayersInMenu.Remove(player);
         if (_menuTimeoutTimers.Remove(player, out var playerTimer))
@@ -74,9 +78,16 @@ public class GunsMenu: AbstractBaseMenu
         OnMenuComplete(player);
     }
 
+    private ChatMenu CreateMenu(CsTeam team, string weaponTypeString)
+    {
+        var teamString = Utils.TeamString(team);
+        return new ChatMenu(
+            $"{MessagePrefix}{Translator.Instance["guns_menu.select_weapon", teamString, weaponTypeString]}");
+    }
+
     private void OpenTPrimaryMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select a T Primary Weapon");
+        var menu = CreateMenu(CsTeam.Terrorist, Translator.Instance["weapon_type.primary"]);
 
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary,
                      CsTeam.Terrorist))
@@ -84,7 +95,7 @@ public class GunsMenu: AbstractBaseMenu
             menu.AddMenuOption(weapon.GetName(), OnTPrimarySelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
@@ -99,7 +110,13 @@ public class GunsMenu: AbstractBaseMenu
 
         var weaponName = option.Text;
 
-        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Primary!");
+        Print(player, Translator.Instance[
+            "guns_menu.weapon_selected",
+            weaponName,
+            Utils.TeamString(CsTeam.Terrorist),
+            Translator.Instance["weapon_type.primary"]
+        ]);
+
         HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
 
         OpenTSecondaryMenu(player);
@@ -107,7 +124,7 @@ public class GunsMenu: AbstractBaseMenu
 
     private void OpenTSecondaryMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select a T Secondary Weapon");
+        var menu = CreateMenu(CsTeam.Terrorist, Translator.Instance["weapon_type.secondary"]);
 
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary,
                      CsTeam.Terrorist))
@@ -115,7 +132,7 @@ public class GunsMenu: AbstractBaseMenu
             menu.AddMenuOption(weapon.GetName(), OnTSecondarySelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
@@ -130,7 +147,12 @@ public class GunsMenu: AbstractBaseMenu
 
         var weaponName = option.Text;
 
-        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Secondary!");
+        Print(player, Translator.Instance[
+            "guns_menu.weapon_selected",
+            weaponName,
+            Utils.TeamString(CsTeam.Terrorist),
+            Translator.Instance["weapon_type.secondary"]
+        ]);
         HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName, RoundType.FullBuy);
 
         OpenCtPrimaryMenu(player);
@@ -138,7 +160,7 @@ public class GunsMenu: AbstractBaseMenu
 
     private void OpenCtPrimaryMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select a CT Primary Weapon");
+        var menu = CreateMenu(CsTeam.CounterTerrorist, Translator.Instance["weapon_type.primary"]);
 
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary,
                      CsTeam.CounterTerrorist))
@@ -146,7 +168,7 @@ public class GunsMenu: AbstractBaseMenu
             menu.AddMenuOption(weapon.GetName(), OnCtPrimarySelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
@@ -161,7 +183,12 @@ public class GunsMenu: AbstractBaseMenu
 
         var weaponName = option.Text;
 
-        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Primary!");
+        Print(player, Translator.Instance[
+            "guns_menu.weapon_selected",
+            weaponName,
+            Utils.TeamString(CsTeam.CounterTerrorist),
+            Translator.Instance["weapon_type.primary"]
+        ]);
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
         OpenCtSecondaryMenu(player);
@@ -169,7 +196,7 @@ public class GunsMenu: AbstractBaseMenu
 
     private void OpenCtSecondaryMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select a CT Secondary Weapon");
+        var menu = CreateMenu(CsTeam.CounterTerrorist, Translator.Instance["weapon_type.secondary"]);
 
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary,
                      CsTeam.CounterTerrorist))
@@ -177,7 +204,7 @@ public class GunsMenu: AbstractBaseMenu
             menu.AddMenuOption(weapon.GetName(), OnCtSecondarySelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
@@ -192,7 +219,12 @@ public class GunsMenu: AbstractBaseMenu
 
         var weaponName = option.Text;
 
-        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Secondary!");
+        Print(player, Translator.Instance[
+            "guns_menu.weapon_selected",
+            weaponName,
+            Utils.TeamString(CsTeam.CounterTerrorist),
+            Translator.Instance["weapon_type.secondary"]
+        ]);
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName, RoundType.FullBuy);
 
         OpenTPistolMenu(player);
@@ -200,7 +232,8 @@ public class GunsMenu: AbstractBaseMenu
 
     private void OpenTPistolMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select a T Pistol Round Weapon");
+        var menu = CreateMenu(CsTeam.Terrorist,
+            Translator.Instance["announcement.roundtype", Translator.Instance["roundtype.Pistol"]]);
 
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound,
                      CsTeam.Terrorist))
@@ -208,7 +241,7 @@ public class GunsMenu: AbstractBaseMenu
             menu.AddMenuOption(weapon.GetName(), OnTPistolSelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
@@ -223,7 +256,12 @@ public class GunsMenu: AbstractBaseMenu
 
         var weaponName = option.Text;
 
-        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Pistol Round Weapon!");
+        Print(player, Translator.Instance[
+            "guns_menu.weapon_selected",
+            weaponName,
+            Utils.TeamString(CsTeam.Terrorist),
+            Translator.Instance["announcement.roundtype", Translator.Instance["roundtype.Pistol"]]
+        ]);
         HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
 
         OpenCtPistolMenu(player);
@@ -231,7 +269,8 @@ public class GunsMenu: AbstractBaseMenu
 
     private void OpenCtPistolMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select a CT Pistol Round Weapon");
+        var menu = CreateMenu(CsTeam.CounterTerrorist,
+            Translator.Instance["announcement.roundtype", Translator.Instance["roundtype.Pistol"]]);
 
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound,
                      CsTeam.CounterTerrorist))
@@ -239,7 +278,7 @@ public class GunsMenu: AbstractBaseMenu
             menu.AddMenuOption(weapon.GetName(), OnCtPistolSelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
@@ -254,7 +293,12 @@ public class GunsMenu: AbstractBaseMenu
 
         var weaponName = option.Text;
 
-        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Pistol Round Weapon!");
+        Print(player, Translator.Instance[
+            "guns_menu.weapon_selected",
+            weaponName,
+            Utils.TeamString(CsTeam.CounterTerrorist),
+            Translator.Instance["announcement.roundtype", Translator.Instance["roundtype.Pistol"]]
+        ]);
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
         OpenTHalfBuyMenu(player);
@@ -262,7 +306,7 @@ public class GunsMenu: AbstractBaseMenu
 
     private void OpenTHalfBuyMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select a T Half Buy Weapon");
+        var menu = CreateMenu(CsTeam.Terrorist, Translator.Instance["roundtype.HalfBuy"]);
 
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary,
                      CsTeam.Terrorist))
@@ -270,12 +314,12 @@ public class GunsMenu: AbstractBaseMenu
             menu.AddMenuOption(weapon.GetName(), OnTHalfBuySelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
-        
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
+
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
-    
+
     private void OnTHalfBuySelect(CCSPlayerController player, ChatMenuOption option)
     {
         if (!PlayersInMenu.Contains(player))
@@ -285,15 +329,20 @@ public class GunsMenu: AbstractBaseMenu
 
         var weaponName = option.Text;
 
-        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as T Half Buy Weapon!");
+        Print(player, Translator.Instance[
+            "guns_menu.weapon_selected",
+            weaponName,
+            Utils.TeamString(CsTeam.Terrorist),
+            Translator.Instance["roundtype.HalfBuy"]
+        ]);
         HandlePreferenceSelection(player, CsTeam.Terrorist, weaponName);
 
         OpenCTHalfBuyMenu(player);
     }
-    
+
     private void OpenCTHalfBuyMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select a CT Half Buy Weapon");
+        var menu = CreateMenu(CsTeam.CounterTerrorist, Translator.Instance["roundtype.HalfBuy"]);
 
         foreach (var weapon in WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary,
                      CsTeam.CounterTerrorist))
@@ -301,12 +350,12 @@ public class GunsMenu: AbstractBaseMenu
             menu.AddMenuOption(weapon.GetName(), OnCTHalfBuySelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
-        
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
+
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
-    
+
     private void OnCTHalfBuySelect(CCSPlayerController player, ChatMenuOption option)
     {
         if (!PlayersInMenu.Contains(player))
@@ -316,25 +365,30 @@ public class GunsMenu: AbstractBaseMenu
 
         var weaponName = option.Text;
 
-        player.PrintToChat($"{MessagePrefix} You selected {weaponName} as CT Half Buy Weapon!");
+        Print(player, Translator.Instance[
+            "guns_menu.weapon_selected",
+            weaponName,
+            Utils.TeamString(CsTeam.CounterTerrorist),
+            Translator.Instance["roundtype.HalfBuy"]
+        ]);
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
         OpenGiveAwpMenu(player);
     }
 
-    private const string AwpNeverOption = "Never";
-    private const string AwpMyTurnOption = "Always";
+    private string AwpNeverOption => Translator.Instance["guns_menu.awp_never"];
+    private string AwpMyTurnOption => Translator.Instance["guns_menu.awp_always"];
 
     private void OpenGiveAwpMenu(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"{MessagePrefix} Select when to give the AWP");
+        var menu = new ChatMenu($"{MessagePrefix}{Translator.Instance["guns_menu.awp_menu"]}");
 
         menu.AddMenuOption(AwpNeverOption, OnGiveAwpSelect);
         // Implementing "Sometimes" will require a more complex AWP queue
         // menu.AddMenuOption("Sometimes", OnGiveAwpSelect);
         menu.AddMenuOption(AwpMyTurnOption, OnGiveAwpSelect);
 
-        menu.AddMenuOption("Exit", OnSelectExit);
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
@@ -347,17 +401,19 @@ public class GunsMenu: AbstractBaseMenu
             return;
         }
 
-        player.PrintToChat($"{MessagePrefix} You selected '{option.Text}' as when to give the AWP!");
+        Print(
+            player,
+            Translator.Instance["guns_menu.awp_preference_selected", option.Text]
+        );
 
-        switch (option.Text)
+        if (option.Text == AwpNeverOption)
         {
-            case AwpNeverOption:
-                // Team doesnt matter for AWP
-                HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: true);
-                break;
-            case AwpMyTurnOption:
-                HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: false);
-                break;
+            // Team doesnt matter for AWP
+            HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: true);
+        }
+        else if (option.Text == AwpMyTurnOption)
+        {
+            HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: false);
         }
 
         OnMenuComplete(player);

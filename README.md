@@ -279,7 +279,8 @@ If you mix up `Incendiary` and `Molotov`, the plugin will fix it for you.
   to `Retakes`.
     - For example, `[Retakes] Next round will be a Terrorist round.`
 - `ChatMessagePluginPrefix`: The *entire* prefix that appears in front of chat messages. If set, this
-  overrides `ChatMessagePluginName`. If you want the prefix to be colored, the config must also specify the colors.
+  overrides `ChatMessagePluginName`. If you want the prefix to be colored, the config must also specify the colors. It
+  must also specify a space after the prefix if you want one.
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
 
