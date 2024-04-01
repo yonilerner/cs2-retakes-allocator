@@ -134,6 +134,8 @@ Here are the weapon configs:
     - The valid values for each subkey this are any `CsItem` that is a weapon.
       To better understand how `DefaultWeapons` works, here is the default config for `DefaultWeapons` as an example:
 - `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
+- `MaxPreferredWeaponsPerTeam`: The maximum number of AWPs for each team. `AllowPreferredWeaponForEveryone` (
+  default `false`) overrides this.
 
 ```json
 {

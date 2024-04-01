@@ -218,6 +218,11 @@ public record ConfigData
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
+    public Dictionary<CsTeam, int> MaxPreferredWeaponsPerTeam { get; set; } = new()
+    {
+        {CsTeam.Terrorist, 1},
+        {CsTeam.CounterTerrorist, 1},
+    };
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
     public string ChatMessagePluginName { get; set; } = "Retakes";
     public string? ChatMessagePluginPrefix { get; set; }

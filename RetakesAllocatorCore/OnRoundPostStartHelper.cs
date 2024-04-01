@@ -61,9 +61,11 @@ public class OnRoundPostStartHelper
         if (roundType == RoundType.FullBuy)
         {
             tPreferredPlayers =
-                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers), isVip);
+                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers), isVip,
+                    CsTeam.Terrorist);
             ctPreferredPlayers =
-                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers), isVip);
+                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers), isVip,
+                    CsTeam.CounterTerrorist);
         }
 
         var nadesByPlayer = new Dictionary<T, ICollection<CsItem>>();

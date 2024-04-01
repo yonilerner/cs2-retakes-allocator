@@ -341,11 +341,21 @@ public static class WeaponHelpers
         };
     }
 
-    public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip)
+    public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip, CsTeam team)
     {
         if (Configs.GetConfigData().AllowPreferredWeaponForEveryone)
         {
             return new List<T>(players);
+        }
+
+        if (!Configs.GetConfigData().MaxPreferredWeaponsPerTeam.TryGetValue(team, out var maxPerTeam))
+        {
+            maxPerTeam = 1;
+        }
+
+        if (maxPerTeam == 0)
+        {
+            return new List<T>();
         }
 
         var choicePlayers = new List<T>();
@@ -362,13 +372,8 @@ public static class WeaponHelpers
             }
         }
 
-        var player = Utils.Choice(choicePlayers);
-        if (player is null)
-        {
-            return new List<T>();
-        }
-
-        return new List<T> {player};
+        Utils.Shuffle(choicePlayers);
+        return new HashSet<T>(choicePlayers).Take(maxPerTeam).ToList();
     }
 
     public static bool IsUsableWeapon(CsItem weapon)
