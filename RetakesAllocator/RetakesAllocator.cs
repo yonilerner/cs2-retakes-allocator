@@ -307,7 +307,6 @@ public class RetakesAllocator : BasePlugin
 
     #region Events
 
-    // NOT READY
     public HookResult OnWeaponCanAcquire(DynamicHook hook)
     {
         // GetCSWeaponDataFromKeyFunc doesnt work on windows
