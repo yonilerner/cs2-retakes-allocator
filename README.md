@@ -133,12 +133,6 @@ Here are the weapon configs:
         - `FullBuyPrimary`: The primary weapon for full buy rounds
     - The valid values for each subkey this are any `CsItem` that is a weapon.
       To better understand how `DefaultWeapons` works, here is the default config for `DefaultWeapons` as an example:
-- `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
-- `AllowPreferredWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
-  setting. Defaults to `false`.
-- `MaxPreferredWeaponsPerTeam`: The maximum number of AWPs for each team.
-- `MinPlayersPerTeamForPreferredWeapon`: The minimum number of players on each team necessary for someone to get an AWP.
-
 ```json
 {
   "DefaultWeapons": {
@@ -157,6 +151,13 @@ Here are the weapon configs:
   }
 }
 ```
+
+
+- `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
+- `AllowPreferredWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
+  setting. Defaults to `false`.
+- `MaxPreferredWeaponsPerTeam`: The maximum number of AWPs for each team.
+- `MinPlayersPerTeamForPreferredWeapon`: The minimum number of players on each team necessary for someone to get an AWP.
 
 #### Nade Configuration
 
