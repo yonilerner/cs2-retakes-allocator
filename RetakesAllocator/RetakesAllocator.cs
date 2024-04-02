@@ -64,7 +64,11 @@ public class RetakesAllocator : BasePlugin
         }
 
         CustomFunctions = new();
-        CustomFunctions.CCSPlayer_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
+
+        if (Configs.GetConfigData().EnableCanAcquireHook)
+        {
+            CustomFunctions.CCSPlayer_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
+        }
 
         if (hotReload)
         {
@@ -100,7 +104,11 @@ public class RetakesAllocator : BasePlugin
         Queries.Disconnect();
 
         GetRetakesPluginEventSender().RetakesPluginEventHandlers -= RetakesEventHandler;
-        CustomFunctions.CCSPlayer_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
+
+        if (Configs.GetConfigData().EnableCanAcquireHook)
+        {
+            CustomFunctions.CCSPlayer_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
+        }
     }
 
     private IRetakesPluginEventSender GetRetakesPluginEventSender()
