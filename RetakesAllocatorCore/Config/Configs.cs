@@ -218,13 +218,20 @@ public record ConfigData
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
-    public bool EnableCanAcquireHook { get; set; } = true;
 
     public Dictionary<CsTeam, int> MaxPreferredWeaponsPerTeam { get; set; } = new()
     {
         {CsTeam.Terrorist, 1},
         {CsTeam.CounterTerrorist, 1},
     };
+
+    public Dictionary<CsTeam, int> MinPlayersPerTeamForPreferredWeapon { get; set; } = new()
+    {
+        {CsTeam.Terrorist, 1},
+        {CsTeam.CounterTerrorist, 1},
+    };
+
+    public bool EnableCanAcquireHook { get; set; } = true;
 
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
     public string ChatMessagePluginName { get; set; } = "Retakes";

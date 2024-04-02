@@ -348,6 +348,16 @@ public static class WeaponHelpers
             return new List<T>(players);
         }
 
+        var playersList = players.ToList();
+
+        if (Configs.GetConfigData().MinPlayersPerTeamForPreferredWeapon.TryGetValue(team, out var minTeamPlayers))
+        {
+            if (playersList.Count < minTeamPlayers)
+            {
+                return new List<T>();
+            }
+        }
+
         if (!Configs.GetConfigData().MaxPreferredWeaponsPerTeam.TryGetValue(team, out var maxPerTeam))
         {
             maxPerTeam = 1;
@@ -359,7 +369,7 @@ public static class WeaponHelpers
         }
 
         var choicePlayers = new List<T>();
-        foreach (var p in players)
+        foreach (var p in playersList)
         {
             choicePlayers.Add(p);
             // VIPs get extra chances to be selected
