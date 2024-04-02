@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
@@ -301,28 +302,37 @@ public class RetakesAllocator : BasePlugin
     // NOT READY
     public HookResult OnWeaponCanAcquire(DynamicHook hook)
     {
-        // Log.Debug($"OnWeaponCanAcquire enter {IsAllocatingForRound}");
+        // GetCSWeaponDataFromKeyFunc doesnt work on windows
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return HookResult.Continue;
+        }
+
+        if (Helpers.IsWarmup())
+        {
+            return HookResult.Continue;
+        }
+
+        // Log.Trace($"OnWeaponCanAcquire enter {IsAllocatingForRound}");
         if (IsAllocatingForRound)
         {
             Log.Debug("Skipping OnWeaponCanAcquire because we're allocating for round");
             return HookResult.Continue;
         }
 
-        var retStop = () =>
+        HookResult RetStop()
         {
             var acquireMethod = hook.GetParam<AcquireMethod>(2);
             // Log.Debug($"Exiting OnWeaponCanAcquire {acquireMethod}");
-            if (acquireMethod != AcquireMethod.PickUp)
-            {
-                hook.SetReturn(AcquireResult.AlreadyOwned);
-            }
-            else
-            {
-                hook.SetReturn(AcquireResult.InvalidItem);
-            }
+            hook.SetReturn(
+                acquireMethod != AcquireMethod.PickUp
+                    ? AcquireResult.AlreadyOwned
+                    : AcquireResult.InvalidItem
+            );
 
             return HookResult.Stop;
-        };
+        }
+
         var weaponData = CustomFunctions.GetCSWeaponDataFromKeyFunc.Invoke(-1,
             hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
 
@@ -331,13 +341,6 @@ public class RetakesAllocator : BasePlugin
         {
             Log.Debug($"Invalid player controller {player} {player?.IsValid} {player?.PawnIsAlive}");
             return HookResult.Continue;
-        }
-
-        var playerId = Helpers.GetSteamId(player);
-        if (playerId == 0)
-        {
-            Log.Debug($"Player not logged in {player}");
-            return retStop();
         }
 
         var team = player.Team;
@@ -350,13 +353,7 @@ public class RetakesAllocator : BasePlugin
 
         if (item is CsItem.Taser)
         {
-            return Configs.GetConfigData().ZeusPreference == ZeusPreference.Always ? HookResult.Continue : retStop();
-        }
-
-        var slotType = WeaponHelpers.GetSlotTypeForItem(item);
-        if (GetPlayerRoundAllocation(player, slotType) == item)
-        {
-            return HookResult.Continue;
+            return Configs.GetConfigData().ZeusPreference == ZeusPreference.Always ? HookResult.Continue : RetStop();
         }
 
         var isPreferred = WeaponHelpers.IsPreferred(team, item);
@@ -379,55 +376,15 @@ public class RetakesAllocator : BasePlugin
             purchasedAllocationType is not null
         )
         {
-            Queries.SetWeaponPreferenceForUser(
-                playerId,
-                team,
-                purchasedAllocationType.Value,
-                item
-            );
-            if (slotType is not null)
-            {
-                SetPlayerRoundAllocation(player, slotType.Value, item);
-            }
-            else
-            {
-                Log.Debug($"WARN: No slot for {item}");
-            }
-
             return HookResult.Continue;
         }
 
-        if (isPreferred)
-        {
-            var itemName = Enum.GetName(item);
-            if (itemName is not null)
-            {
-                try
-                {
-                    var message = OnWeaponCommandHelper.Handle(
-                        new List<string> {itemName},
-                        Helpers.GetSteamId(player),
-                        RoundTypeManager.Instance.GetCurrentRoundType(),
-                        team,
-                        false,
-                        out _
-                    );
-                    Helpers.WriteNewlineDelimited(message, player.PrintToChat);
-                }
-                catch
-                {
-                    Log.Warn($"Failed to set preference for {playerId} {team} {purchasedAllocationType} {item}");
-                }
-            }
-        }
-
-        return retStop();
+        return RetStop();
     }
 
     [GameEventHandler]
     public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
     {
-        return HookResult.Continue;
         var player = @event.Userid;
         if (Helpers.IsWarmup() || !Helpers.PlayerIsValid(player) || !player.PlayerPawn.IsValid)
         {

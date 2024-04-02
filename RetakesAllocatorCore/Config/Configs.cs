@@ -218,11 +218,13 @@ public record ConfigData
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
+
     public Dictionary<CsTeam, int> MaxPreferredWeaponsPerTeam { get; set; } = new()
     {
         {CsTeam.Terrorist, 1},
         {CsTeam.CounterTerrorist, 1},
     };
+
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
     public string ChatMessagePluginName { get; set; } = "Retakes";
     public string? ChatMessagePluginPrefix { get; set; }
@@ -231,7 +233,7 @@ public record ConfigData
     public ZeusPreference ZeusPreference { get; set; } = ZeusPreference.Never;
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
-    public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
+    public string DatabaseConnectionString { get; set; } = "Data Source=data.db; Pooling=False";
 
     public IList<string> Validate()
     {
