@@ -214,7 +214,7 @@ public record ConfigData
     public bool ResetStateOnGameRestart { get; set; } = true;
     public bool AllowAllocationAfterFreezeTime { get; set; } = true;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
-    public bool EnableRoundTypeAnnouncementCenter { get; set; } = true;
+    public bool EnableRoundTypeAnnouncementCenter { get; set; } = false;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;

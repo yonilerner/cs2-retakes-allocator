@@ -315,6 +315,12 @@ public class RetakesAllocator : BasePlugin
             return HookResult.Continue;
         }
 
+        var acquireMethod = hook.GetParam<AcquireMethod>(2);
+        if (acquireMethod == AcquireMethod.PickUp)
+        {
+            return HookResult.Continue;
+        }
+
         if (Helpers.IsWarmup())
         {
             return HookResult.Continue;
@@ -329,7 +335,6 @@ public class RetakesAllocator : BasePlugin
 
         HookResult RetStop()
         {
-            var acquireMethod = hook.GetParam<AcquireMethod>(2);
             // Log.Debug($"Exiting OnWeaponCanAcquire {acquireMethod}");
             hook.SetReturn(
                 acquireMethod != AcquireMethod.PickUp
@@ -584,9 +589,7 @@ public class RetakesAllocator : BasePlugin
             var roundType = RoundTypeManager.Instance.GetCurrentRoundType()!.Value;
             var roundTypeName = RoundTypeHelpers.TranslateRoundTypeName(roundType);
             var message = Translator.Instance["announcement.roundtype", roundTypeName];
-            Server.PrintToChatAll(
-                $"{MessagePrefix}{message}"
-            );
+            Server.PrintToChatAll($"{MessagePrefix}{message}");
             if (Configs.GetConfigData().EnableRoundTypeAnnouncementCenter)
             {
                 foreach (var player in allPlayers)
