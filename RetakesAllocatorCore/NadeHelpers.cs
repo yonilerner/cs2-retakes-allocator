@@ -206,6 +206,10 @@ public class NadeHelpers
             if (PlayerReachedMaxNades(nadesForPlayer))
             {
                 teamPlayersShuffled.RemoveAt(playerI);
+                if (playerI >= teamPlayersShuffled.Count)
+                {
+                    playerI = 0;
+                }
                 continue;
             }
 
