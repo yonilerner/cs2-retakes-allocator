@@ -89,6 +89,21 @@ public static class Configs
 
         File.WriteAllText(_configFilePath, JsonSerializer.Serialize(configData, SerializationOptions));
     }
+
+    public static string? StringifyConfig(string? configName)
+    {
+        var configData = GetConfigData();
+        if (configName is null)
+        {
+            return JsonSerializer.Serialize(configData, SerializationOptions);
+        }
+        var property = configData.GetType().GetProperty(configName);
+        if (property is null)
+        {
+            return null;
+        }
+        return JsonSerializer.Serialize(property.GetValue(configData), SerializationOptions);
+    }
 }
 
 public enum WeaponSelectionType

@@ -321,6 +321,23 @@ public class RetakesAllocator : BasePlugin
         RoundTypeManager.Instance.Initialize();
     }
 
+    [ConsoleCommand("css_print_config", "Print the entire config or a specific config.")]
+    [CommandHelper(usage: "<config>", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    [RequiresPermissions("@css/root")]
+    public void OnPrintConfigCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        var configName = commandInfo.ArgCount > 1 ? commandInfo.GetArg(1) : null;
+        var response = Configs.StringifyConfig(configName);
+        if (response is null)
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}Invalid config name.");
+            return;
+        }
+
+        commandInfo.ReplyToCommand($"{MessagePrefix}{response}");
+        Log.Info(response);
+    }
+
     #endregion
 
     #region Events
