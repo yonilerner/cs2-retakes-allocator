@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core;
 using RetakesAllocator.Managers;
 using RetakesAllocator.Menus.Interfaces;
 using RetakesAllocatorCore;
@@ -12,7 +12,7 @@ public enum MenuType
     NextRoundVote,
 }
 
-public class MenuManager
+public class Menu_Manager
 {
     private readonly Dictionary<MenuType, AbstractBaseMenu> _menus = new()
     {
