@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
@@ -63,11 +63,11 @@ public class CustomGameData
         GetCSWeaponDataFromKeyFunc = new(GetCustomGameDataKey("GetCSWeaponDataFromKey"));
     }
 
-    private string? GetCustomGameDataKey(string key)
+    private string GetCustomGameDataKey(string key)
     {
         if (!_customGameData.TryGetValue(key, out var customGameData))
         {
-            return null;
+            return null!;
         }
 
         OSPlatform platform;
@@ -84,7 +84,7 @@ public class CustomGameData
             throw new Exception("Unsupported platform");
         }
 
-        return customGameData.TryGetValue(platform, out var customData) ? customData : null;
+        return customGameData.TryGetValue(platform, out var customData) ? customData : null!;
     }
 
     public void PlayerGiveNamedItem(CCSPlayerController player, string item)
