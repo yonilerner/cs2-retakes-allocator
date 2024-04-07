@@ -1,3 +1,4 @@
+using System.Text;
 using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -9,6 +10,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Managers;
 using RetakesAllocator.Menus;
@@ -613,6 +615,34 @@ public class RetakesAllocator : BasePlugin
         {
             _advancedGunMenu.OnTick();
         }
+
+        if(Helpers.AnnouceBombSite)
+        {
+            var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+            var countct = Utilities.GetPlayers().Count(p => p.TeamNum == (int)CsTeam.CounterTerrorist && p.PawnIsAlive  && !p.IsHLTV);
+            var countt = Utilities.GetPlayers().Count(p => p.TeamNum == (int)CsTeam.Terrorist && p.PawnIsAlive  && !p.IsHLTV);
+            string Image = Helpers.BombSite == "A" ? Translator.Instance["BombSite.A"] : Helpers.BombSite == "B" ? Translator.Instance["BombSite.B"] : "";
+            foreach (var player in playerEntities)
+            {
+                if (player == null || !player.IsValid || !player.PawnIsAlive || player.IsBot || player.IsHLTV) continue;
+
+                if(player.TeamNum == (byte)CsTeam.Terrorist && !Configs.GetConfigData().BombSiteAnnouncementCenterToCTOnly)
+                {
+                    StringBuilder builder = new StringBuilder();
+                    builder.AppendFormat(Localizer["T.Message"], Helpers.BombSite,Image,countt,countct);
+                    var centerhtml = builder.ToString();
+                    player?.PrintToCenterHtml(centerhtml);
+                }
+                else if(player.TeamNum == (byte)CsTeam.CounterTerrorist)
+                {
+                    StringBuilder builder = new StringBuilder();
+                    builder.AppendFormat(Localizer["CT.Message"], Helpers.BombSite,Image,countt,countct);
+                    var centerhtml = builder.ToString();
+                    player?.PrintToCenterHtml(centerhtml);
+                }
+                
+            }
+        }
     }
 
     [GameEventHandler]
@@ -663,6 +693,131 @@ public class RetakesAllocator : BasePlugin
     {
         if (!Configs.GetConfigData().ResetStateOnGameRestart || @event == null) return HookResult.Continue;
         ResetState();
+        return HookResult.Continue;
+    }
+    [GameEventHandler(HookMode.Pre)]
+    public HookResult OnEventBombPlanted(EventBombPlanted @event, GameEventInfo info)
+    {
+        if (@event == null) return HookResult.Continue;
+
+        if(Configs.GetConfigData().DisableDefaultBombPlantedCenterMessage)
+        {
+            info.DontBroadcast = true;
+        }
+
+        if(Configs.GetConfigData().DisableBombSiteAnnouncementCenterOnPlant)
+        {
+            Helpers.BombSite = "";
+            Helpers.AnnouceBombSite = false;
+        }
+
+        return HookResult.Continue;
+    }
+    [GameEventHandler]
+    public HookResult OnEventRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        if(@event == null)return HookResult.Continue;
+        Helpers.OneTime = false;
+        return HookResult.Continue;
+    }
+    [GameEventHandler]
+    public HookResult OnEventRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        if(@event == null)return HookResult.Continue;
+        Helpers.BombSite = "";
+        Helpers.AnnouceBombSite = false;
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnEventEnterBombzone(EventEnterBombzone @event, GameEventInfo info)
+    {
+        if (@event == null || Helpers.IsWarmup() || Helpers.OneTime) return HookResult.Continue;
+
+        var player = @event.Userid;
+        if (player == null || !player.IsValid || player.TeamNum != (byte)CsTeam.Terrorist) return HookResult.Continue;
+
+        var playerPawn = player.PlayerPawn;
+        if (playerPawn == null || !playerPawn.IsValid) return HookResult.Continue;
+
+        var playerPosition = playerPawn.Value!.AbsOrigin;
+        
+        foreach (var entity in Utilities.FindAllEntitiesByDesignerName<CBombTarget>("info_bomb_target"))
+        {
+            var entityPosition = entity.AbsOrigin;
+            if (entityPosition != null)
+            {
+                var distanceVector = playerPosition! - entityPosition;
+                var distance = distanceVector.Length();
+                float thresholdDistance = 400.0f;
+
+                if (distance <= thresholdDistance)
+                {
+                    if(entity.DesignerName == "info_bomb_target_hint_A")
+                    {
+                        Helpers.BombSite = "A";
+                        if(Configs.GetConfigData().EnableBombSiteAnnouncementCenter)
+                        {
+                            Server.NextFrame(() =>
+                            {
+                                AddTimer(Configs.GetConfigData().BombSiteAnnouncementCenterDelay, () =>
+                                {
+                                    Helpers.OneTime = true;
+                                    Helpers.AnnouceBombSite = true;
+                                    AddTimer(Configs.GetConfigData().BombSiteAnnouncementCenterShowTimer, () =>
+                                    {
+                                        Helpers.BombSite = "";
+                                        Helpers.AnnouceBombSite = false;
+                                    }, TimerFlags.STOP_ON_MAPCHANGE);
+                                }, TimerFlags.STOP_ON_MAPCHANGE);
+                            });
+                        }
+                        if(Configs.GetConfigData().EnableBombSiteAnnouncementChat)
+                        {
+                            Server.PrintToChatAll(Localizer["chatAsite.line1"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line2"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line3"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line4"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line5"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line6"]);
+                        }
+                        break;
+                    }else if(entity.DesignerName == "info_bomb_target_hint_B")
+                    {
+                        Helpers.BombSite = "B";
+                        if(Configs.GetConfigData().EnableBombSiteAnnouncementCenter)
+                        {
+                            Server.NextFrame(() =>
+                            {
+                                AddTimer(Configs.GetConfigData().BombSiteAnnouncementCenterDelay, () =>
+                                {
+                                    Helpers.OneTime = true;
+                                    Helpers.AnnouceBombSite = true;
+                                    AddTimer(Configs.GetConfigData().BombSiteAnnouncementCenterShowTimer, () =>
+                                    {
+                                        Helpers.BombSite = "";
+                                        Helpers.AnnouceBombSite = false;
+                                    }, TimerFlags.STOP_ON_MAPCHANGE);
+                                }, TimerFlags.STOP_ON_MAPCHANGE);
+                            });
+                        }
+                        if(Configs.GetConfigData().EnableBombSiteAnnouncementChat)
+                        {
+                            Server.PrintToChatAll(Localizer["chatBsite.line1"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line2"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line3"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line4"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line5"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line6"]);
+                        }
+                        break;
+                    }
+                    
+                }
+            }
+            
+        }
+
         return HookResult.Continue;
     }
 
