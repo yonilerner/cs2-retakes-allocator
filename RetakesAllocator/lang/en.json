@@ -69,7 +69,7 @@
 
   "BombSite.A": "<img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/ASITE.png' class=''>",
   "BombSite.B": "<img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/BSITE.png' class=''>",
-  "T.Message": "<font color='red'>RETAKE</font> <font color='white'>SITE</font> <font color='red'>{0}</font> <br> {1} <br> {2} <font color='red'>T</font>  vs. {3} <font color='#0182FB'>CT</font>",
+  "T.Message": "<font color='red'>DEFEND</font> <font color='white'>SITE</font> <font color='red'>{0}</font> <br> {1} <br> {2} <font color='red'>T</font>  vs. {3} <font color='#0182FB'>CT</font>",
   "CT.Message": "<font color='green'>RETAKE</font> <font color='white'>SITE</font> <font color='green'>{0}</font> <br> {1} <br> {2} <font color='red'>T</font>  vs. {3} <font color='#0182FB'>CT</font>",
 
   "chatAsite.line1": "{DarkBlue}[Retakes] {Yellow} ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎回︎回︎回︎回︎",
