@@ -31,12 +31,12 @@ public class RetakesAllocator : BasePlugin
     public override string ModuleAuthor => "Yoni Lerner, B3none, Gold KingZ";
     public override string ModuleDescription => "https://github.com/yonilerner/cs2-retakes-allocator";
 
-    private readonly MenuManager _menuManager = new();
+    private readonly Menu_Manager _menuManager = new();
     private readonly AdvancedGunMenu _advancedGunMenu = new();
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
     private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
 
-    private CustomGameData CustomFunctions { get; set; }
+    private CustomGameData? CustomFunctions { get; set; }
 
     private bool IsAllocatingForRound { get; set; }
 
@@ -107,7 +107,7 @@ public class RetakesAllocator : BasePlugin
 
         if (Configs.GetConfigData().EnableCanAcquireHook)
         {
-            CustomFunctions.CCSPlayer_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
+            CustomFunctions!.CCSPlayer_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
         }
     }
 
@@ -345,7 +345,7 @@ public class RetakesAllocator : BasePlugin
             return HookResult.Stop;
         }
 
-        var weaponData = CustomFunctions.GetCSWeaponDataFromKeyFunc.Invoke(-1,
+        var weaponData = CustomFunctions!.GetCSWeaponDataFromKeyFunc.Invoke(-1,
             hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
 
         var player = hook.GetParam<CCSPlayer_ItemServices>(0).Pawn.Value.Controller.Value?.As<CCSPlayerController>();
@@ -609,13 +609,21 @@ public class RetakesAllocator : BasePlugin
 
     public void OnTick()
     {
-        _advancedGunMenu.OnTick();
+        if(!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands))
+        {
+            _advancedGunMenu.OnTick();
+        }
     }
 
     [GameEventHandler]
     public HookResult OnEventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
-        _advancedGunMenu.OnEventPlayerDisconnect(@event, info);
+        if (@event == null) return HookResult.Continue;
+        
+        if(!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands))
+        {
+            _advancedGunMenu.OnEventPlayerDisconnect(@event, info);
+        }
         return HookResult.Continue;
     }
 
@@ -623,7 +631,11 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
     {
         if (@event == null) return HookResult.Continue;
-        _advancedGunMenu.OnEventPlayerChat(@event, info);
+
+        if(!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands))
+        {
+            _advancedGunMenu.OnEventPlayerChat(@event, info);
+        }
 
         if (string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands)) return HookResult.Continue;
         var eventplayer = @event.Userid;
@@ -704,7 +716,7 @@ public class RetakesAllocator : BasePlugin
                     continue;
                 }
 
-                CustomFunctions.PlayerGiveNamedItem(player, itemString);
+                CustomFunctions!.PlayerGiveNamedItem(player, itemString);
                 var slotType = WeaponHelpers.GetSlotTypeForItem(item);
                 if (slotType is not null)
                 {
