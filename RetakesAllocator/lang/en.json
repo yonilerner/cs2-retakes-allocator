@@ -52,10 +52,12 @@
   "menu.tprimary": "█ T Primary █",
   "menu.tsecondary": "█ T Secondary █",
   "menu.tPistol": "█ T Pistol Round █",
+  "menu.tHalfbuy": "█ T Half Buy █",
 
   "menu.ctprimary": "█ CT Primary █",
   "menu.ctsecondary": "█ CT Secondary █",
   "menu.ctPistol": "█ CT Pistol Round █",
+  "menu.ctHalfbuy": "█ CT Half Buy █",
 
   "menu.awp.always": "Always",
   "menu.awp.never": "Never",
