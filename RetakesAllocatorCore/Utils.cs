@@ -48,6 +48,18 @@ public static class Utils
         };
     }
 
+    public static string TeamString(CsTeam team, bool shortName = false)
+    {
+        return team switch
+        {
+            CsTeam.Terrorist => Translator.Instance[shortName ? "teams.terrorist_short" : "teams.terrorist"],
+            CsTeam.CounterTerrorist => Translator.Instance[
+                shortName ? "teams.counter_terrorist_short" : "teams.counter_terrorist"
+            ],
+            _ => ""
+        };
+    }
+
     public static T? ToEnum<T>(string str)
     {
         var enumType = typeof(T);

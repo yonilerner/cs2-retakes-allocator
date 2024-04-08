@@ -9,27 +9,27 @@ namespace RetakesAllocatorTest;
 public class DbTests : BaseTestFixture
 {
     [Test]
-    public void TestGetUsersSettings()
+    public async Task TestGetUsersSettings()
     {
         var usersSettings = Queries.GetUsersSettings(new List<ulong>());
         Assert.That(usersSettings, Is.EqualTo(new Dictionary<ulong, UserSetting>()));
 
-        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary,
+        await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary,
             CsItem.Bizon);
-        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.PistolRound, null);
-        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary,
+        await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.PistolRound, null);
+        await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.HalfBuyPrimary,
             CsItem.MP5);
-        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.CounterTerrorist, WeaponAllocationType.FullBuyPrimary,
+        await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.CounterTerrorist, WeaponAllocationType.FullBuyPrimary,
             CsItem.AK47);
         // Should set for both T and CT
-        Queries.SetPreferredWeaponPreference(TestSteamId, CsItem.AWP);
+        await Queries.SetPreferredWeaponPreferenceAsync(TestSteamId, CsItem.AWP);
 
-        Queries.SetWeaponPreferenceForUser(2, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AK47);
-        Queries.SetWeaponPreferenceForUser(2, CsTeam.Terrorist, WeaponAllocationType.Secondary, CsItem.Deagle);
-        Queries.SetWeaponPreferenceForUser(2, CsTeam.CounterTerrorist, WeaponAllocationType.Secondary,
+        await Queries.SetWeaponPreferenceForUserAsync(2, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AK47);
+        await Queries.SetWeaponPreferenceForUserAsync(2, CsTeam.Terrorist, WeaponAllocationType.Secondary, CsItem.Deagle);
+        await Queries.SetWeaponPreferenceForUserAsync(2, CsTeam.CounterTerrorist, WeaponAllocationType.Secondary,
             CsItem.FiveSeven);
         // Will get different snipers for different teams
-        Queries.SetPreferredWeaponPreference(2, CsItem.SCAR20);
+        await Queries.SetPreferredWeaponPreferenceAsync(2, CsItem.SCAR20);
 
         usersSettings = Queries.GetUsersSettings(new List<ulong> {TestSteamId});
         Assert.Multiple(() =>

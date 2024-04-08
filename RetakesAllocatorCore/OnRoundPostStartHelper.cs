@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using RetakesAllocatorCore.Managers;
 
@@ -60,9 +61,11 @@ public class OnRoundPostStartHelper
         if (roundType == RoundType.FullBuy)
         {
             tPreferredPlayers =
-                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers), isVip);
+                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers), isVip,
+                    CsTeam.Terrorist);
             ctPreferredPlayers =
-                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers), isVip);
+                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers), isVip,
+                    CsTeam.CounterTerrorist);
         }
 
         var nadesByPlayer = new Dictionary<T, ICollection<CsItem>>();
@@ -131,6 +134,11 @@ public class OnRoundPostStartHelper
                     // On pistol rounds, only one person gets a defuse kit
                     giveDefuseKit(player);
                 }
+            }
+
+            if (Configs.GetConfigData().ZeusPreference == ZeusPreference.Always)
+            {
+                items.Add(CsItem.Zeus);
             }
 
             allocateItemsForPlayer(player, items, team == CsTeam.Terrorist ? "slot5" : "slot1");

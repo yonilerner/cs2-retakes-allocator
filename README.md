@@ -133,7 +133,6 @@ Here are the weapon configs:
         - `FullBuyPrimary`: The primary weapon for full buy rounds
     - The valid values for each subkey this are any `CsItem` that is a weapon.
       To better understand how `DefaultWeapons` works, here is the default config for `DefaultWeapons` as an example:
-
 ```json
 {
   "DefaultWeapons": {
@@ -153,10 +152,21 @@ Here are the weapon configs:
 }
 ```
 
+
+- `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
+- `AllowPreferredWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
+  setting. Defaults to `false`.
+- `MaxPreferredWeaponsPerTeam`: The maximum number of AWPs for each team.
+- `MinPlayersPerTeamForPreferredWeapon`: The minimum number of players on each team necessary for someone to get an AWP.
+
 #### Nade Configuration
-- `MaxNades`: You can set the maximum number of each type of nade for each team and on each map (or default). By default the config includes some limits that you may want to change.
-The way `MaxNades` works is that the GLOBAL option sets the max for *all* maps, and then you can also specify subsets of the config for specific maps.
-For example, if your config is:
+
+- `MaxNades`: You can set the maximum number of each type of nade for each team and on each map (or default). By default
+  the config includes some limits that you may want to change.
+  The way `MaxNades` works is that the GLOBAL option sets the max for *all* maps, and then you can also specify subsets
+  of the config for specific maps.
+  For example, if your config is:
+
 ```json
 {
   "MaxNades": {
@@ -177,7 +187,9 @@ For example, if your config is:
   }
 }
 ```
+
 but you specifically want to allow 2 smokes for CT on mirage, you can do:
+
 ```json
 {
   "MaxNades": {
@@ -203,21 +215,37 @@ but you specifically want to allow 2 smokes for CT on mirage, you can do:
   }
 }
 ```
+
 This will keep the defaults the same for everything but override just CT smokes on mirage.
 
 The valid keys for nades on `Terrorist` are:
+
 - `Flashbang`
 - `Smoke`
 - `Molotov`
 - `HighExplosive`
 
 The valid keys for nades on `CounterTerrorist` are:
+
 - `Flashbang`
 - `Smoke`
 - `Incendiary`
 - `HighExplosive`
 
 If you mix up `Incendiary` and `Molotov`, the plugin will fix it for you.
+
+- `MaxTeamNades` - This config works similarly to `MaxNades`, except it affects the max number of nades an entire team
+  can have. The structure is the same as `MaxNades` except that after the map and team keys, it maps a round type to a
+  max nade setting. The possible max nade settings are:
+    - `One`, `Two`, ... until `Ten`
+    - `AveragePointFivePerPlayer` (rounds up)
+    - `AverageOnePerPlayer` (rounds up)
+    - `AverageOnePointFivePerPlayer` (rounds up)
+    - `AverageTwoPerPlayer` (rounds up)
+    - `None`
+
+*NOTE: There is a bug right now where the plugin will not always give the maximum number of nades, even if players have
+room for it*.
 
 #### Other Configuration
 
@@ -269,8 +297,14 @@ If you mix up `Incendiary` and `Molotov`, the plugin will fix it for you.
 - `ChatMessagePluginName`: The name that you want to appear between [] in chat messages from the plugin. Defaults
   to `Retakes`.
     - For example, `[Retakes] Next round will be a Terrorist round.`
+- `ChatMessagePluginPrefix`: The *entire* prefix that appears in front of chat messages. If set, this
+  overrides `ChatMessagePluginName`. If you want the prefix to be colored, the config must also specify the colors. It
+  must also specify a space after the prefix if you want one.
 - `MigrateOnStartup`: Whether or not to migrate the database on startup. This defaults to yes for now, but production
   servers may want to change this to false so they can control when database migrations are applied.
+- `EnableRoundTypeAnnouncement`: Whether or not to announce the round type.
+- `EnableRoundTypeAnnouncementCenter`: Whether or not to announce the round type in the center of the users screen. Only
+  applies if `EnableRoundTypeAnnouncement` is also set to `true`.
 
 ### Commands
 

@@ -48,7 +48,7 @@ public static class WeaponHelpers
 
     private static readonly ICollection<CsItem> _ctPistols = new HashSet<CsItem>
     {
-        CsItem.USP,
+        CsItem.USPS,
         CsItem.P2000,
         CsItem.FiveSeven,
     };
@@ -341,15 +341,35 @@ public static class WeaponHelpers
         };
     }
 
-    public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip)
+    public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip, CsTeam team)
     {
         if (Configs.GetConfigData().AllowPreferredWeaponForEveryone)
         {
             return new List<T>(players);
         }
 
+        var playersList = players.ToList();
+
+        if (Configs.GetConfigData().MinPlayersPerTeamForPreferredWeapon.TryGetValue(team, out var minTeamPlayers))
+        {
+            if (playersList.Count < minTeamPlayers)
+            {
+                return new List<T>();
+            }
+        }
+
+        if (!Configs.GetConfigData().MaxPreferredWeaponsPerTeam.TryGetValue(team, out var maxPerTeam))
+        {
+            maxPerTeam = 1;
+        }
+
+        if (maxPerTeam == 0)
+        {
+            return new List<T>();
+        }
+
         var choicePlayers = new List<T>();
-        foreach (var p in players)
+        foreach (var p in playersList)
         {
             choicePlayers.Add(p);
             // VIPs get extra chances to be selected
@@ -362,13 +382,8 @@ public static class WeaponHelpers
             }
         }
 
-        var player = Utils.Choice(choicePlayers);
-        if (player is null)
-        {
-            return new List<T>();
-        }
-
-        return new List<T> {player};
+        Utils.Shuffle(choicePlayers);
+        return new HashSet<T>(choicePlayers).Take(maxPerTeam).ToList();
     }
 
     public static bool IsUsableWeapon(CsItem weapon)

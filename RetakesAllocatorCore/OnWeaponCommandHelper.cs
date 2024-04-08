@@ -7,26 +7,37 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
+
     public static string Handle(ICollection<string> args, ulong userId, RoundType? roundType, CsTeam currentTeam,
         bool remove, out CsItem? outWeapon)
     {
-        outWeapon = null;
+        var result = Task.Run(() => HandleAsync(args, userId, roundType, currentTeam, remove)).Result;
+        outWeapon = result.Item2;
+        return result.Item1;
+    }
+
+    public static async Task<Tuple<string, CsItem?>> HandleAsync (ICollection<string> args, ulong userId, RoundType? roundType, CsTeam currentTeam,
+        bool remove)
+    {
+        CsItem? outWeapon = null;
+
+        Tuple<string, CsItem?> Ret(string str) => new(str, outWeapon);
+
         if (!Configs.GetConfigData().CanPlayersSelectWeapons())
         {
-            return "Players cannot choose their weapons on this server.";
+            return Ret(Translator.Instance["weapon_preference.cannot_choose"]);
         }
 
         if (args.Count == 0)
         {
-            var gunsMessage =
-                $"Usage: !gun <gun>. Partial matches for any gun will be found.\nValid guns for {currentTeam}:\n";
-            gunsMessage +=
-                $"Pistols: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound, currentTeam))}\n";
-            gunsMessage +=
-                $"Half buy: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary, currentTeam))}\n";
-            gunsMessage +=
-                $"Full buy: {string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, currentTeam))}";
-            return gunsMessage;
+            var gunsMessage = Translator.Instance[
+                "weapon_preference.gun_usage",
+                currentTeam,
+                string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound, currentTeam)),
+                string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary, currentTeam)),
+                string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, currentTeam))
+            ];
+            return Ret(gunsMessage);
         }
 
         var weaponInput = args.ElementAt(0).Trim();
@@ -38,14 +49,14 @@ public class OnWeaponCommandHelper
             var parsedTeamInput = Utils.ParseTeam(teamInput);
             if (parsedTeamInput == CsTeam.None)
             {
-                return $"Invalid team provided: {teamInput}";
+                return Ret(Translator.Instance["weapon_preference.invalid_team", teamInput]);
             }
 
             team = parsedTeamInput;
         }
         else if (currentTeam is CsTeam.None or CsTeam.Spectator)
         {
-            return "You must join a team before running this command.";
+            return Ret(Translator.Instance["weapon_preference.join_team"]);
         }
         else
         {
@@ -55,20 +66,20 @@ public class OnWeaponCommandHelper
         var foundWeapons = WeaponHelpers.FindValidWeaponsByName(weaponInput);
         if (foundWeapons.Count == 0)
         {
-            return $"Weapon '{weaponInput}' not found.";
+            return Ret(Translator.Instance["weapon_preference.not_found", weaponInput]);
         }
 
         var weapon = foundWeapons.First();
 
         if (!WeaponHelpers.IsUsableWeapon(weapon))
         {
-            return $"Weapon '{weapon}' is not allowed to be selected.";
+            return Ret(Translator.Instance["weapon_preference.not_allowed", weapon]);
         }
 
         var weaponRoundTypes = WeaponHelpers.GetRoundTypesForWeapon(weapon);
         if (weaponRoundTypes.Count == 0)
         {
-            return $"Invalid weapon '{weapon}'";
+            return Ret(Translator.Instance["weapon_preference.invalid_weapon", weapon]);
         }
 
         var allocationType = WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(
@@ -90,7 +101,7 @@ public class OnWeaponCommandHelper
 
         if (allocationType is null)
         {
-            return $"Weapon '{weapon}' is not valid for {team}";
+            return Ret(Translator.Instance["weapon_preference.not_valid_for_team", weapon, team]);
         }
 
 
@@ -98,27 +109,27 @@ public class OnWeaponCommandHelper
         {
             if (isPreferred)
             {
-                Queries.SetPreferredWeaponPreference(userId, null);
-                return $"You will no longer receive '{weapon}'.";
+                await Queries.SetPreferredWeaponPreferenceAsync(userId, null);
+                return Ret(Translator.Instance["weapon_preference.unset_preference_preferred", weapon]);
             }
             else
             {
-                Queries.SetWeaponPreferenceForUser(userId, team, allocationType.Value, null);
-                return $"Weapon '{weapon}' is no longer your {allocationType.Value} preference for {team}.";
+                await Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, null);
+                return Ret(Translator.Instance["weapon_preference.unset_preference", weapon, allocationType.Value, team]);
             }
         }
 
         string message;
         if (isPreferred)
         {
-            Queries.SetPreferredWeaponPreference(userId, weapon);
+            await Queries.SetPreferredWeaponPreferenceAsync(userId, weapon);
             // If we ever add more preferred weapons, we need to change the wording of "sniper" here
-            message = $"You will now get a '{weapon}' when its your turn for a sniper.";
+            message = Translator.Instance["weapon_preference.set_preference_preferred", weapon];
         }
         else
         {
-            Queries.SetWeaponPreferenceForUser(userId, team, allocationType.Value, weapon);
-            message = $"Weapon '{weapon}' is now your {allocationType.Value} preference for {team}.";
+            await Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, weapon);
+            message = Translator.Instance["weapon_preference.set_preference", weapon, allocationType.Value, team];
         }
 
         if (allocateImmediately)
@@ -127,14 +138,14 @@ public class OnWeaponCommandHelper
         }
         else if (!isPreferred)
         {
-            message += $" You will get it at the next {weaponRoundTypes.First()} round.";
+            message += Translator.Instance["weapon_preference.receive_next_round", weaponRoundTypes.First()];
         }
 
         if (userId == 0)
         {
-            message = "Without a valid Steam ID, your preferences will not be saved.";
+            message = Translator.Instance["weapon_preference.not_saved"];
         }
 
-        return message;
+        return Ret(message);
     }
 }

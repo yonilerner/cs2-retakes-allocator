@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Modules.Menu;
 using RetakesAllocator.Managers;
 using RetakesAllocator.Menus.Interfaces;
+using RetakesAllocatorCore;
 using static RetakesAllocatorCore.PluginInfo;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
@@ -22,14 +23,14 @@ public class VoteMenu : AbstractBaseMenu
     {
         PlayersInMenu.Add(player);
 
-        var menu = new ChatMenu($"{_voteManager.VoteMessagePrefix} Select your vote!");
+        var menu = new ChatMenu($"{_voteManager.VoteMessagePrefix}{Translator.Instance["vote_menu.select_vote"]}");
 
         foreach (var option in _voteManager.GetVoteOptions())
         {
             menu.AddMenuOption(option, OnVoteSelect);
         }
 
-        menu.AddMenuOption("Exit", OnSelectExit);
+        menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
         ChatMenus.OpenMenu(player, menu);
         CreateMenuTimeoutTimer(player);
@@ -47,7 +48,10 @@ public class VoteMenu : AbstractBaseMenu
 
     private void OnMenuTimeout(CCSPlayerController player)
     {
-        player.PrintToChat($"{MessagePrefix}You did not interact with the menu in {MenuTimeout} seconds!");
+        Helpers.WriteNewlineDelimited(
+            Translator.Instance["menu.timeout", MenuTimeout],
+            player.PrintToChat
+        );
 
         PlayersInMenu.Remove(player);
         _menuTimeoutTimers[player].Kill();

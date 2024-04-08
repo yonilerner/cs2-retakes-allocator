@@ -6,25 +6,28 @@ namespace RetakesAllocatorCore.Db;
 
 public class Queries
 {
-    public static UserSetting? GetUserSettings(ulong userId)
+    public static async Task<UserSetting?> GetUserSettings(ulong userId)
     {
-        return Db.GetInstance().UserSettings.FirstOrDefault(u => u.UserId == userId);
+        return await Db.GetInstance().UserSettings.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId);
     }
 
-    private static UserSetting? UpsertUserSettings(ulong userId, Action<UserSetting> mutation)
+    private static async Task<UserSetting?> UpsertUserSettings(ulong userId, Action<UserSetting> mutation)
     {
         if (userId == 0)
         {
             Log.Debug("Encountered userid 0, not upserting user settings");
             return null;
         }
+        
+        Log.Debug($"Upserting settings for {userId}");
+
         var instance = Db.GetInstance();
         var isNew = false;
-        var userSettings = instance.UserSettings.FirstOrDefault(u => u.UserId == userId);
+        var userSettings = await instance.UserSettings.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId);
         if (userSettings is null)
         {
             userSettings = new UserSetting {UserId = userId};
-            instance.UserSettings.Add(userSettings);
+            await instance.UserSettings.AddAsync(userSettings);
             isNew = true;
         }
 
@@ -32,36 +35,50 @@ public class Queries
 
         mutation(userSettings);
 
-        instance.SaveChanges();
+        await instance.SaveChangesAsync();
         instance.Entry(userSettings).State = EntityState.Detached;
 
         return userSettings;
     }
 
+    public static async Task SetWeaponPreferenceForUserAsync(ulong userId, CsTeam team,
+        WeaponAllocationType weaponAllocationType,
+        CsItem? item)
+    {
+        await UpsertUserSettings(userId,
+            userSetting => { userSetting.SetWeaponPreference(team, weaponAllocationType, item); });
+    }
+
     public static void SetWeaponPreferenceForUser(ulong userId, CsTeam team, WeaponAllocationType weaponAllocationType,
         CsItem? item)
     {
-        UpsertUserSettings(userId,
-            userSetting => { userSetting.SetWeaponPreference(team, weaponAllocationType, item); });
+        Task.Run(async () => { await SetWeaponPreferenceForUserAsync(userId, team, weaponAllocationType, item); });
+    }
+
+    public static async Task ClearWeaponPreferencesForUserAsync(ulong userId)
+    {
+        await UpsertUserSettings(userId, userSetting => { userSetting.WeaponPreferences = new(); });
     }
 
     public static void ClearWeaponPreferencesForUser(ulong userId)
     {
-        UpsertUserSettings(userId, userSetting =>
-        {
-            userSetting.WeaponPreferences = new();
-        });
+        Task.Run(async () => { await ClearWeaponPreferencesForUserAsync(userId); });
     }
 
-    public static void SetPreferredWeaponPreference(ulong userId, CsItem? item)
+    public static async Task SetPreferredWeaponPreferenceAsync(ulong userId, CsItem? item)
     {
-        UpsertUserSettings(userId, userSetting =>
+        await UpsertUserSettings(userId, userSetting =>
         {
             userSetting.SetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Preferred,
                 WeaponHelpers.CoercePreferredTeam(item, CsTeam.Terrorist));
             userSetting.SetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.Preferred,
                 WeaponHelpers.CoercePreferredTeam(item, CsTeam.CounterTerrorist));
         });
+    }
+
+    public static void SetPreferredWeaponPreference(ulong userId, CsItem? item)
+    {
+        Task.Run(async () => { await SetPreferredWeaponPreferenceAsync(userId, item); });
     }
 
     public static IDictionary<ulong, UserSetting> GetUsersSettings(ICollection<ulong> userIds)

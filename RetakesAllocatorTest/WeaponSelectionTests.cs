@@ -11,42 +11,42 @@ namespace RetakesAllocatorTest;
 public class WeaponSelectionTests : BaseTestFixture
 {
     [Test]
-    public void SetWeaponPreferenceDirectly()
+    public async Task SetWeaponPreferenceDirectly()
     {
         Assert.That(
-            Queries.GetUserSettings(TestSteamId)
+            (await Queries.GetUserSettings(TestSteamId))
                 ?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
             Is.EqualTo(null));
 
-        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary,
+        await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary,
             CsItem.Galil);
         Assert.That(
-            Queries.GetUserSettings(TestSteamId)
+            (await Queries.GetUserSettings(TestSteamId))
                 ?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
             Is.EqualTo(CsItem.Galil));
 
-        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary,
+        await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary,
             CsItem.AWP);
         Assert.That(
-            Queries.GetUserSettings(TestSteamId)
+            (await Queries.GetUserSettings(TestSteamId))
                 ?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
             Is.EqualTo(CsItem.AWP));
 
-        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.PistolRound,
+        await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.Terrorist, WeaponAllocationType.PistolRound,
             CsItem.Deagle);
         Assert.That(
-            Queries.GetUserSettings(TestSteamId)
+            (await Queries.GetUserSettings(TestSteamId))
                 ?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.PistolRound),
             Is.EqualTo(CsItem.Deagle));
 
         Assert.That(
-            Queries.GetUserSettings(TestSteamId)
+            (await Queries.GetUserSettings(TestSteamId))
                 ?.GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary),
             Is.EqualTo(null));
-        Queries.SetWeaponPreferenceForUser(TestSteamId, CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary,
+        await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary,
             CsItem.MP9);
         Assert.That(
-            Queries.GetUserSettings(TestSteamId)
+            (await Queries.GetUserSettings(TestSteamId))
                 ?.GetWeaponPreference(CsTeam.CounterTerrorist, WeaponAllocationType.HalfBuyPrimary),
             Is.EqualTo(CsItem.MP9));
     }
@@ -81,7 +81,7 @@ public class WeaponSelectionTests : BaseTestFixture
     [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "ak,F", null, "Invalid team", "Invalid team")]
     [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "awp", null, "will now get a 'AWP", "no longer receive 'AWP")]
     [TestCase(RoundType.Pistol, CsTeam.CounterTerrorist, "awp", null, "will now get a 'AWP", "no longer receive 'AWP")]
-    public void SetWeaponPreferenceCommandSingleArg(
+    public async Task SetWeaponPreferenceCommandSingleArg(
         RoundType? roundType,
         CsTeam team,
         string strArgs,
@@ -92,14 +92,15 @@ public class WeaponSelectionTests : BaseTestFixture
     {
         var args = strArgs.Split(",");
 
-        var result = OnWeaponCommandHelper.Handle(args, TestSteamId, roundType, team, false, out var selectedItem);
+        var result = await OnWeaponCommandHelper.HandleAsync(args, TestSteamId, roundType, team, false);
 
         var messages = message.Split(";;;");
         foreach (var m in messages)
         {
-            Assert.That(result, Does.Contain(m));
+            Assert.That(result.Item1, Does.Contain(m));
         }
 
+        var selectedItem = result.Item2;
         Assert.That(selectedItem, Is.EqualTo(expectedItem));
 
         var allocationType =
@@ -108,18 +109,18 @@ public class WeaponSelectionTests : BaseTestFixture
                 : null;
 
         var setWeapon = allocationType is not null
-            ? Queries.GetUserSettings(TestSteamId)?
+            ? (await Queries.GetUserSettings(TestSteamId))?
                 .GetWeaponPreference(team, allocationType.Value)
             : null;
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
 
         if (removeMessage is not null)
         {
-            result = OnWeaponCommandHelper.Handle(args, TestSteamId, roundType, team, true, out _);
-            Assert.That(result, Does.Contain(removeMessage));
+            result = await OnWeaponCommandHelper.HandleAsync(args, TestSteamId, roundType, team, true);
+            Assert.That(result.Item1, Does.Contain(removeMessage));
 
             setWeapon = allocationType is not null
-                ? Queries.GetUserSettings(TestSteamId)?.GetWeaponPreference(team, allocationType.Value)
+                ? (await Queries.GetUserSettings(TestSteamId))?.GetWeaponPreference(team, allocationType.Value)
                 : null;
             Assert.That(setWeapon, Is.EqualTo(null));
         }
@@ -129,7 +130,7 @@ public class WeaponSelectionTests : BaseTestFixture
     [TestCase("ak", CsItem.AK47, WeaponSelectionType.PlayerChoice, CsItem.AK47, "AK47' is now")]
     [TestCase("ak", CsItem.Galil, WeaponSelectionType.PlayerChoice, null, "not allowed")]
     [TestCase("ak", CsItem.AK47, WeaponSelectionType.Default, null, "cannot choose")]
-    public void SetWeaponPreferencesConfig(
+    public async Task SetWeaponPreferencesConfig(
         string itemName,
         CsItem? allowedItem,
         WeaponSelectionType weaponSelectionType,
@@ -146,13 +147,12 @@ public class WeaponSelectionTests : BaseTestFixture
         }
 
         var args = new List<string> {itemName};
-        var result =
-            OnWeaponCommandHelper.Handle(args, TestSteamId, RoundType.FullBuy, team, false, out var selectedItem);
+        var result = await OnWeaponCommandHelper.HandleAsync(args, TestSteamId, RoundType.FullBuy, team, false);
 
-        Assert.That(result, Does.Contain(message));
-        Assert.That(selectedItem, Is.EqualTo(expectedItem));
+        Assert.That(result.Item1, Does.Contain(message));
+        Assert.That(result.Item2, Is.EqualTo(expectedItem));
 
-        var setWeapon = Queries.GetUserSettings(TestSteamId)
+        var setWeapon = (await Queries.GetUserSettings(TestSteamId))
             ?.GetWeaponPreference(team, WeaponAllocationType.FullBuyPrimary);
         Assert.That(setWeapon, Is.EqualTo(expectedItem));
     }

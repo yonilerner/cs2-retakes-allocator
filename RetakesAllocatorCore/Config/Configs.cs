@@ -156,6 +156,37 @@ public record ConfigData
         }
     };
 
+    public Dictionary<
+        string,
+        Dictionary<
+            CsTeam,
+            Dictionary<RoundType, MaxTeamNadesSetting>
+        >
+    > MaxTeamNades { get; set; } = new()
+    {
+        {
+            NadeHelpers.GlobalSettingName, new()
+            {
+                {
+                    CsTeam.Terrorist, new()
+                    {
+                        {RoundType.Pistol, MaxTeamNadesSetting.AverageOnePerPlayer},
+                        {RoundType.HalfBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                        {RoundType.FullBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                    }
+                },
+                {
+                    CsTeam.CounterTerrorist, new()
+                    {
+                        {RoundType.Pistol, MaxTeamNadesSetting.AverageOnePerPlayer},
+                        {RoundType.HalfBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                        {RoundType.FullBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                    }
+                },
+            }
+        }
+    };
+
     public RoundTypeSelectionOption RoundTypeSelection { get; set; } = RoundTypeSelectionOption.Random;
 
     public Dictionary<RoundType, int> RoundTypePercentages { get; set; } = new()
@@ -180,16 +211,37 @@ public record ConfigData
     };
 
     public bool MigrateOnStartup { get; set; } = true;
+    public bool ResetStateOnGameRestart { get; set; } = true;
     public bool AllowAllocationAfterFreezeTime { get; set; } = true;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
+    public bool EnableRoundTypeAnnouncementCenter { get; set; } = false;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
+
+    public Dictionary<CsTeam, int> MaxPreferredWeaponsPerTeam { get; set; } = new()
+    {
+        {CsTeam.Terrorist, 1},
+        {CsTeam.CounterTerrorist, 1},
+    };
+
+    public Dictionary<CsTeam, int> MinPlayersPerTeamForPreferredWeapon { get; set; } = new()
+    {
+        {CsTeam.Terrorist, 1},
+        {CsTeam.CounterTerrorist, 1},
+    };
+
+    public bool EnableCanAcquireHook { get; set; } = true;
+
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
     public string ChatMessagePluginName { get; set; } = "Retakes";
+    public string? ChatMessagePluginPrefix { get; set; }
+    public string InGameGunMenuCenterCommands { get; set; } = "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns";
+    public string InGameGunMenuChatCommands { get; set; } = "guns,!guns";
+    public ZeusPreference ZeusPreference { get; set; } = ZeusPreference.Never;
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
-    public string DatabaseConnectionString { get; set; } = "Data Source=data.db";
+    public string DatabaseConnectionString { get; set; } = "Data Source=data.db; Pooling=False";
 
     public IList<string> Validate()
     {

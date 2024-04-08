@@ -24,7 +24,7 @@ public class MenuManager
     {
         if (IsUserInMenu(player))
         {
-            player.PrintToChat($"{MessagePrefix}You are already using another menu!");
+            Helpers.WriteNewlineDelimited(Translator.Instance["menu.already_in_menu"], player.PrintToChat);
             return true;
         }
 
