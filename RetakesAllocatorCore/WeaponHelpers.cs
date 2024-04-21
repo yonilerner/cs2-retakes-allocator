@@ -371,7 +371,7 @@ public static class WeaponHelpers
         var choicePlayers = new List<T>();
         foreach (var p in playersList)
         {
-            if (Configs.GetConfigData().AllowPreferredWeaponForOnlyVIP)
+            if (Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon == -1)
             {
                 if (isVip(p))
                 {

@@ -29,6 +29,8 @@
   "weapon_preference.set_preference": "Weapon '{0}' is now your {1} preference for {2}.",
   "weapon_preference.receive_next_round": " You will get it at the next {0} round.",
   "weapon_preference.not_saved": "Without a valid Steam ID, your preferences will not be saved.",
+  "weapon_preference.only_vip_can_use": "Only VIP users can use this command!",
+
 
   "menu.timeout": "You did not interact with the menu in {0} seconds!",
   "menu.exit": "Exit",

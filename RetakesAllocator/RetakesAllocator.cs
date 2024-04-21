@@ -234,6 +234,13 @@ public class RetakesAllocator : BasePlugin
 
         var currentTeam = player!.Team;
 
+        if (Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon == -1 && !Helpers.IsVip(player!))
+        {
+            var message = Translator.Instance["weapon_preference.only_vip_can_use"];
+            commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
+            return;
+        }
+
         var result = Task.Run(async () =>
         {
             var currentPreferredSetting = (await Queries.GetUserSettings(playerId))
