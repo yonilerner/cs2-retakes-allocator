@@ -63,7 +63,7 @@ public class OnRoundPostStartHelper
         Random random = new Random();
         double generatedChance = random.NextDouble() * 100;
 
-        if (roundType == RoundType.FullBuy && generatedChance <= Configs.GetConfigData().PercentageOfPreferredWeaponPerRound)
+        if (roundType == RoundType.FullBuy && generatedChance <= Configs.GetConfigData().ChanceForPreferredWeapon)
         {
             tPreferredPlayers =
                 WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers), isVip,
