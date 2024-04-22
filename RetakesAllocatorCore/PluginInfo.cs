@@ -18,7 +18,8 @@ public static class PluginInfo
             {
                 if (Configs.GetConfigData().ChatMessagePluginPrefix is not null)
                 {
-                    return Translator.Color(Configs.GetConfigData().ChatMessagePluginPrefix!);
+                    // If message starts with color code it wont work. Hacky fix.
+                    return " " + Translator.Color(Configs.GetConfigData().ChatMessagePluginPrefix!);
                 }
 
                 name = Configs.GetConfigData().ChatMessagePluginName;
