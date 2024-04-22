@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
 using RetakesAllocatorCore.Managers;
+using System;
 
 namespace RetakesAllocatorCore;
 
@@ -58,7 +59,11 @@ public class OnRoundPostStartHelper
 
         ICollection<T> tPreferredPlayers = new List<T>();
         ICollection<T> ctPreferredPlayers = new List<T>();
-        if (roundType == RoundType.FullBuy)
+
+        Random random = new Random();
+        double generatedChance = random.NextDouble() * 100;
+
+        if (roundType == RoundType.FullBuy && generatedChance <= Configs.GetConfigData().RatioOfPreferredWeaponPerRound)
         {
             tPreferredPlayers =
                 WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers), isVip,
