@@ -29,6 +29,7 @@
   "weapon_preference.set_preference": "Arma '{0}' agora é sua preferência de {1} para {2}.",
   "weapon_preference.receive_next_round": " Você a receberá na próxima rodada de {0}.",
   "weapon_preference.not_saved": "Sem um STEAM ID válido, suas preferências não serão salvas.",
+  "weapon_preference.only_vip_can_use": "Somente jogadores VIP podem usar este comando!",
 
   "menu.timeout": "Você não interagiu com o menu em {0} segundos!",
   "menu.exit": "Sair",
