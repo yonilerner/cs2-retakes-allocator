@@ -109,6 +109,7 @@ public class OnWeaponCommandHelper
         {
             if (isPreferred)
             {
+
                 await Queries.SetPreferredWeaponPreferenceAsync(userId, null);
                 return Ret(Translator.Instance["weapon_preference.unset_preference_preferred", weapon]);
             }
