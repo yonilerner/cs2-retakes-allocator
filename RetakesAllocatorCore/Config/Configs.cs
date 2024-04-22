@@ -219,7 +219,7 @@ public record ConfigData
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
 
-    public double RatioOfPreferredWeaponPerRound { get; set; } = 50;
+    public double PercentageOfPreferredWeaponPerRound { get; set; } = 50;
 
     public Dictionary<CsTeam, int> MaxPreferredWeaponsPerTeam { get; set; } = new()
     {
