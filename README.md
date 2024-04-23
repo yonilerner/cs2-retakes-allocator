@@ -260,6 +260,7 @@ room for it*.
       the other two players will each have 25% chance of getting the AWP.
     - If you set this to 0, there will be no preference for VIPs.
     - If you set this to -1, only VIPs can get the AWP
+- `ChanceForPreferredWeapon`: This allows you to determine chance of players getting preferred weapon. (ie. 100 = %100, 50 = %50)
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
     - Choices:
         - `PlayerChoice` - Allow players to choose their preferences for the round type
