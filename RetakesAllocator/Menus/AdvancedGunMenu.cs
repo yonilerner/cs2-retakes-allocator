@@ -43,42 +43,7 @@ public class AdvancedGunMenu
             buttonPressed.Add(playerid, false);
         }
     }
-    /*public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
-    {
-        if(string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands) || @event == null)return HookResult.Continue;
-        var eventplayer = @event.Userid;
-        var eventmessage = @event.Text;
-        var player = Utilities.GetPlayerFromUserid(eventplayer);
-        
-        if (player == null || !player.IsValid)return HookResult.Continue;
-        var playerid = player.SteamID;
-
-        if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
-        string trimmedMessageStart = eventmessage.TrimStart();
-        string message = trimmedMessageStart.TrimEnd();
-        string[] CenterMenuCommands = Configs.GetConfigData().InGameGunMenuCenterCommands.Split(',');
-
-        if (CenterMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
-        {
-            if (!menuon.ContainsKey(playerid))
-            {
-                menuon.Add(playerid, true);
-            }
-            if (!mainmenu.ContainsKey(playerid))
-            {
-                mainmenu.Add(playerid, 0);
-            }
-            if (!currentIndexDict.ContainsKey(playerid))
-            {
-                currentIndexDict.Add(playerid, 0);
-            }
-            if (!buttonPressed.ContainsKey(playerid))
-            {
-                buttonPressed.Add(playerid, false);
-            }
-        }
-        return HookResult.Continue;
-    }*/
+   
 
     public void OnTick()
     {
