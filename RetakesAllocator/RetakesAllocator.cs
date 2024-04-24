@@ -74,6 +74,50 @@ public class RetakesAllocator : BasePlugin
         {
             HandleHotReload();
         }
+
+        if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands))
+        {
+            string[] ChatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
+            if (ChatMenuCommands.Length > 0)
+            {
+                foreach (var command in ChatMenuCommands)
+                {
+                    AddCommand($"css_{command}", "Opens the gun menu", (player, commandInfo) =>
+                    {
+                        if (player == null || !player.IsValid)
+                        {
+                            return;
+                        }
+
+                        _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
+                    });
+                }
+            }
+
+            string[] InGameGunMenuCenterCommands = Configs.GetConfigData().InGameGunMenuCenterCommands.Split(',');
+            if (InGameGunMenuCenterCommands.Length > 0)
+            {
+                foreach (var command in InGameGunMenuCenterCommands)
+                {
+                    AddCommand($"css_{command}", "Opens the advanced gun menu", (player, commandInfo) =>
+                    {
+                        if (player == null || !player.IsValid)
+                        {
+                            return;
+                        }
+
+                        _advancedGunMenu.HandleMenuCommand(player.UserId.Value);
+                    });
+                }
+            }
+
+
+            
+
+        }
+
+
+        
     }
 
     private void ResetState(bool loadConfig = true)
@@ -623,33 +667,6 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnEventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
         _advancedGunMenu.OnEventPlayerDisconnect(@event, info);
-        return HookResult.Continue;
-    }
-
-    [GameEventHandler(HookMode.Post)]
-    public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
-    {
-        if (@event == null) return HookResult.Continue;
-        _advancedGunMenu.OnEventPlayerChat(@event, info);
-
-        if (string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands)) return HookResult.Continue;
-        var eventplayer = @event.Userid;
-        var eventmessage = @event.Text;
-        var player = Utilities.GetPlayerFromUserid(eventplayer);
-
-        if (player == null || !player.IsValid) return HookResult.Continue;
-        var playerid = player.SteamID;
-
-        if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
-        string trimmedMessageStart = eventmessage.TrimStart();
-        string message = trimmedMessageStart.TrimEnd();
-        string[] ChatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
-
-        if (ChatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
-        {
-            _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
-        }
-
         return HookResult.Continue;
     }
 

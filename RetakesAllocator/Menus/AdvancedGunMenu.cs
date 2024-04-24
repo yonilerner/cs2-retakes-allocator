@@ -17,42 +17,33 @@ public class AdvancedGunMenu
     public Dictionary<ulong, int> currentIndexDict = new Dictionary<ulong, int>();
     public Dictionary<ulong, bool> buttonPressed = new Dictionary<ulong, bool>();
 
-    public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
+
+    public void HandleMenuCommand(int eventplayer)
     {
-        if(string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands) || @event == null)return HookResult.Continue;
-        var eventplayer = @event.Userid;
-        var eventmessage = @event.Text;
+
         var player = Utilities.GetPlayerFromUserid(eventplayer);
-        
-        if (player == null || !player.IsValid)return HookResult.Continue;
+
+        if (player == null || !player.IsValid) return;
         var playerid = player.SteamID;
 
-        if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
-        string trimmedMessageStart = eventmessage.TrimStart();
-        string message = trimmedMessageStart.TrimEnd();
-        string[] CenterMenuCommands = Configs.GetConfigData().InGameGunMenuCenterCommands.Split(',');
-
-        if (CenterMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
+        if (!menuon.ContainsKey(playerid))
         {
-            if (!menuon.ContainsKey(playerid))
-            {
-                menuon.Add(playerid, true);
-            }
-            if (!mainmenu.ContainsKey(playerid))
-            {
-                mainmenu.Add(playerid, 0);
-            }
-            if (!currentIndexDict.ContainsKey(playerid))
-            {
-                currentIndexDict.Add(playerid, 0);
-            }
-            if (!buttonPressed.ContainsKey(playerid))
-            {
-                buttonPressed.Add(playerid, false);
-            }
+            menuon.Add(playerid, true);
         }
-        return HookResult.Continue;
+        if (!mainmenu.ContainsKey(playerid))
+        {
+            mainmenu.Add(playerid, 0);
+        }
+        if (!currentIndexDict.ContainsKey(playerid))
+        {
+            currentIndexDict.Add(playerid, 0);
+        }
+        if (!buttonPressed.ContainsKey(playerid))
+        {
+            buttonPressed.Add(playerid, false);
+        }
     }
+   
 
     public void OnTick()
     {
