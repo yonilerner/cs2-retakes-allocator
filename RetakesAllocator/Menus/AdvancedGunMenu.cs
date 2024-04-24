@@ -17,7 +17,33 @@ public class AdvancedGunMenu
     public Dictionary<ulong, int> currentIndexDict = new Dictionary<ulong, int>();
     public Dictionary<ulong, bool> buttonPressed = new Dictionary<ulong, bool>();
 
-    public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
+
+    public void HandleMenuCommand(int eventplayer)
+    {
+
+        var player = Utilities.GetPlayerFromUserid(eventplayer);
+
+        if (player == null || !player.IsValid) return;
+        var playerid = player.SteamID;
+
+        if (!menuon.ContainsKey(playerid))
+        {
+            menuon.Add(playerid, true);
+        }
+        if (!mainmenu.ContainsKey(playerid))
+        {
+            mainmenu.Add(playerid, 0);
+        }
+        if (!currentIndexDict.ContainsKey(playerid))
+        {
+            currentIndexDict.Add(playerid, 0);
+        }
+        if (!buttonPressed.ContainsKey(playerid))
+        {
+            buttonPressed.Add(playerid, false);
+        }
+    }
+    /*public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
     {
         if(string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands) || @event == null)return HookResult.Continue;
         var eventplayer = @event.Userid;
@@ -52,7 +78,7 @@ public class AdvancedGunMenu
             }
         }
         return HookResult.Continue;
-    }
+    }*/
 
     public void OnTick()
     {
