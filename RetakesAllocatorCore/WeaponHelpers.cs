@@ -380,6 +380,7 @@ public static class WeaponHelpers
             }
             else
             {
+                choicePlayers.Add(p);
                 if (isVip(p))
                 {
                     for (var i = 0; i < Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon; i++)
