@@ -195,4 +195,7 @@ public static class Helpers
     }
 
     public static bool IsVip(CCSPlayerController player) => AdminManager.PlayerHasPermissions(player, "@css/vip");
+    public static string BombSite = "";
+    public static bool AnnouceBombSite = false;
+    public static bool OneTime = false;
 }
