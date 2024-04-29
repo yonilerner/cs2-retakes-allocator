@@ -31,7 +31,7 @@ public class AllocatorMenuManager
     }
 
     public T GetMenu<T>(MenuType menuType)
-    where T : AbstractBaseMenu
+        where T : AbstractBaseMenu
     {
         return (T) _menus[menuType];
     }

@@ -246,7 +246,10 @@ public record ConfigData
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
     public string ChatMessagePluginName { get; set; } = "Retakes";
     public string? ChatMessagePluginPrefix { get; set; }
-    public string InGameGunMenuCenterCommands { get; set; } = "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns,/gunsmenu,/gunmenu";
+
+    public string InGameGunMenuCenterCommands { get; set; } =
+        "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns,/gunsmenu,/gunmenu";
+
     public string InGameGunMenuChatCommands { get; set; } = "guns,!guns,/guns";
     public ZeusPreference ZeusPreference { get; set; } = ZeusPreference.Never;
 

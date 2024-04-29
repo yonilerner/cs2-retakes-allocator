@@ -7,7 +7,6 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
-
     public static string Handle(ICollection<string> args, ulong userId, RoundType? roundType, CsTeam currentTeam,
         bool remove, out CsItem? outWeapon)
     {
@@ -16,7 +15,8 @@ public class OnWeaponCommandHelper
         return result.Item1;
     }
 
-    public static async Task<Tuple<string, CsItem?>> HandleAsync (ICollection<string> args, ulong userId, RoundType? roundType, CsTeam currentTeam,
+    public static async Task<Tuple<string, CsItem?>> HandleAsync(ICollection<string> args, ulong userId,
+        RoundType? roundType, CsTeam currentTeam,
         bool remove)
     {
         CsItem? outWeapon = null;
@@ -33,9 +33,13 @@ public class OnWeaponCommandHelper
             var gunsMessage = Translator.Instance[
                 "weapon_preference.gun_usage",
                 currentTeam,
-                string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound, currentTeam)),
-                string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary, currentTeam)),
-                string.Join(", ", WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, currentTeam))
+                string.Join(", ",
+                    WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound, currentTeam)),
+                string.Join(", ",
+                    WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.HalfBuyPrimary,
+                        currentTeam)),
+                string.Join(", ",
+                    WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, currentTeam))
             ];
             return Ret(gunsMessage);
         }
@@ -109,14 +113,14 @@ public class OnWeaponCommandHelper
         {
             if (isPreferred)
             {
-
                 await Queries.SetPreferredWeaponPreferenceAsync(userId, null);
                 return Ret(Translator.Instance["weapon_preference.unset_preference_preferred", weapon]);
             }
             else
             {
                 await Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, null);
-                return Ret(Translator.Instance["weapon_preference.unset_preference", weapon, allocationType.Value, team]);
+                return Ret(
+                    Translator.Instance["weapon_preference.unset_preference", weapon, allocationType.Value, team]);
             }
         }
 

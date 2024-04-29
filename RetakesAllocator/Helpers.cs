@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -194,8 +195,10 @@ public static class Helpers
             .Count;
     }
 
+    public static bool IsWindows()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    }
+
     public static bool IsVip(CCSPlayerController player) => AdminManager.PlayerHasPermissions(player, "@css/vip");
-    public static string BombSite = "";
-    public static bool AnnouceBombSite = false;
-    public static bool OneTime = false;
 }
