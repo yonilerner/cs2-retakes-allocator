@@ -445,7 +445,7 @@ public class RetakesAllocator : BasePlugin
             : null;
 
         var isValidAllocation = WeaponHelpers.IsAllocationTypeValidForRound(purchasedAllocationType,
-            RoundTypeManager.Instance.GetCurrentRoundType());
+            RoundTypeManager.Instance.GetCurrentRoundType()) && WeaponHelpers.IsUsableWeapon(item);
 
         Log.Debug($"item {item} team {team} player {playerId}");
         Log.Debug($"weapon alloc {purchasedAllocationType} valid? {isValidAllocation}");
