@@ -56,6 +56,7 @@ public class RetakesAllocator : BasePlugin
         RegisterListener<Listeners.OnMapStart>(mapName =>
         {
             ResetState();
+            Log.Debug($"Setting map name {mapName}");
             RoundTypeManager.Instance.SetMap(mapName);
         });
 
@@ -609,7 +610,7 @@ public class RetakesAllocator : BasePlugin
     private void HandleAllocateEvent()
     {
         IsAllocatingForRound = true;
-        Log.Debug("Handling allocate event");
+        Log.Debug($"Handling allocate event");
         Server.ExecuteCommand("mp_max_armor 0");
 
         var menu = _allocatorMenuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);

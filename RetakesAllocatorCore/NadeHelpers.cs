@@ -61,7 +61,7 @@ public class NadeHelpers
             _ => (int) Math.Ceiling(numPlayers * multiplier)
         };
 
-        Log.Debug($"Nade setting: {maxNadesSetting}. Total: {maxTotalNades}");
+        Log.Debug($"Nade setting: {maxNadesSetting}. Total: {maxTotalNades}. Map: {map}");
 
         var molly = team == CsTeam.Terrorist ? CsItem.Molotov : CsItem.Incendiary;
         var nadeDistribution = new List<CsItem>
