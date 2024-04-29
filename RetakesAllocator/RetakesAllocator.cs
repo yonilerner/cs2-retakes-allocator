@@ -33,7 +33,7 @@ public class RetakesAllocator : BasePlugin
     public override string ModuleAuthor => "Yoni Lerner, B3none, Gold KingZ";
     public override string ModuleDescription => "https://github.com/yonilerner/cs2-retakes-allocator";
 
-    private readonly Menu_Manager _menuManager = new();
+    private readonly AllocatorMenuManager _allocatorMenuManager = new();
     private readonly AdvancedGunMenu _advancedGunMenu = new();
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
     private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
@@ -56,7 +56,10 @@ public class RetakesAllocator : BasePlugin
             RoundTypeManager.Instance.SetMap(mapName);
         });
 
-        RegisterListener<Listeners.OnTick>(OnTick);
+        if (Configs.GetConfigData().UseOnTickFeatures)
+        {
+            RegisterListener<Listeners.OnTick>(OnTick);
+        }
 
         AddTimer(0.1f, () => { GetRetakesPluginEventSender().RetakesPluginEventHandlers += RetakesEventHandler; });
 
@@ -165,7 +168,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        _menuManager.OpenMenuForPlayer(player!, MenuType.NextRoundVote);
+        _allocatorMenuManager.OpenMenuForPlayer(player!, MenuType.NextRoundVote);
     }
 
     [ConsoleCommand("css_gun")]
@@ -318,9 +321,11 @@ public class RetakesAllocator : BasePlugin
 
     public HookResult OnWeaponCanAcquire(DynamicHook hook)
     {
+        Log.Debug("OnWeaponCanAcquire");
         // GetCSWeaponDataFromKeyFunc doesnt work on windows
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
+            Log.Debug("Exit early");
             return HookResult.Continue;
         }
 
@@ -352,6 +357,11 @@ public class RetakesAllocator : BasePlugin
             );
 
             return HookResult.Stop;
+        }
+
+        if (CustomFunctions is null)
+        {
+            return RetStop();
         }
 
         var weaponData = CustomFunctions.GetCSWeaponDataFromKeyFunc.Invoke(-1,
@@ -574,7 +584,7 @@ public class RetakesAllocator : BasePlugin
         Log.Debug("Handling allocate event");
         Server.ExecuteCommand("mp_max_armor 0");
 
-        var menu = _menuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);
+        var menu = _allocatorMenuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);
         menu.GatherAndHandleVotes();
 
         var allPlayers = Utilities.GetPlayers()
@@ -811,7 +821,7 @@ public class RetakesAllocator : BasePlugin
 
             if (ChatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
             {
-                _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
+                _allocatorMenuManager.OpenMenuForPlayer(player!, MenuType.Guns);
             }
         }
         
@@ -877,7 +887,7 @@ public class RetakesAllocator : BasePlugin
                     continue;
                 }
 
-                CustomFunctions.PlayerGiveNamedItem(player, itemString);
+                CustomFunctions?.PlayerGiveNamedItem(player, itemString);
                 var slotType = WeaponHelpers.GetSlotTypeForItem(item);
                 if (slotType is not null)
                 {
