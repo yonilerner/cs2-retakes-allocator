@@ -158,6 +158,7 @@ Here are the weapon configs:
   setting. Defaults to `false`.
 - `MaxPreferredWeaponsPerTeam`: The maximum number of AWPs for each team.
 - `MinPlayersPerTeamForPreferredWeapon`: The minimum number of players on each team necessary for someone to get an AWP.
+- `ChanceForPreferredWeapon`: The % chance that the round will have an AWP.
 
 #### Nade Configuration
 
@@ -307,6 +308,9 @@ room for it*.
 - `EnableRoundTypeAnnouncement`: Whether or not to announce the round type.
 - `EnableRoundTypeAnnouncementCenter`: Whether or not to announce the round type in the center of the users screen. Only
   applies if `EnableRoundTypeAnnouncement` is also set to `true`.
+- `UseOnTickFeatures`: Set to false if you want better performance and dont want any OnTick features, including:
+  - Bombsite center announcement
+  - Advanced gun menu
 
 ### Commands
 
@@ -325,6 +329,7 @@ You can use the following commands to select specific weapon preferences per-use
   is `false` by default.
 - `!setnextround <P|H|F>` - For admins only. Force the next round to be the selected type.
 - `!reload_allocator_config` - For admins only. Reload the JSON config in-place.
+- `!print_config <name>` - For admins only. Print out the config with the given name.
 
 # Building
 
