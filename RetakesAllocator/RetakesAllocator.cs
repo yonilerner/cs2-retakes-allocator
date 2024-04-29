@@ -56,6 +56,7 @@ public class RetakesAllocator : BasePlugin
         RegisterListener<Listeners.OnMapStart>(mapName =>
         {
             ResetState();
+            Log.Debug($"Setting map name {mapName}");
             RoundTypeManager.Instance.SetMap(mapName);
         });
 
@@ -319,6 +320,23 @@ public class RetakesAllocator : BasePlugin
         commandInfo.ReplyToCommand($"{MessagePrefix}Reloading config for version {ModuleVersion}");
         Configs.Load(ModuleDirectory);
         RoundTypeManager.Instance.Initialize();
+    }
+
+    [ConsoleCommand("css_print_config", "Print the entire config or a specific config.")]
+    [CommandHelper(usage: "<config>", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    [RequiresPermissions("@css/root")]
+    public void OnPrintConfigCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        var configName = commandInfo.ArgCount > 1 ? commandInfo.GetArg(1) : null;
+        var response = Configs.StringifyConfig(configName);
+        if (response is null)
+        {
+            commandInfo.ReplyToCommand($"{MessagePrefix}Invalid config name.");
+            return;
+        }
+
+        commandInfo.ReplyToCommand($"{MessagePrefix}{response}");
+        Log.Info(response);
     }
 
     #endregion
@@ -592,7 +610,7 @@ public class RetakesAllocator : BasePlugin
     private void HandleAllocateEvent()
     {
         IsAllocatingForRound = true;
-        Log.Debug("Handling allocate event");
+        Log.Debug($"Handling allocate event");
         Server.ExecuteCommand("mp_max_armor 0");
 
         var menu = _allocatorMenuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);

@@ -28,7 +28,6 @@ public class RoundTypeManager
 
     public void Initialize()
     {
-        _map = null;
         _nextRoundTypeOverride = null;
         _currentRoundType = null;
         _roundTypeSelection = Configs.GetConfigData().RoundTypeSelection;
