@@ -2,7 +2,6 @@
 using RetakesAllocator.Managers;
 using RetakesAllocator.Menus.Interfaces;
 using RetakesAllocatorCore;
-using static RetakesAllocatorCore.PluginInfo;
 
 namespace RetakesAllocator.Menus;
 
@@ -12,7 +11,7 @@ public enum MenuType
     NextRoundVote,
 }
 
-public class MenuManager
+public class AllocatorMenuManager
 {
     private readonly Dictionary<MenuType, AbstractBaseMenu> _menus = new()
     {
@@ -32,7 +31,7 @@ public class MenuManager
     }
 
     public T GetMenu<T>(MenuType menuType)
-    where T : AbstractBaseMenu
+        where T : AbstractBaseMenu
     {
         return (T) _menus[menuType];
     }

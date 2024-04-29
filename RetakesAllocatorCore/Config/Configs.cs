@@ -213,8 +213,16 @@ public record ConfigData
     public bool MigrateOnStartup { get; set; } = true;
     public bool ResetStateOnGameRestart { get; set; } = true;
     public bool AllowAllocationAfterFreezeTime { get; set; } = true;
+    public bool UseOnTickFeatures { get; set; } = true;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
     public bool EnableRoundTypeAnnouncementCenter { get; set; } = false;
+    public bool EnableBombSiteAnnouncementCenter { get; set; } = false;
+    public bool BombSiteAnnouncementCenterToCTOnly { get; set; } = false;
+    public bool DisableDefaultBombPlantedCenterMessage { get; set; } = false;
+    public bool ForceCloseBombSiteAnnouncementCenterOnPlant { get; set; } = true;
+    public float BombSiteAnnouncementCenterDelay { get; set; } = 1.0f;
+    public float BombSiteAnnouncementCenterShowTimer { get; set; } = 5.0f;
+    public bool EnableBombSiteAnnouncementChat { get; set; } = false;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
     public bool AllowPreferredWeaponForEveryone { get; set; } = false;
@@ -238,7 +246,10 @@ public record ConfigData
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
     public string ChatMessagePluginName { get; set; } = "Retakes";
     public string? ChatMessagePluginPrefix { get; set; }
-    public string InGameGunMenuCenterCommands { get; set; } = "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns,/gunsmenu,/gunmenu";
+
+    public string InGameGunMenuCenterCommands { get; set; } =
+        "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns,/gunsmenu,/gunmenu";
+
     public string InGameGunMenuChatCommands { get; set; } = "guns,!guns,/guns";
     public ZeusPreference ZeusPreference { get; set; } = ZeusPreference.Never;
 

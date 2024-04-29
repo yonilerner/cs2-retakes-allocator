@@ -1,3 +1,4 @@
+using System.Text;
 using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -9,6 +10,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Managers;
 using RetakesAllocator.Menus;
@@ -31,14 +33,17 @@ public class RetakesAllocator : BasePlugin
     public override string ModuleAuthor => "Yoni Lerner, B3none, Gold KingZ";
     public override string ModuleDescription => "https://github.com/yonilerner/cs2-retakes-allocator";
 
-    private readonly MenuManager _menuManager = new();
+    private readonly AllocatorMenuManager _allocatorMenuManager = new();
     private readonly AdvancedGunMenu _advancedGunMenu = new();
     private readonly Dictionary<CCSPlayerController, Dictionary<ItemSlotType, CsItem>> _allocatedPlayerItems = new();
     private IRetakesPluginEventSender? RetakesPluginEventSender { get; set; }
 
-    private CustomGameData CustomFunctions { get; set; }
+    private CustomGameData? CustomFunctions { get; set; }
 
     private bool IsAllocatingForRound { get; set; }
+    private string _bombsite = "";
+    private bool _announceBombsite = false;
+    private bool _bombsiteAnnounceOneTime = false;
 
     #region Setup
 
@@ -54,7 +59,10 @@ public class RetakesAllocator : BasePlugin
             RoundTypeManager.Instance.SetMap(mapName);
         });
 
-        RegisterListener<Listeners.OnTick>(OnTick);
+        if (Configs.GetConfigData().UseOnTickFeatures)
+        {
+            RegisterListener<Listeners.OnTick>(OnTick);
+        }
 
         AddTimer(0.1f, () => { GetRetakesPluginEventSender().RetakesPluginEventHandlers += RetakesEventHandler; });
 
@@ -65,7 +73,7 @@ public class RetakesAllocator : BasePlugin
 
         CustomFunctions = new();
 
-        if (Configs.GetConfigData().EnableCanAcquireHook)
+        if (Configs.GetConfigData().EnableCanAcquireHook && !Helpers.IsWindows())
         {
             CustomFunctions.CCSPlayer_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
         }
@@ -90,6 +98,9 @@ public class RetakesAllocator : BasePlugin
         RoundTypeManager.Instance.Initialize();
 
         _allocatedPlayerItems.Clear();
+        _bombsite = "";
+        _announceBombsite = false;
+        _bombsiteAnnounceOneTime = false;
     }
 
     private void HandleHotReload()
@@ -105,7 +116,7 @@ public class RetakesAllocator : BasePlugin
 
         GetRetakesPluginEventSender().RetakesPluginEventHandlers -= RetakesEventHandler;
 
-        if (Configs.GetConfigData().EnableCanAcquireHook)
+        if (Configs.GetConfigData().EnableCanAcquireHook && CustomFunctions != null)
         {
             CustomFunctions.CCSPlayer_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
         }
@@ -163,7 +174,7 @@ public class RetakesAllocator : BasePlugin
             return;
         }
 
-        _menuManager.OpenMenuForPlayer(player!, MenuType.NextRoundVote);
+        _allocatorMenuManager.OpenMenuForPlayer(player!, MenuType.NextRoundVote);
     }
 
     [ConsoleCommand("css_gun")]
@@ -316,9 +327,11 @@ public class RetakesAllocator : BasePlugin
 
     public HookResult OnWeaponCanAcquire(DynamicHook hook)
     {
+        Log.Debug("OnWeaponCanAcquire");
         // GetCSWeaponDataFromKeyFunc doesnt work on windows
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (Helpers.IsWindows())
         {
+            Log.Debug("Exit early");
             return HookResult.Continue;
         }
 
@@ -352,6 +365,11 @@ public class RetakesAllocator : BasePlugin
             return HookResult.Stop;
         }
 
+        if (CustomFunctions is null)
+        {
+            return RetStop();
+        }
+
         var weaponData = CustomFunctions.GetCSWeaponDataFromKeyFunc.Invoke(-1,
             hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
 
@@ -373,6 +391,11 @@ public class RetakesAllocator : BasePlugin
         if (item is CsItem.Taser)
         {
             return Configs.GetConfigData().ZeusPreference == ZeusPreference.Always ? HookResult.Continue : RetStop();
+        }
+
+        if (!WeaponHelpers.IsUsableWeapon(item))
+        {
+            return RetStop();
         }
 
         var isPreferred = WeaponHelpers.IsPreferred(team, item);
@@ -572,7 +595,7 @@ public class RetakesAllocator : BasePlugin
         Log.Debug("Handling allocate event");
         Server.ExecuteCommand("mp_max_armor 0");
 
-        var menu = _menuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);
+        var menu = _allocatorMenuManager.GetMenu<VoteMenu>(MenuType.NextRoundVote);
         menu.GatherAndHandleVotes();
 
         var allPlayers = Utilities.GetPlayers()
@@ -616,13 +639,183 @@ public class RetakesAllocator : BasePlugin
 
     public void OnTick()
     {
-        _advancedGunMenu.OnTick();
+        if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands))
+        {
+            _advancedGunMenu.OnTick();
+        }
+
+        if (_announceBombsite)
+        {
+            var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+            var countct = Utilities.GetPlayers()
+                .Count(p => p.TeamNum == (int) CsTeam.CounterTerrorist && p.PawnIsAlive && !p.IsHLTV);
+            var countt = Utilities.GetPlayers()
+                .Count(p => p.TeamNum == (int) CsTeam.Terrorist && p.PawnIsAlive && !p.IsHLTV);
+            string Image = _bombsite == "A" ? Translator.Instance["BombSite.A"] :
+                _bombsite == "B" ? Translator.Instance["BombSite.B"] : "";
+            foreach (var player in playerEntities)
+            {
+                if (player == null || !player.IsValid || !player.PawnIsAlive || player.IsBot || player.IsHLTV) continue;
+
+                if (player.TeamNum == (byte) CsTeam.Terrorist &&
+                    !Configs.GetConfigData().BombSiteAnnouncementCenterToCTOnly)
+                {
+                    StringBuilder builder = new StringBuilder();
+                    builder.AppendFormat(Localizer["T.Message"], _bombsite, Image, countt, countct);
+                    var centerhtml = builder.ToString();
+                    player?.PrintToCenterHtml(centerhtml);
+                }
+                else if (player.TeamNum == (byte) CsTeam.CounterTerrorist)
+                {
+                    StringBuilder builder = new StringBuilder();
+                    builder.AppendFormat(Localizer["CT.Message"], _bombsite, Image, countt, countct);
+                    var centerhtml = builder.ToString();
+                    player?.PrintToCenterHtml(centerhtml);
+                }
+            }
+        }
     }
+
+    [GameEventHandler(HookMode.Pre)]
+    public HookResult OnEventBombPlanted(EventBombPlanted @event, GameEventInfo info)
+    {
+        if (@event == null) return HookResult.Continue;
+
+        if (Configs.GetConfigData().DisableDefaultBombPlantedCenterMessage)
+        {
+            info.DontBroadcast = true;
+        }
+
+        if (Configs.GetConfigData().ForceCloseBombSiteAnnouncementCenterOnPlant)
+        {
+            _bombsite = "";
+            _announceBombsite = false;
+        }
+
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnEventRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        if (@event == null) return HookResult.Continue;
+        _bombsiteAnnounceOneTime = false;
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnEventRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        if (@event == null) return HookResult.Continue;
+        _bombsite = "";
+        _announceBombsite = false;
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnEventEnterBombzone(EventEnterBombzone @event, GameEventInfo info)
+    {
+        if (@event == null || Helpers.IsWarmup() || _bombsiteAnnounceOneTime) return HookResult.Continue;
+
+        var player = @event.Userid;
+        if (player == null || !player.IsValid || player.TeamNum != (byte) CsTeam.Terrorist) return HookResult.Continue;
+
+        var playerPawn = player.PlayerPawn;
+        if (playerPawn == null || !playerPawn.IsValid) return HookResult.Continue;
+
+        var playerPosition = playerPawn.Value!.AbsOrigin;
+
+        foreach (var entity in Utilities.FindAllEntitiesByDesignerName<CBombTarget>("info_bomb_target"))
+        {
+            var entityPosition = entity.AbsOrigin;
+            if (entityPosition != null)
+            {
+                var distanceVector = playerPosition! - entityPosition;
+                var distance = distanceVector.Length();
+                float thresholdDistance = 400.0f;
+
+                if (distance <= thresholdDistance)
+                {
+                    if (entity.DesignerName == "info_bomb_target_hint_A")
+                    {
+                        _bombsite = "A";
+                        if (Configs.GetConfigData().EnableBombSiteAnnouncementCenter)
+                        {
+                            Server.NextFrame(() =>
+                            {
+                                AddTimer(Configs.GetConfigData().BombSiteAnnouncementCenterDelay, () =>
+                                {
+                                    _bombsiteAnnounceOneTime = true;
+                                    _announceBombsite = true;
+                                    AddTimer(Configs.GetConfigData().BombSiteAnnouncementCenterShowTimer, () =>
+                                    {
+                                        _bombsite = "";
+                                        _announceBombsite = false;
+                                    }, TimerFlags.STOP_ON_MAPCHANGE);
+                                }, TimerFlags.STOP_ON_MAPCHANGE);
+                            });
+                        }
+
+                        if (Configs.GetConfigData().EnableBombSiteAnnouncementChat)
+                        {
+                            Server.PrintToChatAll(Localizer["chatAsite.line1"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line2"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line3"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line4"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line5"]);
+                            Server.PrintToChatAll(Localizer["chatAsite.line6"]);
+                        }
+
+                        break;
+                    }
+                    else if (entity.DesignerName == "info_bomb_target_hint_B")
+                    {
+                        _bombsite = "B";
+                        if (Configs.GetConfigData().EnableBombSiteAnnouncementCenter)
+                        {
+                            Server.NextFrame(() =>
+                            {
+                                AddTimer(Configs.GetConfigData().BombSiteAnnouncementCenterDelay, () =>
+                                {
+                                    _bombsiteAnnounceOneTime = true;
+                                    _announceBombsite = true;
+                                    AddTimer(Configs.GetConfigData().BombSiteAnnouncementCenterShowTimer, () =>
+                                    {
+                                        _bombsite = "";
+                                        _announceBombsite = false;
+                                    }, TimerFlags.STOP_ON_MAPCHANGE);
+                                }, TimerFlags.STOP_ON_MAPCHANGE);
+                            });
+                        }
+
+                        if (Configs.GetConfigData().EnableBombSiteAnnouncementChat)
+                        {
+                            Server.PrintToChatAll(Localizer["chatBsite.line1"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line2"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line3"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line4"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line5"]);
+                            Server.PrintToChatAll(Localizer["chatBsite.line6"]);
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        return HookResult.Continue;
+    }
+
 
     [GameEventHandler]
     public HookResult OnEventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
-        _advancedGunMenu.OnEventPlayerDisconnect(@event, info);
+        if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands))
+        {
+            _advancedGunMenu.OnEventPlayerDisconnect(@event, info);
+        }
+
         return HookResult.Continue;
     }
 
@@ -630,9 +823,12 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
     {
         if (@event == null) return HookResult.Continue;
-        _advancedGunMenu.OnEventPlayerChat(@event, info);
 
-        if (string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands)) return HookResult.Continue;
+        if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands))
+        {
+            _advancedGunMenu.OnEventPlayerChat(@event, info);
+        }
+
         var eventplayer = @event.Userid;
         var eventmessage = @event.Text;
         var player = Utilities.GetPlayerFromUserid(eventplayer);
@@ -643,12 +839,17 @@ public class RetakesAllocator : BasePlugin
         if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
         string trimmedMessageStart = eventmessage.TrimStart();
         string message = trimmedMessageStart.TrimEnd();
-        string[] ChatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
 
-        if (ChatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
+        if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands))
         {
-            _menuManager.OpenMenuForPlayer(player!, MenuType.Guns);
+            string[] ChatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
+
+            if (ChatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
+            {
+                _allocatorMenuManager.OpenMenuForPlayer(player!, MenuType.Guns);
+            }
         }
+
 
         return HookResult.Continue;
     }
@@ -711,7 +912,7 @@ public class RetakesAllocator : BasePlugin
                     continue;
                 }
 
-                CustomFunctions.PlayerGiveNamedItem(player, itemString);
+                CustomFunctions?.PlayerGiveNamedItem(player, itemString);
                 var slotType = WeaponHelpers.GetSlotTypeForItem(item);
                 if (slotType is not null)
                 {

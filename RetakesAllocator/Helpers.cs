@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -192,6 +193,11 @@ public static class Helpers
             .Where(player => player.IsValid)
             .Where(player => player.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist).ToList()
             .Count;
+    }
+
+    public static bool IsWindows()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     }
 
     public static bool IsVip(CCSPlayerController player) => AdminManager.PlayerHasPermissions(player, "@css/vip");

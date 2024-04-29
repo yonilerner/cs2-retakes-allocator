@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -97,7 +97,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
@@ -134,7 +134,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
@@ -170,7 +170,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
@@ -206,7 +206,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
@@ -243,7 +243,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
@@ -280,7 +280,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
@@ -316,7 +316,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
@@ -352,7 +352,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
@@ -390,7 +390,7 @@ public class GunsMenu : AbstractBaseMenu
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
-        ChatMenus.OpenMenu(player, menu);
+        MenuManager.OpenChatMenu(player, menu);
         CreateMenuTimeoutTimer(player);
     }
 
