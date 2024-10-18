@@ -76,7 +76,7 @@ public class RetakesAllocator : BasePlugin
 
         if (Configs.GetConfigData().EnableCanAcquireHook && !Helpers.IsWindows())
         {
-            CustomFunctions.CCSPlayer_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
+            CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
         }
 
         if (hotReload)
@@ -119,7 +119,7 @@ public class RetakesAllocator : BasePlugin
 
         if (Configs.GetConfigData().EnableCanAcquireHook && CustomFunctions != null)
         {
-            CustomFunctions.CCSPlayer_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
+            CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
         }
     }
 
