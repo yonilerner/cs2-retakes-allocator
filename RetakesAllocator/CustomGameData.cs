@@ -11,20 +11,20 @@ public class CustomGameData
     {
         // Thank you to @Whaliin https://github.com/CS2Plugins/WeaponRestrict/blob/main/WeaponRestrict.json
         {
-            "CCSPlayer_CanAcquire",
+            "CCSPlayer_ItemServices_CanAcquire",
             new()
             {
-                {OSPlatform.Windows, @"\x48\x8B\xC4\x44\x89\x40\x18\x48\x89\x48\x08\x55\x56"},
-                {OSPlatform.Linux, @"\x55\x48\x89\xE5\x41\x57\x41\x56\x48\x8D\x45\xCC"},
+                {OSPlatform.Windows, @"\x48\x8B\xC4\x44\x89\x40\x18\x48\x89\x50\x??\x48\x89\x48"},
+                {OSPlatform.Linux, @"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x49\x89\xCD\x41\x54\x53\x48\x83\xEC"},
             }
         },
         {
             "GetCSWeaponDataFromKey",
             new()
             {
-                {OSPlatform.Windows, @"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\x8B"},
+                {OSPlatform.Windows, @"\x48\x89\x5C\x24\x??\x48\x89\x74\x24\x??\x57\x48\x83\xEC\x??\x48\x8B\xFA\x8B\xF1\x48\x85\xD2\x0F\x84"},
                 {OSPlatform.Linux, @"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x89\xFE\x41\x55\x41\x54\x45"},
-            }
+			}
         },
         {
             "GiveNamedItem2",
@@ -46,14 +46,14 @@ public class CustomGameData
 
     public readonly
         MemoryFunctionWithReturn<CCSPlayer_ItemServices, CEconItemView, AcquireMethod, NativeObject, AcquireResult>
-        CCSPlayer_CanAcquireFunc;
+        CCSPlayer_ItemServices_CanAcquireFunc;
 
     public readonly MemoryFunctionWithReturn<int, string, CCSWeaponBaseVData> GetCSWeaponDataFromKeyFunc;
 
     public CustomGameData()
     {
         GiveNamedItem2 = new(GetCustomGameDataKey("GiveNamedItem2"));
-        CCSPlayer_CanAcquireFunc = new(GetCustomGameDataKey("CCSPlayer_CanAcquire"));
+        CCSPlayer_ItemServices_CanAcquireFunc = new(GetCustomGameDataKey("CCSPlayer_ItemServices_CanAcquire"));
         GetCSWeaponDataFromKeyFunc = new(GetCustomGameDataKey("GetCSWeaponDataFromKey"));
     }
 
