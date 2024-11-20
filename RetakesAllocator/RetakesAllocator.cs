@@ -632,6 +632,25 @@ public class RetakesAllocator : BasePlugin
         RoundTypeManager.Instance.SetCurrentRoundType(currentRoundType);
         RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
 
+        switch(currentRoundType)
+        {
+            case RoundType.Pistol:
+            {
+                Server.ExecuteCommand("execifexists cs2-retakes/Pistol.cfg");
+                break;
+            }
+            case RoundType.HalfBuy:
+            {
+                Server.ExecuteCommand("execifexists cs2-retakes/SmallBuy.cfg");
+                break;
+            }
+            case RoundType.FullBuy:
+            {
+                Server.ExecuteCommand("execifexists cs2-retakes/FullBuy.cfg");
+                break;
+            }
+        }
+
         if (Configs.GetConfigData().EnableRoundTypeAnnouncement)
         {
             var roundType = RoundTypeManager.Instance.GetCurrentRoundType()!.Value;
