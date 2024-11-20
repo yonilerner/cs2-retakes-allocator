@@ -8,3 +8,4 @@ riderModule.iml
 .vs/
 .vs-code/
 data.db
+*.sln
