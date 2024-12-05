@@ -5,7 +5,7 @@ namespace RetakesAllocatorCore;
 
 public static class PluginInfo
 {
-    public const string Version = "2.3.16";
+    public const string Version = "2.3.17";
 
     public static readonly string LogPrefix = $"[RetakesAllocator {Version}] ";
 
