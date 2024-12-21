@@ -19,10 +19,49 @@ public class CustomGameData
     public CustomGameData()
     {
         LoadCustomGameDataFromJson();
-        
         GiveNamedItem2 = new(GetCustomGameDataKey("GiveNamedItem2"));
         CCSPlayer_ItemServices_CanAcquireFunc = new(GetCustomGameDataKey("CCSPlayer_ItemServices_CanAcquire"));
         GetCSWeaponDataFromKeyFunc = new(GetCustomGameDataKey("GetCSWeaponDataFromKey"));
+    }
+    public void LoadCustomGameDataFromJson()
+    {
+        string jsonFilePath = $"{Configs.Shared.Module}/../../plugins/RetakesAllocator/gamedata/RetakesAllocator_gamedata.json";
+        if (!File.Exists(jsonFilePath))
+        {
+            Log.Debug($"JSON file does not exist at path: {jsonFilePath}. Returning without loading custom game data.");
+            return;
+        }
+        
+        try
+        {
+            var jsonData = File.ReadAllText(jsonFilePath);
+            var jsonDocument = JsonDocument.Parse(jsonData);
+            
+            foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            {
+                string key = element.Name;
+
+                var platformData = new Dictionary<OSPlatform, string>();
+
+                if (element.Value.TryGetProperty("signatures", out var signatures))
+                {
+                    if (signatures.TryGetProperty("windows", out var windows))
+                    {
+                        platformData[OSPlatform.Windows] = windows.GetString()!;
+                    }
+
+                    if (signatures.TryGetProperty("linux", out var linux))
+                    {
+                        platformData[OSPlatform.Linux] = linux.GetString()!;
+                    }
+                }
+                _customGameData[key] = platformData;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Debug($"Error loading custom game data: {ex.Message}");
+        }
     }
     public void LoadCustomGameDataFromJson()
     {
