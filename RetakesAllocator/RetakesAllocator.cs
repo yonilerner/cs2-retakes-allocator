@@ -49,6 +49,8 @@ public class RetakesAllocator : BasePlugin
 
     public override void Load(bool hotReload)
     {
+        Configs.Shared.Module = ModuleDirectory;
+        
         Log.Debug($"Loaded. Hot reload: {hotReload}");
         ResetState();
         Batteries.Init();
@@ -58,6 +60,11 @@ public class RetakesAllocator : BasePlugin
             ResetState();
             Log.Debug($"Setting map name {mapName}");
             RoundTypeManager.Instance.SetMap(mapName);
+        });
+
+        _ = Task.Run(async () =>
+        {
+            await Helpers.DownloadMissingFiles();
         });
 
         if (Configs.GetConfigData().UseOnTickFeatures)
