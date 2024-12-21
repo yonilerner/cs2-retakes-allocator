@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore;
 
 namespace RetakesAllocator;
@@ -201,4 +202,91 @@ public static class Helpers
     }
 
     public static bool IsVip(CCSPlayerController player) => AdminManager.PlayerHasPermissions(player, "@css/vip");
+
+    public static async Task DownloadMissingFiles()
+    {
+        string baseFolderPath = Configs.Shared.Module!;
+
+        string gamedataFileName = "gamedata/RetakesAllocator_gamedata.json";
+        string gamedataGithubUrl = "https://raw.githubusercontent.com/oqyh/cs2-retakes-allocator/main/Resources/RetakesAllocator_gamedata.json";
+        string gamedataFilePath = Path.Combine(baseFolderPath, gamedataFileName);
+        string gamedataDirectoryPath = Path.GetDirectoryName(gamedataFilePath)!;
+        await CheckAndDownloadFile(gamedataFilePath, gamedataGithubUrl, gamedataDirectoryPath);
+    }
+
+    public static async Task<bool> CheckAndDownloadFile(string filePath, string githubUrl, string directoryPath)
+    {
+        if (!File.Exists(filePath))
+        {
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+            await DownloadFileFromGithub(githubUrl, filePath);
+            return true;
+        }
+        else
+        {
+            if (Configs.GetConfigData().AutoUpdateSignatures)
+            {
+                bool isFileDifferent = await IsFileDifferent(filePath, githubUrl);
+                if (isFileDifferent)
+                {
+                    File.Delete(filePath);
+                    await DownloadFileFromGithub(githubUrl, filePath);
+                    return true;
+                }
+            }
+            
+        }
+
+        return false;
+    }
+
+
+    public static async Task<bool> IsFileDifferent(string localFilePath, string githubUrl)
+    {
+        try
+        {
+            byte[] localFileBytes = await File.ReadAllBytesAsync(localFilePath);
+            string localFileHash = GetFileHash(localFileBytes);
+
+            using (HttpClient client = new HttpClient())
+            {
+                byte[] githubFileBytes = await client.GetByteArrayAsync(githubUrl);
+                string githubFileHash = GetFileHash(githubFileBytes);
+                return localFileHash != githubFileHash;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Debug($"Error comparing files: {ex.Message}");
+            return false;
+        }
+    }
+
+    public static string GetFileHash(byte[] fileBytes)
+    {
+        using (var md5 = System.Security.Cryptography.MD5.Create())
+        {
+            byte[] hashBytes = md5.ComputeHash(fileBytes);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+    }
+
+    public static async Task DownloadFileFromGithub(string url, string destinationPath)
+    {
+        using (HttpClient client = new HttpClient())
+        {
+            try
+            {
+                byte[] fileBytes = await client.GetByteArrayAsync(url);
+                await File.WriteAllBytesAsync(destinationPath, fileBytes);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug($"Error downloading file: {ex.Message}");
+            }
+        }
+    }
 }
