@@ -233,6 +233,7 @@ public record ConfigData
     public bool ResetStateOnGameRestart { get; set; } = true;
     public bool AllowAllocationAfterFreezeTime { get; set; } = true;
     public bool UseOnTickFeatures { get; set; } = true;
+    public bool CapabilityWeaponPaints { get; set; } = true;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
     public bool EnableRoundTypeAnnouncementCenter { get; set; } = false;
     public bool EnableBombSiteAnnouncementCenter { get; set; } = false;
