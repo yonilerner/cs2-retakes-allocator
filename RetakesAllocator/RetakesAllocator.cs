@@ -956,7 +956,14 @@ public class RetakesAllocator : BasePlugin
                     continue;
                 }
 
-                CustomFunctions?.PlayerGiveNamedItem(player, itemString);
+                if(Configs.GetConfigData().CapabilityWeaponPaints)
+                {
+                    CustomFunctions?.PlayerGiveNamedItem(player, itemString);
+                }else
+                {
+                    player.GiveNamedItem(itemString);
+                }
+                
                 var slotType = WeaponHelpers.GetSlotTypeForItem(item);
                 if (slotType is not null)
                 {
