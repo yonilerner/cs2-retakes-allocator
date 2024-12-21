@@ -8,6 +8,10 @@ namespace RetakesAllocatorCore.Config;
 
 public static class Configs
 {
+    public static class Shared
+    {
+        public static string? Module { get; set; }
+    }
     private static readonly string ConfigDirectoryName = "config";
     private static readonly string ConfigFileName = "config.json";
 
@@ -270,6 +274,7 @@ public record ConfigData
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db; Pooling=False";
+    public bool AutoUpdateSignatures { get; set; } = true;
 
     public IList<string> Validate()
     {
