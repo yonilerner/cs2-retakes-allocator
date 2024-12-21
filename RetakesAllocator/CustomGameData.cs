@@ -1,31 +1,16 @@
 using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using RetakesAllocatorCore.Config;
+using RetakesAllocatorCore;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using System.Text.Json;
 
 namespace RetakesAllocator;
 
 public class CustomGameData
 {
-    private static Dictionary<string, Dictionary<OSPlatform, string>> _customGameData = new()
-    {
-        // Thank you to @Whaliin https://github.com/CS2Plugins/WeaponRestrict/blob/main/WeaponRestrict.json
-        {
-            "GiveNamedItem2",
-            new()
-            {
-                {
-                    OSPlatform.Windows,
-                    @"\x48\x83\xEC\x38\x48\xC7\x44\x24\x28\x00\x00\x00\x00\x45\x33\xC9\x45\x33\xC0\xC6\x44\x24\x20\x00\xE8\x2A\x2A\x2A\x2A\x48\x85"
-                },
-                {
-                    OSPlatform.Linux,
-                    @"\x55\x48\x89\xE5\x41\x57\x41\x56\x4D\x89\xC6\x41\x55\x49\x89\xD5\x41\x54\x49\x89\xF4"
-                },
-            }
-        }
-    };
-
+    public static Dictionary<string, Dictionary<OSPlatform, string>> _customGameData = new();
     private readonly MemoryFunctionVoid<IntPtr, string, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr> GiveNamedItem2;
 
     public readonly
@@ -36,7 +21,49 @@ public class CustomGameData
 
     public CustomGameData()
     {
+        LoadCustomGameDataFromJson();
+
         GiveNamedItem2 = new(GetCustomGameDataKey("GiveNamedItem2"));
+    }
+    public void LoadCustomGameDataFromJson()
+    {
+        string jsonFilePath = $"{Configs.Shared.Module}/../../plugins/RetakesAllocator/gamedata/RetakesAllocator_gamedata.json";
+        if (!File.Exists(jsonFilePath))
+        {
+            Log.Debug($"JSON file does not exist at path: {jsonFilePath}. Returning without loading custom game data.");
+            return;
+        }
+        
+        try
+        {
+            var jsonData = File.ReadAllText(jsonFilePath);
+            var jsonDocument = JsonDocument.Parse(jsonData);
+            
+            foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            {
+                string key = element.Name;
+
+                var platformData = new Dictionary<OSPlatform, string>();
+
+                if (element.Value.TryGetProperty("signatures", out var signatures))
+                {
+                    if (signatures.TryGetProperty("windows", out var windows))
+                    {
+                        platformData[OSPlatform.Windows] = windows.GetString()!;
+                    }
+
+                    if (signatures.TryGetProperty("linux", out var linux))
+                    {
+                        platformData[OSPlatform.Linux] = linux.GetString()!;
+                    }
+                }
+                _customGameData[key] = platformData;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Debug($"Error loading custom game data: {ex.Message}");
+        }
     }
 
     private string GetCustomGameDataKey(string key)

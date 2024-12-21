@@ -8,6 +8,10 @@ namespace RetakesAllocatorCore.Config;
 
 public static class Configs
 {
+    public static class Shared
+    {
+        public static string? Module { get; set; }
+    }
     private static readonly string ConfigDirectoryName = "config";
     private static readonly string ConfigFileName = "config.json";
 
@@ -229,6 +233,7 @@ public record ConfigData
     public bool ResetStateOnGameRestart { get; set; } = true;
     public bool AllowAllocationAfterFreezeTime { get; set; } = true;
     public bool UseOnTickFeatures { get; set; } = true;
+    public bool CapabilityWeaponPaints { get; set; } = true;
     public bool EnableRoundTypeAnnouncement { get; set; } = true;
     public bool EnableRoundTypeAnnouncementCenter { get; set; } = false;
     public bool EnableBombSiteAnnouncementCenter { get; set; } = false;
@@ -270,6 +275,7 @@ public record ConfigData
 
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db; Pooling=False";
+    public bool AutoUpdateSignatures { get; set; } = true;
 
     public IList<string> Validate()
     {
