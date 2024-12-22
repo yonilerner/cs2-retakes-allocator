@@ -69,14 +69,18 @@ public class RetakesAllocator : BasePlugin
                 return;
             }
 
-            CustomFunctions ??= new();
-            // Must unhook the old functions before reloading and rehooking
-            CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Unhook(OnWeaponCanAcquire, HookMode.Pre);
-            CustomFunctions.LoadCustomGameDataFromJson();
-            if (Configs.GetConfigData().EnableCanAcquireHook)
+            Server.NextFrame(() =>
             {
-                CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Hook(OnWeaponCanAcquire, HookMode.Pre);
-            }
+                CustomFunctions ??= new();
+                // Must unhook the old functions before reloading and rehooking
+                CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Unhook(OnWeaponCanAcquire, HookMode.Pre);
+                CustomFunctions.LoadCustomGameDataFromJson();
+                if (Configs.GetConfigData().EnableCanAcquireHook)
+                {
+                    CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Hook(OnWeaponCanAcquire, HookMode.Pre);
+                }
+            });
+
         });
 
         if (Configs.GetConfigData().UseOnTickFeatures)
