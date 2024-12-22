@@ -81,7 +81,7 @@ public class RetakesAllocator : BasePlugin
 
         CustomFunctions = new();
 
-        if (Configs.GetConfigData().EnableCanAcquireHook && !Helpers.IsWindows())
+        if (Configs.GetConfigData().EnableCanAcquireHook)
         {
             CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
         }
@@ -353,13 +353,7 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnWeaponCanAcquire(DynamicHook hook)
     {
         Log.Debug("OnWeaponCanAcquire");
-        // GetCSWeaponDataFromKeyFunc doesnt work on windows
-        if (Helpers.IsWindows())
-        {
-            Log.Debug("Exit early");
-            return HookResult.Continue;
-        }
-
+        
         var acquireMethod = hook.GetParam<AcquireMethod>(2);
         if (acquireMethod == AcquireMethod.PickUp)
         {
