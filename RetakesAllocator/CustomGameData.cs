@@ -18,10 +18,10 @@ public class CustomGameData
 
     public CustomGameData()
     {
-        LoadCustomGameDataFromJson();
+        LoadCustomGameData();
     }
 
-    public void LoadCustomGameDataFromJson()
+    public void LoadCustomGameData()
     {
         if (Configs.Shared.Module == null)
         {
@@ -29,41 +29,42 @@ public class CustomGameData
             return;
         }
         var jsonFilePath = Path.Combine(Configs.Shared.Module, "gamedata/RetakesAllocator_gamedata.json");
-        if (!File.Exists(jsonFilePath))
+        if (File.Exists(jsonFilePath))
         {
-            Log.Debug($"JSON file does not exist at path: {jsonFilePath}. Returning without loading custom game data.");
-            return;
-        }
-
-        try
-        {
-            var jsonData = File.ReadAllText(jsonFilePath);
-            var jsonDocument = JsonDocument.Parse(jsonData);
-            
-            foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            try
             {
-                string key = element.Name;
-
-                var platformData = new Dictionary<OSPlatform, string>();
-
-                if (element.Value.TryGetProperty("signatures", out var signatures))
+                var jsonData = File.ReadAllText(jsonFilePath);
+                var jsonDocument = JsonDocument.Parse(jsonData);
+            
+                foreach (var element in jsonDocument.RootElement.EnumerateObject())
                 {
-                    if (signatures.TryGetProperty("windows", out var windows))
-                    {
-                        platformData[OSPlatform.Windows] = windows.GetString()!;
-                    }
+                    string key = element.Name;
 
-                    if (signatures.TryGetProperty("linux", out var linux))
+                    var platformData = new Dictionary<OSPlatform, string>();
+
+                    if (element.Value.TryGetProperty("signatures", out var signatures))
                     {
-                        platformData[OSPlatform.Linux] = linux.GetString()!;
+                        if (signatures.TryGetProperty("windows", out var windows))
+                        {
+                            platformData[OSPlatform.Windows] = windows.GetString()!;
+                        }
+
+                        if (signatures.TryGetProperty("linux", out var linux))
+                        {
+                            platformData[OSPlatform.Linux] = linux.GetString()!;
+                        }
                     }
+                    _customGameData[key] = platformData;
                 }
-                _customGameData[key] = platformData;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error loading custom game data: {ex.Message}");
             }
         }
-        catch (Exception ex)
+        else
         {
-            Log.Error($"Error loading custom game data: {ex.Message}");
+            Log.Debug($"JSON file does not exist at path: {jsonFilePath}. Returning without loading custom game data.");
         }
         
         try

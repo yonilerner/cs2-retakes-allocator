@@ -74,7 +74,7 @@ public class RetakesAllocator : BasePlugin
                 CustomFunctions ??= new();
                 // Must unhook the old functions before reloading and rehooking
                 CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Unhook(OnWeaponCanAcquire, HookMode.Pre);
-                CustomFunctions.LoadCustomGameDataFromJson();
+                CustomFunctions.LoadCustomGameData();
                 if (Configs.GetConfigData().EnableCanAcquireHook)
                 {
                     CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Hook(OnWeaponCanAcquire, HookMode.Pre);
