@@ -1,5 +1,4 @@
 using System.Text;
-using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
@@ -42,8 +41,8 @@ public class RetakesAllocator : BasePlugin
 
     private bool IsAllocatingForRound { get; set; }
     private string _bombsite = "";
-    private bool _announceBombsite = false;
-    private bool _bombsiteAnnounceOneTime = false;
+    private bool _announceBombsite;
+    private bool _bombsiteAnnounceOneTime;
 
     #region Setup
 
@@ -64,7 +63,24 @@ public class RetakesAllocator : BasePlugin
 
         _ = Task.Run(async () =>
         {
-            await Helpers.DownloadMissingFiles();
+            var downloadedNewGameData = await Helpers.DownloadMissingFiles();
+            if (!downloadedNewGameData)
+            {
+                return;
+            }
+
+            Server.NextFrame(() =>
+            {
+                CustomFunctions ??= new();
+                // Must unhook the old functions before reloading and rehooking
+                CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Unhook(OnWeaponCanAcquire, HookMode.Pre);
+                CustomFunctions.LoadCustomGameData();
+                if (Configs.GetConfigData().EnableCanAcquireHook)
+                {
+                    CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Hook(OnWeaponCanAcquire, HookMode.Pre);
+                }
+            });
+
         });
 
         if (Configs.GetConfigData().UseOnTickFeatures)
@@ -83,7 +99,7 @@ public class RetakesAllocator : BasePlugin
 
         if (Configs.GetConfigData().EnableCanAcquireHook)
         {
-            CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnWeaponCanAcquire, HookMode.Pre);
+            CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Hook(OnWeaponCanAcquire, HookMode.Pre);
         }
 
         if (hotReload)
@@ -126,7 +142,7 @@ public class RetakesAllocator : BasePlugin
 
         if (Configs.GetConfigData().EnableCanAcquireHook && CustomFunctions != null)
         {
-            CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnWeaponCanAcquire, HookMode.Pre);
+            CustomFunctions.CCSPlayer_ItemServices_CanAcquireFunc?.Unhook(OnWeaponCanAcquire, HookMode.Pre);
         }
     }
 
@@ -161,10 +177,6 @@ public class RetakesAllocator : BasePlugin
     #endregion
 
     #region Commands
-
-    private void RegisterCommands()
-    {
-    }
 
     [ConsoleCommand("css_nextround", "Opens the menu to vote for the next round type.")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -253,7 +265,7 @@ public class RetakesAllocator : BasePlugin
 
         var currentTeam = player!.Team;
 
-        if (Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon == -1 && !Helpers.IsVip(player!))
+        if (Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon == -1 && !Helpers.IsVip(player))
         {
             var message = Translator.Instance["weapon_preference.only_vip_can_use"];
             commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
@@ -389,13 +401,19 @@ public class RetakesAllocator : BasePlugin
             return RetStop();
         }
 
-        var weaponData = CustomFunctions.GetCSWeaponDataFromKeyFunc.Invoke(-1,
+        var weaponData = CustomFunctions.GetCSWeaponDataFromKeyFunc?.Invoke(-1,
             hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
 
         var player = hook.GetParam<CCSPlayer_ItemServices>(0).Pawn.Value.Controller.Value?.As<CCSPlayerController>();
         if (player is null || !player.IsValid || !player.PawnIsAlive)
         {
             Log.Debug($"Invalid player controller {player} {player?.IsValid} {player?.PawnIsAlive}");
+            return HookResult.Continue;
+        }
+
+        if (weaponData == null)
+        {
+            Log.Warn($"Invalid weapon data {hook.GetParam<CEconItemView>(1).ItemDefinitionIndex}");
             return HookResult.Continue;
         }
 
@@ -689,26 +707,26 @@ public class RetakesAllocator : BasePlugin
                 .Count(p => p.TeamNum == (int) CsTeam.CounterTerrorist && p.PawnIsAlive && !p.IsHLTV);
             var countt = Utilities.GetPlayers()
                 .Count(p => p.TeamNum == (int) CsTeam.Terrorist && p.PawnIsAlive && !p.IsHLTV);
-            string Image = _bombsite == "A" ? Translator.Instance["BombSite.A"] :
+            string image = _bombsite == "A" ? Translator.Instance["BombSite.A"] :
                 _bombsite == "B" ? Translator.Instance["BombSite.B"] : "";
             foreach (var player in playerEntities)
             {
-                if (player == null || !player.IsValid || !player.PawnIsAlive || player.IsBot || player.IsHLTV) continue;
+                if (!player.IsValid || !player.PawnIsAlive || player.IsBot || player.IsHLTV) continue;
 
                 if (player.TeamNum == (byte) CsTeam.Terrorist &&
                     !Configs.GetConfigData().BombSiteAnnouncementCenterToCTOnly)
                 {
                     StringBuilder builder = new StringBuilder();
-                    builder.AppendFormat(Localizer["T.Message"], _bombsite, Image, countt, countct);
+                    builder.AppendFormat(Localizer["T.Message"], _bombsite, image, countt, countct);
                     var centerhtml = builder.ToString();
-                    player?.PrintToCenterHtml(centerhtml);
+                    player.PrintToCenterHtml(centerhtml);
                 }
                 else if (player.TeamNum == (byte) CsTeam.CounterTerrorist)
                 {
                     StringBuilder builder = new StringBuilder();
-                    builder.AppendFormat(Localizer["CT.Message"], _bombsite, Image, countt, countct);
+                    builder.AppendFormat(Localizer["CT.Message"], _bombsite, image, countt, countct);
                     var centerhtml = builder.ToString();
-                    player?.PrintToCenterHtml(centerhtml);
+                    player.PrintToCenterHtml(centerhtml);
                 }
             }
         }
@@ -717,6 +735,7 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler(HookMode.Pre)]
     public HookResult OnEventBombPlanted(EventBombPlanted @event, GameEventInfo info)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (@event == null) return HookResult.Continue;
 
         if (Configs.GetConfigData().DisableDefaultBombPlantedCenterMessage)
@@ -736,6 +755,7 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnEventRoundStart(EventRoundStart @event, GameEventInfo info)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (@event == null) return HookResult.Continue;
         _bombsiteAnnounceOneTime = false;
         return HookResult.Continue;
@@ -744,6 +764,7 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnEventRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (@event == null) return HookResult.Continue;
         _bombsite = "";
         _announceBombsite = false;
@@ -753,12 +774,14 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnEventEnterBombzone(EventEnterBombzone @event, GameEventInfo info)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (@event == null || Helpers.IsWarmup() || _bombsiteAnnounceOneTime) return HookResult.Continue;
 
         var player = @event.Userid;
         if (player == null || !player.IsValid || player.TeamNum != (byte) CsTeam.Terrorist) return HookResult.Continue;
 
         var playerPawn = player.PlayerPawn;
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (playerPawn == null || !playerPawn.IsValid) return HookResult.Continue;
 
         var playerPosition = playerPawn.Value!.AbsOrigin;
@@ -857,9 +880,11 @@ public class RetakesAllocator : BasePlugin
         return HookResult.Continue;
     }
 
+    // ReSharper disable once RedundantArgumentDefaultValue
     [GameEventHandler(HookMode.Post)]
     public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (@event == null) return HookResult.Continue;
 
         if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuCenterCommands))
@@ -871,8 +896,8 @@ public class RetakesAllocator : BasePlugin
         var eventmessage = @event.Text;
         var player = Utilities.GetPlayerFromUserid(eventplayer);
 
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (player == null || !player.IsValid) return HookResult.Continue;
-        var playerid = player.SteamID;
 
         if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
         string trimmedMessageStart = eventmessage.TrimStart();
@@ -880,11 +905,11 @@ public class RetakesAllocator : BasePlugin
 
         if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands))
         {
-            string[] ChatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
+            string[] chatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
 
-            if (ChatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
+            if (chatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
             {
-                _allocatorMenuManager.OpenMenuForPlayer(player!, MenuType.Guns);
+                _allocatorMenuManager.OpenMenuForPlayer(player, MenuType.Guns);
             }
         }
 
@@ -895,6 +920,7 @@ public class RetakesAllocator : BasePlugin
     [GameEventHandler]
     public HookResult OnEventRoundAnnounceWarmup(EventRoundAnnounceWarmup @event, GameEventInfo info)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (!Configs.GetConfigData().ResetStateOnGameRestart || @event == null) return HookResult.Continue;
         ResetState();
         return HookResult.Continue;
@@ -906,7 +932,7 @@ public class RetakesAllocator : BasePlugin
 
     private void SetPlayerRoundAllocation(CCSPlayerController player, ItemSlotType slotType, CsItem item)
     {
-        if (!_allocatedPlayerItems.TryGetValue(player, out var playerAllocatedItems))
+        if (!_allocatedPlayerItems.TryGetValue(player, out _))
         {
             _allocatedPlayerItems[player] = new();
         }
@@ -950,10 +976,11 @@ public class RetakesAllocator : BasePlugin
                     continue;
                 }
 
-                if(Configs.GetConfigData().CapabilityWeaponPaints)
+                if (Configs.GetConfigData().CapabilityWeaponPaints && CustomFunctions != null && CustomFunctions.PlayerGiveNamedItemEnabled())
                 {
                     CustomFunctions?.PlayerGiveNamedItem(player, itemString);
-                }else
+                }
+                else
                 {
                     player.GiveNamedItem(itemString);
                 }

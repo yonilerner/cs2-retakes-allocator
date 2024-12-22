@@ -26,6 +26,22 @@ This plugin is made to run alongside B3none's retakes implementation: https://gi
     - `mp_afterroundmoney 65535`
     - More info about this in the "Buy Menu" section below
 
+## Game Data/Signatures (Optional Information)
+This section is optional. If you dont care, you can skip it. The defaults are fine.
+
+This plugin relies on some function signatures that:
+- Regularly break with game updates:
+  - `GetCSWeaponDataFromKey`
+  - `CCSPlayer_ItemServices_CanAcquire`
+- Are not included in the default CS# signatures:
+  - `GiveNamedItem2`
+
+Custom game data signatures are maintained in https://github.com/yonilerner/cs2-retakes-allocator/blob/main/Resources/RetakesAllocator_gamedata.json. There are a few ways to keep these up to date:
+- If you want the plugin to automatically download the signatures, you can do so by running the plugin with the `AutoUpdateSignatures` config set to `true`. **This is the recommended approach**. See more below in the "Configuration" section.
+- If you want to manually download the signatures, you can do so by downloading the `RetakesAllocator_gamedata.json` file from Github and placing it in the `RetakesAllocator/gamedata` folder in the plugin. You may have to create that folder if it does not exist.
+
+If you do not want to use any custom game data/signatures, you can disable `AutoUpdateSignatures` and `CapabilityWeaponPaints`. If you do this (and if you previously had downloaded custom game data, make sure to delete the `RetakesAllocator/gamedata/RetakesAllocator_gamedata.json` file), the plugin will fallback to using the default CS# signatures. See more below in the "Configuration" section.
+
 ## Usage
 
 ### Round Types
@@ -311,6 +327,8 @@ room for it*.
 - `UseOnTickFeatures`: Set to false if you want better performance and dont want any OnTick features, including:
   - Bombsite center announcement
   - Advanced gun menu
+- `AutoUpdateSignatures `: When true, the plugin will always try to download the latest custom game data/signatures on startup. A game server restart may be required to apply the new signatures after they have been downloaded. If this is disabled, the plugin will fallback to using the default CS# game data/signatures.
+- `CapabilityWeaponPaints`: When true, will try to use the custom game data `GiveNamedItem2` that will maintain weapon paints in non-standard situations. This is enabled by default for backwards compatibility, but is less stable. If this option is enabled, `AutoUpdateSignatures` should also be enabled. If you dont want to use `AutoUpdateSignatures`, at least ensure that the custom game data/signatures are updated correctly, since this `GiveNamedItem2` is not in the default game data/signatures.
 
 ### Commands
 
