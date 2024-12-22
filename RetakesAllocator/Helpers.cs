@@ -203,18 +203,23 @@ public static class Helpers
 
     public static bool IsVip(CCSPlayerController player) => AdminManager.PlayerHasPermissions(player, "@css/vip");
 
-    public static async Task DownloadMissingFiles()
+    public static async Task<bool> DownloadMissingFiles()
     {
+        if (!Configs.GetConfigData().AutoUpdateSignatures)
+        {
+            return false;
+        }
         string baseFolderPath = Configs.Shared.Module!;
 
         string gamedataFileName = "gamedata/RetakesAllocator_gamedata.json";
         string gamedataGithubUrl = "https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/RetakesAllocator_gamedata.json";
         string gamedataFilePath = Path.Combine(baseFolderPath, gamedataFileName);
         string gamedataDirectoryPath = Path.GetDirectoryName(gamedataFilePath)!;
-        await CheckAndDownloadFile(gamedataFilePath, gamedataGithubUrl, gamedataDirectoryPath);
+        
+        return await CheckAndDownloadFile(gamedataFilePath, gamedataGithubUrl, gamedataDirectoryPath);
     }
 
-    public static async Task<bool> CheckAndDownloadFile(string filePath, string githubUrl, string directoryPath)
+    private static async Task<bool> CheckAndDownloadFile(string filePath, string githubUrl, string directoryPath)
     {
         if (!File.Exists(filePath))
         {
@@ -225,26 +230,19 @@ public static class Helpers
             await DownloadFileFromGithub(githubUrl, filePath);
             return true;
         }
-        else
+
+        bool isFileDifferent = await IsFileDifferent(filePath, githubUrl);
+        if (isFileDifferent)
         {
-            if (Configs.GetConfigData().AutoUpdateSignatures)
-            {
-                bool isFileDifferent = await IsFileDifferent(filePath, githubUrl);
-                if (isFileDifferent)
-                {
-                    File.Delete(filePath);
-                    await DownloadFileFromGithub(githubUrl, filePath);
-                    return true;
-                }
-            }
-            
+            File.Delete(filePath);
+            await DownloadFileFromGithub(githubUrl, filePath);
+            return true;
         }
 
         return false;
     }
 
-
-    public static async Task<bool> IsFileDifferent(string localFilePath, string githubUrl)
+    private static async Task<bool> IsFileDifferent(string localFilePath, string githubUrl)
     {
         try
         {
@@ -260,12 +258,12 @@ public static class Helpers
         }
         catch (Exception ex)
         {
-            Log.Debug($"Error comparing files: {ex.Message}");
+            Log.Warn($"Error comparing files: {ex.Message}");
             return false;
         }
     }
 
-    public static string GetFileHash(byte[] fileBytes)
+    private static string GetFileHash(byte[] fileBytes)
     {
         using (var md5 = System.Security.Cryptography.MD5.Create())
         {
@@ -274,7 +272,7 @@ public static class Helpers
         }
     }
 
-    public static async Task DownloadFileFromGithub(string url, string destinationPath)
+    private static async Task DownloadFileFromGithub(string url, string destinationPath)
     {
         using (HttpClient client = new HttpClient())
         {
@@ -285,7 +283,7 @@ public static class Helpers
             }
             catch (Exception ex)
             {
-                Log.Debug($"Error downloading file: {ex.Message}");
+                Log.Warn($"Error downloading file: {ex.Message}");
             }
         }
     }

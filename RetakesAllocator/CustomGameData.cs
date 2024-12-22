@@ -5,33 +5,36 @@ using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using System.Text.Json;
+// ReSharper disable InconsistentNaming
 
 namespace RetakesAllocator;
 
 public class CustomGameData
 {
-    public static Dictionary<string, Dictionary<OSPlatform, string>> _customGameData = new();
-    private readonly MemoryFunctionVoid<IntPtr, string, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr> GiveNamedItem2;
-    public readonly MemoryFunctionWithReturn<CCSPlayer_ItemServices, CEconItemView, AcquireMethod, NativeObject, AcquireResult> CCSPlayer_ItemServices_CanAcquireFunc;
-    public readonly MemoryFunctionWithReturn<int, string, CCSWeaponBaseVData> GetCSWeaponDataFromKeyFunc;
+    private static readonly Dictionary<string, Dictionary<OSPlatform, string>> _customGameData = new();
+    private MemoryFunctionVoid<IntPtr, string, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr>? GiveNamedItem2;
+    public MemoryFunctionWithReturn<CCSPlayer_ItemServices, CEconItemView, AcquireMethod, NativeObject, AcquireResult>? CCSPlayer_ItemServices_CanAcquireFunc;
+    public MemoryFunctionWithReturn<int, string, CCSWeaponBaseVData>? GetCSWeaponDataFromKeyFunc;
 
     public CustomGameData()
     {
         LoadCustomGameDataFromJson();
-        
-        GiveNamedItem2 = new(GetCustomGameDataKey("GiveNamedItem2"));
-        CCSPlayer_ItemServices_CanAcquireFunc = new(GetCustomGameDataKey("CCSPlayer_ItemServices_CanAcquire"));
-        GetCSWeaponDataFromKeyFunc = new(GetCustomGameDataKey("GetCSWeaponDataFromKey"));
     }
+
     public void LoadCustomGameDataFromJson()
     {
-        string jsonFilePath = $"{Configs.Shared.Module}/../../plugins/RetakesAllocator/gamedata/RetakesAllocator_gamedata.json";
+        if (Configs.Shared.Module == null)
+        {
+            Log.Error("Module path is null. Returning without loading custom game data.");
+            return;
+        }
+        var jsonFilePath = Path.Combine(Configs.Shared.Module, "gamedata/RetakesAllocator_gamedata.json");
         if (!File.Exists(jsonFilePath))
         {
             Log.Debug($"JSON file does not exist at path: {jsonFilePath}. Returning without loading custom game data.");
             return;
         }
-        
+
         try
         {
             var jsonData = File.ReadAllText(jsonFilePath);
@@ -60,14 +63,36 @@ public class CustomGameData
         }
         catch (Exception ex)
         {
-            Log.Debug($"Error loading custom game data: {ex.Message}");
+            Log.Error($"Error loading custom game data: {ex.Message}");
         }
+        
+        try
+        {
+            GiveNamedItem2 = new(GetCustomGameDataKey("GiveNamedItem2"));
+        }
+        catch
+        {
+            // GiveNamedItem2 failing to load shouldnt crash because we will try to fallback to GiveNamedItem
+        }
+        GetCSWeaponDataFromKeyFunc = new(GetCustomGameDataKey("GetCSWeaponDataFromKey"));
+        CCSPlayer_ItemServices_CanAcquireFunc = new(GetCustomGameDataKey("CCSPlayer_ItemServices_CanAcquire"));
     }
 
     private string GetCustomGameDataKey(string key)
     {
         if (!_customGameData.TryGetValue(key, out var customGameData))
         {
+            try
+            {
+                var defaultGameData = GameData.GetSignature(key);
+                Log.Info($"Using default gamedata for {key} because no custom data was found.");
+                return defaultGameData;
+            }
+            catch
+            {
+                // ignored
+            }
+
             throw new Exception($"Invalid key {key}");
         }
 
@@ -90,6 +115,11 @@ public class CustomGameData
             : throw new Exception($"Missing custom data for {key} on {platform}");
     }
 
+    public bool PlayerGiveNamedItemEnabled()
+    {
+        return GiveNamedItem2 != null;
+    }
+
     public void PlayerGiveNamedItem(CCSPlayerController player, string item)
     {
         if (!player.PlayerPawn.IsValid) return;
@@ -98,7 +128,7 @@ public class CustomGameData
         if (player.PlayerPawn.Value.ItemServices == null) return;
 
         // Log.Debug("Using custom function for GiveNamedItem2");
-        GiveNamedItem2.Invoke(player.PlayerPawn.Value.ItemServices.Handle, item, 0, 0, 0, 0, 0, 0);
+        GiveNamedItem2?.Invoke(player.PlayerPawn.Value.ItemServices.Handle, item, 0, 0, 0, 0, 0, 0);
     }
 }
 
