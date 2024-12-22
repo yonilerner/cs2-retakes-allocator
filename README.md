@@ -29,10 +29,10 @@ This plugin is made to run alongside B3none's retakes implementation: https://gi
 ## Game Data/Signatures
 This plugin relies on some function signatures that:
 - Regularly break with game updates
-  - GetCSWeaponDataFromKey
-  - CCSPlayer_ItemServices_CanAcquire
+  - `GetCSWeaponDataFromKey`
+  - `CCSPlayer_ItemServices_CanAcquire`
 - Are not included in the default CS# signatures:
-  - GiveNamedItem2
+  - `GiveNamedItem2`
 
 Custom game data signatures are maintained in https://github.com/yonilerner/cs2-retakes-allocator/blob/main/Resources/RetakesAllocator_gamedata.json. There are a few ways to keep these up to date:
 - If you want the plugin to automatically download the signatures, you can do so by running the plugin with the `AutoUpdateSignatures` config set to `true`. See more below in the "Configuration" section.
