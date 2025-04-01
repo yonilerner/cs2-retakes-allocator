@@ -7,6 +7,7 @@ using System.Text;
 using RetakesAllocator.Menus;
 using RetakesAllocatorCore.Config;
 using static RetakesAllocatorCore.PluginInfo;
+using CounterStrikeSharp.API.Modules.Events;
 
 namespace RetakesAllocator.AdvancedMenus;
 

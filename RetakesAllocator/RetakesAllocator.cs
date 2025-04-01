@@ -21,6 +21,7 @@ using RetakesAllocator.AdvancedMenus;
 using static RetakesAllocatorCore.PluginInfo;
 using RetakesPluginShared;
 using RetakesPluginShared.Events;
+using CounterStrikeSharp.API.Modules.Events;
 
 namespace RetakesAllocator;
 
