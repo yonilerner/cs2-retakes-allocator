@@ -61,7 +61,6 @@ public static class Helpers
 
         var itemServices = new CCSPlayer_ItemServices(player.PlayerPawn.Value.ItemServices.Handle);
         itemServices.HasHelmet = false;
-        itemServices.HasHeavyArmor = false;
     }
 
     public static CsItem? GetPlayerWeaponItem(CCSPlayerController player, Func<CsItem, bool> pred)
