@@ -26,6 +26,7 @@ public enum MaxTeamNadesSetting
 public enum MaxTeamNadesPerTypeSetting
 {
     Unlimited,
+    Zero,
     One,
     Two,
     Three,
@@ -182,6 +183,7 @@ public class NadeHelpers
                         return maxNadesSetting switch
                         {
                             MaxTeamNadesPerTypeSetting.Unlimited => 999999,
+                            MaxTeamNadesPerTypeSetting.Zero => 0,
                             MaxTeamNadesPerTypeSetting.One => 1,
                             MaxTeamNadesPerTypeSetting.Two => 2,
                             MaxTeamNadesPerTypeSetting.Three => 3,
