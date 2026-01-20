@@ -23,6 +23,21 @@ public enum MaxTeamNadesSetting
     AverageTwoPerPlayer,
 }
 
+public enum MaxTeamNadesPerTypeSetting
+{
+    Unlimited,
+    One,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+}
+
 public class NadeHelpers
 {
     public static string GlobalSettingName = "GLOBAL";
@@ -58,7 +73,7 @@ public class NadeHelpers
             MaxTeamNadesSetting.Eight => 8,
             MaxTeamNadesSetting.Nine => 9,
             MaxTeamNadesSetting.Ten => 10,
-            _ => (int) Math.Ceiling(numPlayers * multiplier)
+            _ => (int)Math.Ceiling(numPlayers * multiplier)
         };
 
         Log.Debug($"Nade setting: {maxNadesSetting}. Total: {maxTotalNades}. Map: {map}");
@@ -72,6 +87,7 @@ public class NadeHelpers
             molly, molly
         };
 
+        // Per-player limits from MaxNades config
         var nadeAllocations = new Dictionary<CsItem, int>
         {
             {CsItem.Flashbang, GetMaxNades(map, team, CsItem.Flashbang)},
@@ -80,7 +96,24 @@ public class NadeHelpers
             {molly, GetMaxNades(map, team, molly)},
         };
 
+        // Per-team per-type limits from MaxTeamNadesPerType config
+        var teamNadeTypeLimits = new Dictionary<CsItem, int>
+        {
+            {CsItem.Flashbang, GetMaxTeamNadesPerType(map, team, roundType, CsItem.Flashbang)},
+            {CsItem.Smoke, GetMaxTeamNadesPerType(map, team, roundType, CsItem.Smoke)},
+            {CsItem.HE, GetMaxTeamNadesPerType(map, team, roundType, CsItem.HE)},
+            {molly, GetMaxTeamNadesPerType(map, team, roundType, molly)},
+        };
+
         var nades = new Stack<CsItem>();
+        var teamNadeTypeCounts = new Dictionary<CsItem, int>
+        {
+            {CsItem.Flashbang, 0},
+            {CsItem.Smoke, 0},
+            {CsItem.HE, 0},
+            {molly, 0},
+        };
+
         while (true)
         {
             if (nadeAllocations.Count == 0 || maxTotalNades <= 0)
@@ -89,6 +122,16 @@ public class NadeHelpers
             }
 
             var nextNade = Utils.Choice(nadeDistribution);
+
+            // Check if team has reached per-type limit
+            if (teamNadeTypeCounts[nextNade] >= teamNadeTypeLimits[nextNade])
+            {
+                nadeDistribution.RemoveAll(item => item == nextNade);
+                nadeAllocations.Remove(nextNade);
+                continue;
+            }
+
+            // Check if player limit reached
             if (nadeAllocations[nextNade] <= 0)
             {
                 nadeDistribution.RemoveAll(item => item == nextNade);
@@ -98,6 +141,7 @@ public class NadeHelpers
 
             nades.Push(nextNade);
             nadeAllocations[nextNade]--;
+            teamNadeTypeCounts[nextNade]++;
             maxTotalNades--;
         }
 
@@ -123,6 +167,44 @@ public class NadeHelpers
         }
 
         return GetMaxTeamNades(GlobalSettingName, team, roundType);
+    }
+
+    private static int GetMaxTeamNadesPerType(string map, CsTeam team, RoundType roundType, CsItem nadeType)
+    {
+        if (Configs.GetConfigData().MaxTeamNadesPerType.TryGetValue(map, out var mapMaxNades))
+        {
+            if (mapMaxNades.TryGetValue(team, out var teamMaxNades))
+            {
+                if (teamMaxNades.TryGetValue(roundType, out var roundTypeMaxNades))
+                {
+                    if (roundTypeMaxNades.TryGetValue(nadeType, out var maxNadesSetting))
+                    {
+                        return maxNadesSetting switch
+                        {
+                            MaxTeamNadesPerTypeSetting.Unlimited => 999999,
+                            MaxTeamNadesPerTypeSetting.One => 1,
+                            MaxTeamNadesPerTypeSetting.Two => 2,
+                            MaxTeamNadesPerTypeSetting.Three => 3,
+                            MaxTeamNadesPerTypeSetting.Four => 4,
+                            MaxTeamNadesPerTypeSetting.Five => 5,
+                            MaxTeamNadesPerTypeSetting.Six => 6,
+                            MaxTeamNadesPerTypeSetting.Seven => 7,
+                            MaxTeamNadesPerTypeSetting.Eight => 8,
+                            MaxTeamNadesPerTypeSetting.Nine => 9,
+                            MaxTeamNadesPerTypeSetting.Ten => 10,
+                            _ => 999999,
+                        };
+                    }
+                }
+            }
+        }
+
+        if (map == GlobalSettingName)
+        {
+            return 999999;
+        }
+
+        return GetMaxTeamNadesPerType(GlobalSettingName, team, roundType, nadeType);
     }
 
     private static int GetMaxNades(string map, CsTeam team, CsItem nade)
