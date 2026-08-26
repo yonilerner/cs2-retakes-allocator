@@ -148,7 +148,8 @@ public record ConfigData
             CsTeam,
             Dictionary<CsItem, int>
         >
-    > MaxNades { get; set; } = new()
+    > MaxNades
+    { get; set; } = new()
     {
         {
             NadeHelpers.GlobalSettingName, new()
@@ -181,7 +182,8 @@ public record ConfigData
             CsTeam,
             Dictionary<RoundType, MaxTeamNadesSetting>
         >
-    > MaxTeamNades { get; set; } = new()
+    > MaxTeamNades
+    { get; set; } = new()
     {
         {
             NadeHelpers.GlobalSettingName, new()
@@ -200,6 +202,86 @@ public record ConfigData
                         {RoundType.Pistol, MaxTeamNadesSetting.AverageOnePerPlayer},
                         {RoundType.HalfBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
                         {RoundType.FullBuy, MaxTeamNadesSetting.AverageOnePointFivePerPlayer},
+                    }
+                },
+            }
+        }
+    };
+
+    public Dictionary<
+        string,
+        Dictionary<
+            CsTeam,
+            Dictionary<RoundType, Dictionary<CsItem, MaxTeamNadesPerTypeSetting>>
+        >
+    > MaxTeamNadesPerType
+    { get; set; } = new()
+    {
+        {
+            NadeHelpers.GlobalSettingName, new()
+            {
+                {
+                    CsTeam.Terrorist, new()
+                    {
+                        {
+                            RoundType.Pistol, new()
+                            {
+                                {CsItem.Flashbang, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.Smoke, MaxTeamNadesPerTypeSetting.Two},
+                                {CsItem.Molotov, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.HE, MaxTeamNadesPerTypeSetting.Unlimited},
+                            }
+                        },
+                        {
+                            RoundType.HalfBuy, new()
+                            {
+                                {CsItem.Flashbang, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.Smoke, MaxTeamNadesPerTypeSetting.Three},
+                                {CsItem.Molotov, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.HE, MaxTeamNadesPerTypeSetting.Unlimited},
+                            }
+                        },
+                        {
+                            RoundType.FullBuy, new()
+                            {
+                                {CsItem.Flashbang, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.Smoke, MaxTeamNadesPerTypeSetting.Three},
+                                {CsItem.Molotov, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.HE, MaxTeamNadesPerTypeSetting.Unlimited},
+                            }
+                        },
+                    }
+                },
+                {
+                    CsTeam.CounterTerrorist, new()
+                    {
+                        {
+                            RoundType.Pistol, new()
+                            {
+                                {CsItem.Flashbang, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.Smoke, MaxTeamNadesPerTypeSetting.Two},
+                                {CsItem.Incendiary, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.HE, MaxTeamNadesPerTypeSetting.Unlimited},
+                            }
+                        },
+                        {
+                            RoundType.HalfBuy, new()
+                            {
+                                {CsItem.Flashbang, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.Smoke, MaxTeamNadesPerTypeSetting.Three},
+                                {CsItem.Incendiary, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.HE, MaxTeamNadesPerTypeSetting.Unlimited},
+                            }
+                        },
+                        {
+                            RoundType.FullBuy, new()
+                            {
+                                {CsItem.Flashbang, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.Smoke, MaxTeamNadesPerTypeSetting.Three},
+                                {CsItem.Incendiary, MaxTeamNadesPerTypeSetting.Unlimited},
+                                {CsItem.HE, MaxTeamNadesPerTypeSetting.Unlimited},
+                            }
+                        },
                     }
                 },
             }
