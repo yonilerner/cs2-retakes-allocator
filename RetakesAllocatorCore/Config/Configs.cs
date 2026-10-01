@@ -65,6 +65,8 @@ public static class Configs
             throw new Exception("Failed to load configs.");
         }
 
+        _configData.AllowedWeaponSelectionTypes.RemoveAll(type => type == WeaponSelectionType.Random);
+
         if (saveAfterLoad)
         {
             SaveConfigData(_configData);
@@ -137,7 +139,7 @@ public record ConfigData
     public List<CsItem> UsableWeapons { get; set; } = WeaponHelpers.AllWeapons;
 
     public List<WeaponSelectionType> AllowedWeaponSelectionTypes { get; set; } =
-        Enum.GetValues<WeaponSelectionType>().ToList();
+        new() {WeaponSelectionType.PlayerChoice, WeaponSelectionType.Default};
 
     public Dictionary<CsTeam, Dictionary<WeaponAllocationType, CsItem>> DefaultWeapons { get; set; } =
         WeaponHelpers.DefaultWeaponsByTeamAndAllocationType;

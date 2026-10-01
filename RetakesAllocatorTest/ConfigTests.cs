@@ -7,6 +7,41 @@ namespace RetakesAllocatorTest;
 
 public class ConfigTests : BaseTestFixture
 {
+    [TestCase(false)]
+    [TestCase(true)]
+    public void SavedConfigExcludesRandomWeaponSelection(bool existingConfig)
+    {
+        var modulePath = Path.Combine(Path.GetTempPath(), "RetakesAllocatorConfig-" + Guid.NewGuid().ToString("N"));
+        var configDirectory = Path.Combine(modulePath, "config");
+        var configPath = Path.Combine(configDirectory, "config.json");
+        try
+        {
+            if (existingConfig)
+            {
+                Directory.CreateDirectory(configDirectory);
+                File.WriteAllText(configPath,
+                    "{\"AllowedWeaponSelectionTypes\":[\"PlayerChoice\",\"Random\",\"Default\"],\"ChatMessagePluginName\":\"CustomRetakes\"}");
+            }
+
+            Configs.Load(modulePath, saveAfterLoad: true);
+            using var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(configPath));
+            var selections = json.RootElement.GetProperty("AllowedWeaponSelectionTypes")
+                .EnumerateArray().Select(value => value.GetString()).ToArray();
+            Assert.That(selections, Is.EqualTo(new[] {"PlayerChoice", "Default"}));
+            if (existingConfig)
+            {
+                Assert.That(json.RootElement.GetProperty("ChatMessagePluginName").GetString(), Is.EqualTo("CustomRetakes"));
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(modulePath))
+            {
+                Directory.Delete(modulePath, recursive: true);
+            }
+        }
+    }
+
     [Test]
     public void TestDefaultWeaponsValidation()
     {

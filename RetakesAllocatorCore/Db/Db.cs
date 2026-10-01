@@ -9,17 +9,13 @@ public class Db : DbContext
 {
     public DbSet<UserSetting> UserSettings { get; set; }
 
-    private static Db? Instance { get; set; }
-
-    public static Db GetInstance()
+    /// <summary>
+    /// A new context for one unit of work. Contexts are cheap to create and must not be shared
+    /// between threads, so callers dispose this when they are done.
+    /// </summary>
+    public static Db Create()
     {
-        return Instance ??= new Db();
-    }
-
-    public static void Disconnect()
-    {
-        Instance?.Dispose();
-        Instance = null;
+        return new Db();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

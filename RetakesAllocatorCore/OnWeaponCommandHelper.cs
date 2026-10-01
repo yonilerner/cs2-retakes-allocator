@@ -7,10 +7,17 @@ namespace RetakesAllocatorCore;
 
 public class OnWeaponCommandHelper
 {
+    private static readonly object SaveQueueLock = new();
+    private static Task _saveQueue = Task.CompletedTask;
+
     public static string Handle(ICollection<string> args, ulong userId, RoundType? roundType, CsTeam currentTeam,
         bool remove, out CsItem? outWeapon)
     {
-        var result = Task.Run(() => HandleAsync(args, userId, roundType, currentTeam, remove)).Result;
+        var (result, save) = Prepare(args, userId, roundType, currentTeam, remove);
+        if (save is not null)
+        {
+            _ = SaveAndLogAsync(save);
+        }
         outWeapon = result.Item2;
         return result.Item1;
     }
@@ -19,9 +26,44 @@ public class OnWeaponCommandHelper
         RoundType? roundType, CsTeam currentTeam,
         bool remove)
     {
-        CsItem? outWeapon = null;
+        var (result, save) = Prepare(args, userId, roundType, currentTeam, remove);
+        if (save is not null)
+        {
+            await QueueSave(save);
+        }
+        return result;
+    }
 
-        Tuple<string, CsItem?> Ret(string str) => new(str, outWeapon);
+    private static Task QueueSave(Func<Task> save)
+    {
+        // Keep menu selections in order, but run every database operation on a worker.
+        lock (SaveQueueLock)
+        {
+            _saveQueue = _saveQueue.ContinueWith(_ => save(), CancellationToken.None,
+                TaskContinuationOptions.None, TaskScheduler.Default).Unwrap();
+            return _saveQueue;
+        }
+    }
+
+    private static async Task SaveAndLogAsync(Func<Task> save)
+    {
+        try
+        {
+            await QueueSave(save);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Failed to save weapon preference: {ex}");
+        }
+    }
+
+    private static (Tuple<string, CsItem?> Result, Func<Task>? Save) Prepare(ICollection<string> args, ulong userId,
+        RoundType? roundType, CsTeam currentTeam, bool remove)
+    {
+        CsItem? outWeapon = null;
+        Func<Task>? save = null;
+
+        (Tuple<string, CsItem?>, Func<Task>?) Ret(string str) => (new(str, outWeapon), save);
 
         if (!Configs.GetConfigData().CanPlayersSelectWeapons())
         {
@@ -113,12 +155,12 @@ public class OnWeaponCommandHelper
         {
             if (isPreferred)
             {
-                _ = Queries.SetPreferredWeaponPreferenceAsync(userId, null);
+                save = () => Queries.SetPreferredWeaponPreferenceAsync(userId, null);
                 return Ret(Translator.Instance["weapon_preference.unset_preference_preferred", weapon]);
             }
             else
             {
-                _ = Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, null);
+                save = () => Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, null);
                 return Ret(
                     Translator.Instance["weapon_preference.unset_preference", weapon, allocationType.Value, team]);
             }
@@ -127,13 +169,13 @@ public class OnWeaponCommandHelper
         string message;
         if (isPreferred)
         {
-            _ = Queries.SetPreferredWeaponPreferenceAsync(userId, weapon);
+            save = () => Queries.SetPreferredWeaponPreferenceAsync(userId, weapon);
             // If we ever add more preferred weapons, we need to change the wording of "sniper" here
             message = Translator.Instance["weapon_preference.set_preference_preferred", weapon];
         }
         else
         {
-            _ = Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, weapon);
+            save = () => Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, weapon);
             message = Translator.Instance["weapon_preference.set_preference", weapon, allocationType.Value, team];
         }
 

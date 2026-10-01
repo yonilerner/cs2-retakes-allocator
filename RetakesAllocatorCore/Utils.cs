@@ -86,9 +86,13 @@ public static class Utils
         return default;
     }
 
+    // AutoDetect opens a connection to ask the server for its version. Each database operation
+    // now builds its own context, so detect once per connection string instead of every time.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ServerVersion> MySqlVersions = new();
+
     public static void SetupMySql(string connectionString, DbContextOptionsBuilder optionsBuilder)
     {
-        var version = ServerVersion.AutoDetect(connectionString);
+        var version = MySqlVersions.GetOrAdd(connectionString, ServerVersion.AutoDetect);
         optionsBuilder.UseMySql(connectionString, version);
     }
 

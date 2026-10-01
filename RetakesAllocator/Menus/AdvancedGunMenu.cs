@@ -60,8 +60,14 @@ public class AdvancedGunMenu
 
     public void OnTick()
     {
-        var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
-        foreach (var player in playerEntities)
+        // Runs every server tick. Nothing to do unless someone has the menu open, and the
+        // player slots are a far cheaper walk than a designer-name scan of every entity.
+        if (menuon.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var player in Utilities.GetPlayers())
         {
             if (player == null || !player.IsValid || !player.PawnIsAlive || player.IsBot || player.IsHLTV) continue;
             

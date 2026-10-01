@@ -11,6 +11,22 @@ namespace RetakesAllocatorTest;
 public class WeaponSelectionTests : BaseTestFixture
 {
     [Test]
+    public async Task RapidMenuChoicesPersistInSelectionOrder()
+    {
+        OnWeaponCommandHelper.Handle(new[] {"ak47", "T"}, TestSteamId, RoundType.FullBuy,
+            CsTeam.Terrorist, false, out _);
+        OnWeaponCommandHelper.Handle(new[] {"galil", "T"}, TestSteamId, RoundType.FullBuy,
+            CsTeam.Terrorist, false, out _);
+        await OnWeaponCommandHelper.HandleAsync(new[] {"krieg", "T"}, TestSteamId, RoundType.FullBuy,
+            CsTeam.Terrorist, false);
+
+        Queries.ClearCache();
+        var saved = await Queries.GetUserSettings(TestSteamId);
+        Assert.That(saved?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary),
+            Is.EqualTo(CsItem.Krieg));
+    }
+
+    [Test]
     public async Task SetWeaponPreferenceDirectly()
     {
         Assert.That(

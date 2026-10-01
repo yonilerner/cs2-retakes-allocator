@@ -51,7 +51,7 @@ public abstract class AbstractVoteManager
 
         foreach (var (player, vote) in _votes)
         {
-            if (!player.IsValid || player.Connected != PlayerConnectedState.PlayerConnected)
+            if (!player.IsValid || player.Connected != PlayerConnectedState.Connected)
             {
                 continue;
             }

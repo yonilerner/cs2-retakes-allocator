@@ -28,6 +28,7 @@ public class CustomGameData
             Log.Error("Module path is null. Returning without loading custom game data.");
             return;
         }
+        _customGameData.Clear();
         var jsonFilePath = Path.Combine(Configs.Shared.Module, "gamedata/RetakesAllocator_gamedata.json");
         if (File.Exists(jsonFilePath))
         {
@@ -67,16 +68,36 @@ public class CustomGameData
             Log.Debug($"JSON file does not exist at path: {jsonFilePath}. Returning without loading custom game data.");
         }
         
+        GiveNamedItem2 = null;
+        GetCSWeaponDataFromKeyFunc = null;
+        CCSPlayer_ItemServices_CanAcquireFunc = null;
+
         try
         {
             GiveNamedItem2 = new(GetCustomGameDataKey("GiveNamedItem2"));
         }
-        catch
+        catch (Exception ex)
         {
-            // GiveNamedItem2 failing to load shouldnt crash because we will try to fallback to GiveNamedItem
+            Log.Warn($"GiveNamedItem2 is unavailable: {ex.Message}");
         }
-        GetCSWeaponDataFromKeyFunc = new(GetCustomGameDataKey("GetCSWeaponDataFromKey"));
-        CCSPlayer_ItemServices_CanAcquireFunc = new(GetCustomGameDataKey("CCSPlayer_ItemServices_CanAcquire"));
+
+        try
+        {
+            GetCSWeaponDataFromKeyFunc = new(GetCustomGameDataKey("GetCSWeaponDataFromKey"));
+        }
+        catch (Exception ex)
+        {
+            Log.Warn($"GetCSWeaponDataFromKey is unavailable: {ex.Message}");
+        }
+
+        try
+        {
+            CCSPlayer_ItemServices_CanAcquireFunc = new(GetCustomGameDataKey("CCSPlayer_ItemServices_CanAcquire"));
+        }
+        catch (Exception ex)
+        {
+            Log.Warn($"CCSPlayer_ItemServices_CanAcquire is unavailable: {ex.Message}");
+        }
     }
 
     private string GetCustomGameDataKey(string key)
@@ -123,13 +144,15 @@ public class CustomGameData
 
     public void PlayerGiveNamedItem(CCSPlayerController player, string item)
     {
-        if (!player.PlayerPawn.IsValid) return;
-        if (player.PlayerPawn.Value == null) return;
-        if (!player.PlayerPawn.Value.IsValid) return;
-        if (player.PlayerPawn.Value.ItemServices == null) return;
+        if (!player.IsValid || GiveNamedItem2 is null || !player.PlayerPawn.IsValid) return;
 
-        // Log.Debug("Using custom function for GiveNamedItem2");
-        GiveNamedItem2?.Invoke(player.PlayerPawn.Value.ItemServices.Handle, item, 0, 0, 0, 0, 0, 0);
+        var pawn = player.PlayerPawn.Value;
+        if (pawn is null || !pawn.IsValid) return;
+
+        var itemServices = pawn.ItemServices;
+        if (itemServices is null || itemServices.Handle == IntPtr.Zero) return;
+
+        GiveNamedItem2.Invoke(itemServices.Handle, item, 0, 0, 0, 0, 0, 0);
     }
 }
 

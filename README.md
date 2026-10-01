@@ -38,7 +38,7 @@ This plugin relies on some function signatures that:
 - Are not included in the default CS# signatures:
   - `GiveNamedItem2`
 
-Custom game data signatures are maintained in https://github.com/yonilerner/cs2-retakes-allocator/blob/main/Resources/RetakesAllocator_gamedata.json. There are a few ways to keep these up to date on your server:
+Custom game data signatures are maintained in https://github.com/staaar0/cs2-retakes-allocator/blob/main/Resources/RetakesAllocator_gamedata.json. There are a few ways to keep these up to date on your server:
 - If you want the plugin to automatically download the signatures, you can do so by running the plugin with the `AutoUpdateSignatures` config set to `true`. **This is the recommended approach**. See more below in the "Configuration" section.
 - If you want to manually download the signatures, you can do so by downloading the `RetakesAllocator_gamedata.json` file from Github and placing it in the `RetakesAllocator/gamedata` folder in the plugin. You may have to create that folder if it does not exist.
 
@@ -283,7 +283,6 @@ room for it*.
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
     - Choices:
         - `PlayerChoice` - Allow players to choose their preferences for the round type
-        - `Random` - Everyone gets a random weapon for the round type
         - `Default` - Everyone gets a default weapon for the round type. The defaults are:
             - T Pistol: Glock
             - CT Pistol: USPS
@@ -291,7 +290,7 @@ room for it*.
             - CT HalfBuy: MP9
             - T Rifle: AK47
             - CT Rifle: M4A4
-    - These will be tried in order of `PlayerChoice`, `Random`, and `Default`. If a player preference is not available,
+    - These will be tried in order of `PlayerChoice`, `Default`. If a player preference is not available,
       or this type is removed from the config, a random weapon will be tried. If random weapons are removed from the
       config, a default weapon will be tried. If default weapons are removed from the config, no weapons will be
       allocated.
